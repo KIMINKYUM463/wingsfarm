@@ -158,9 +158,24 @@ export interface KonvaTextElement extends KonvaElementBase {
   textDecoration?: 'none' | 'underline' | 'overline' | 'line-through';
 }
 /**
+ * 사진 칸 표시 설정 — 원본 사진은 그대로 두고 그릴 때만 반영 (사진 편집 패널)
+ */
+export interface KonvaImageAdjust {
+  /** cover = 칸을 꽉 채움(넘치는 부분 잘림), contain = 사진 전체가 보이게 맞춤 */
+  imageFit?: 'cover' | 'contain';
+  /** 확대 배율 (1 = 맞춤 기준) */
+  imageZoom?: number;
+  /** 사진이 칸보다 클 때 보이는 위치 (0 = 왼쪽/위, 0.5 = 가운데, 1 = 오른쪽/아래) */
+  imageFocusX?: number;
+  imageFocusY?: number;
+  imageFlipX?: boolean;
+  imageFlipY?: boolean;
+  imageGrayscale?: boolean;
+}
+/**
  * 사각형 요소
  */
-export interface KonvaRectElement extends KonvaElementBase {
+export interface KonvaRectElement extends KonvaElementBase, KonvaImageAdjust {
   type: 'rect';
   width: number;
   height: number;
@@ -174,7 +189,7 @@ export interface KonvaRectElement extends KonvaElementBase {
 /**
  * 경로 요소 (벡터)
  */
-export interface KonvaPathElement extends KonvaElementBase {
+export interface KonvaPathElement extends KonvaElementBase, KonvaImageAdjust {
   type: 'path';
   data: string;
   fillRule?: string;

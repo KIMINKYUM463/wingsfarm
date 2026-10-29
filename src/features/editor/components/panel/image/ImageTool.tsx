@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useId } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import ResultDescription from '@/features/editor/components/panel/common/ResultDescription';
 import {
@@ -17,15 +17,26 @@ import FileInput from '@/shared/ui/FileInput/FileInput';
 import { useAssetUpload } from '@/features/editor/hooks/useAssetUpload';
 import { StyleSelector } from './style';
 import ImageGenerationStatus, { type RegenerateRequest } from './ImageGenerationStatus';
+import ImageAdjustSection from './ImageAdjustSection';
+import type { KonvaPathElement, KonvaRectElement } from '@/shared/types/konva';
 
 const ImageTool = () => {
   const params = useParams();
   const projectId = params.id as string;
-  const { element: selectedElement } = useSelectedElement();
+  const { element: selectedElement, elements: selectedElements } = useSelectedElement();
   const formId = useId();
 
   // 이미지 요소가 선택되었는지 확인
   const isImageSelected = selectedElement && isImageElement(selectedElement);
+  // 사진이 들어 있는 칸만 사진 편집 대상
+  const photoElements = useMemo(
+    () =>
+      selectedElements.filter(
+        (el): el is KonvaRectElement | KonvaPathElement =>
+          isImageElement(el) && 'assetId' in el && Boolean(el.assetId),
+      ),
+    [selectedElements],
+  );
 
   // AI 이미지 생성 V2 훅 (RHF + mutation)
   const {
@@ -186,6 +197,7 @@ const ImageTool = () => {
         }
         infiniteScroll={{ hasNextPage, isFetchingNextPage, fetchNextPage }}
       >
+        {photoElements.length > 0 && <ImageAdjustSection elements={photoElements} />}
         <StyleSelector selected={selectedStyleDisplay} onClick={openStyleSelector} />
         <ResultDescription
           formId={formId}

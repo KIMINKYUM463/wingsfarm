@@ -9,7 +9,7 @@ import { KonvaPathElement } from '@/shared/types/konva';
 import { Path, Group } from 'react-konva';
 import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useKonvaElementHandlers } from '@/features/editor/hooks/useKonvaElementHandlers';
-import { useImageCover } from '@/features/editor/hooks/useImageCover';
+import { useImagePattern } from '@/features/editor/hooks/useImagePattern';
 import { ImageControlOverlay } from '@/features/editor/components/canvas/layout/ImageHoverLayout';
 import { isImageElement } from '@/features/editor/lib/element-finder';
 import ImagePlaceholder from './ImagePlaceholder';
@@ -48,13 +48,7 @@ const KonvaPath = forwardRef<Konva.Path, KonvaPathProps>(
     // ref 동기화
     useImperativeHandle(ref, () => pathRef.current!);
 
-    // object-fit: cover 스타일 계산
-    const coverScale = useImageCover({
-      imageUrl,
-      image,
-      width: element.width,
-      height: element.height,
-    });
+    const imagePattern = useImagePattern({ ...element, image: imageUrl ? image : undefined });
 
     // 이미지 요소 플레이스홀더 표시 조건:
     // 1. assetId가 없는 경우 (이미지 미지정)
@@ -116,13 +110,8 @@ const KonvaPath = forwardRef<Konva.Path, KonvaPathProps>(
               fillRadialGradientColorStops={
                 imageUrl ? undefined : element.fillRadialGradientColorStops
               }
-              // Image pattern fill (object-fit: cover)
-              fillPatternImage={imageUrl && image ? image : undefined}
-              fillPatternRepeat={imageUrl && image ? 'no-repeat' : undefined}
-              fillPatternScaleX={coverScale?.scale}
-              fillPatternScaleY={coverScale?.scale}
-              fillPatternX={coverScale?.offsetX}
-              fillPatternY={coverScale?.offsetY}
+              // 사진 채우기 (맞춤·확대·위치·반전·흑백)
+              {...imagePattern}
               // Stroke props
               stroke={element.stroke}
               strokeWidth={element.strokeWidth}

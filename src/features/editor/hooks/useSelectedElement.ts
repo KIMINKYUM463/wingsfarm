@@ -112,7 +112,14 @@ export const useSelectedElement = () => {
 
   const { element, elements, textElements, shapeElements, lineElements, graphicElements } = useMemo(() => {
     if (selectedElements.length === 0) {
-      return { element: null, elements: [], textElements: [], shapeElements: [], lineElements: [], graphicElements: [] };
+      return {
+        element: null,
+        elements: [] as KonvaElement[],
+        textElements: [] as KonvaTextElement[],
+        shapeElements: [] as KonvaShapeElement[],
+        lineElements: [] as KonvaLineTypeElement[],
+        graphicElements: [] as KonvaRectElement[],
+      };
     }
 
     // 텍스트 요소 수집 (그룹 내부 텍스트 포함)

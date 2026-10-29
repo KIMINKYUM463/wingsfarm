@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
 /**
  * 디바운스된 콜백 함수 훅
@@ -45,10 +45,14 @@ export const useDebouncedCallback = <T extends (...args: unknown[]) => void>(
 
   // 최신 콜백 참조 (클로저 문제 방지)
   const callbackRef = useRef(callback);
-  callbackRef.current = callback;
+  useLayoutEffect(() => {
+    callbackRef.current = callback;
+  });
 
   // 마지막 호출 시간
   const lastCallTimeRef = useRef<number>(0);
+  // 마지막 호출 인자 (maxWait 타이머도 가장 최근 값으로 실행해야 마지막 값이 버려지지 않는다)
+  const latestArgsRef = useRef<unknown[]>([]);
 
   // 클린업 함수
   const cleanup = useCallback(() => {
@@ -70,6 +74,13 @@ export const useDebouncedCallback = <T extends (...args: unknown[]) => void>(
   const debouncedCallback = useCallback(
     (...args: unknown[]) => {
       const now = Date.now();
+      latestArgsRef.current = args;
+
+      const flush = () => {
+        callbackRef.current(...(latestArgsRef.current as Parameters<T>));
+        lastCallTimeRef.current = 0;
+        cleanup();
+      };
 
       // 기존 타이머 제거
       if (timeoutRef.current) {
@@ -81,19 +92,11 @@ export const useDebouncedCallback = <T extends (...args: unknown[]) => void>(
         lastCallTimeRef.current = now;
 
         // maxWait 타이머 설정
-        maxWaitTimeoutRef.current = setTimeout(() => {
-          callbackRef.current(...(args as Parameters<T>));
-          lastCallTimeRef.current = 0;
-          cleanup();
-        }, maxWait);
+        maxWaitTimeoutRef.current = setTimeout(flush, maxWait);
       }
 
       // 일반 디바운스 타이머 설정
-      timeoutRef.current = setTimeout(() => {
-        callbackRef.current(...(args as Parameters<T>));
-        lastCallTimeRef.current = 0;
-        cleanup();
-      }, delay);
+      timeoutRef.current = setTimeout(flush, delay);
     },
     [delay, maxWait, cleanup],
   ) as T;
