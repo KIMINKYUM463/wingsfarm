@@ -85,7 +85,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
             isSquare ? 'aspect-square' : 'aspect-154/206',
           )}
         >
-          {item.thumbnailUrl && (
+          {item.thumbnailUrl ? (
             <Image
               src={item.thumbnailUrl}
               alt={item.name ?? ''}
@@ -94,6 +94,10 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
               priority={priority}
               className="img-placeholder object-cover"
             />
+          ) : (
+            <div className="flex size-full items-center justify-center bg-gray-50 text-gray-300" aria-hidden>
+              <Icon name="image" width={40} />
+            </div>
           )}
 
           {/* AI 배지 */}
