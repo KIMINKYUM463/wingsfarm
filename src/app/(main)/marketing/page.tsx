@@ -313,8 +313,7 @@ export default function MarketingPage() {
       <PageHeader title={`${BRAND} 마케팅`} description="만들고 싶은 형식을 고르면 팝업 스튜디오가 열립니다. 결과는 보관함에 자동 저장돼요." />
 
       <div className="flex min-h-[58vh] flex-col items-center py-6">
-        <p className="mb-2 text-base text-stone-500 sm:text-lg">어떤 콘텐츠를 만들까요?</p>
-        <p className="mb-4 text-xs text-stone-400">가운데를 누르면 도구가 펼쳐집니다.</p>
+        <p className="mb-4 text-base text-stone-500 sm:text-lg">어떤 콘텐츠를 만들까요?</p>
         <MoleculeHub onPick={openStudio} />
       </div>
 

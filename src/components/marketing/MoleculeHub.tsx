@@ -46,7 +46,8 @@ type HubPhase = "collapsed" | "expanding" | "expanded" | "collapsing";
 export function MoleculeHub({ onPick }: { onPick: (f: MarketingFormat) => void }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useState<NodePos[]>(INITIAL);
-  const [phase, setPhase] = useState<HubPhase>("collapsed");
+  // 도구 9개가 첫 화면에 바로 보이도록 진입하자마자 펼친다 (가운데 버튼으로 접기 가능)
+  const [phase, setPhase] = useState<HubPhase>("expanding");
   /** 0=접힘(중앙), 1=완전 펼침 */
   const [spread, setSpread] = useState(0);
   const dragRef = useRef<{ id: MarketingFormat; ox: number; oy: number; startX: number; startY: number } | null>(null);
@@ -293,7 +294,7 @@ export function MoleculeHub({ onPick }: { onPick: (f: MarketingFormat) => void }
               }}
             >
               <span
-                className={`grid size-20 place-items-center rounded-full bg-linear-to-br ${meta.accent} text-3xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.35)] ring-4 ring-white/70 transition-[transform] duration-200 ease-out group-hover:scale-110 group-active:scale-[0.97] sm:size-24 sm:text-4xl`}
+                className={`grid size-14 place-items-center rounded-full bg-linear-to-br ${meta.accent} text-2xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.35)] ring-4 ring-white/70 transition-[transform] duration-200 ease-out group-hover:scale-110 group-active:scale-[0.97] sm:size-24 sm:text-4xl`}
               >
                 <span className="drop-shadow-sm" aria-hidden>
                   {meta.icon}
