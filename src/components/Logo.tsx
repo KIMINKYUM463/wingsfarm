@@ -32,7 +32,7 @@ export function Logo() {
         <span className="block text-xl font-extrabold tracking-tight text-emerald-800">
           윙스팜<span className="ml-0.5 bg-linear-to-r from-emerald-500 to-amber-500 bg-clip-text text-transparent">AI</span>
         </span>
-        <span className="block text-[11px] text-stone-400">{BRAND_TAGLINE}</span>
+        <span className="block text-xs text-stone-500">{BRAND_TAGLINE}</span>
       </span>
     </span>
   );

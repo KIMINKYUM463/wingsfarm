@@ -35,8 +35,8 @@ export function ConnectionStatus() {
                 <li key={item.key} className="flex items-start justify-between gap-3 rounded-xl bg-stone-50 px-4 py-3">
                   <div>
                     <p className="text-sm font-semibold text-stone-800">{item.label}</p>
-                    <p className="text-[11px] text-stone-500">{item.uses}</p>
-                    {!ok && <p className="mt-1 font-mono text-[11px] text-stone-400">{item.env}</p>}
+                    <p className="text-xs text-stone-500">{item.uses}</p>
+                    {!ok && <p className="mt-1 font-mono text-xs text-stone-500">{item.env}</p>}
                   </div>
                   <Badge tone={ok ? "good" : item.key === "passwordLock" ? "default" : "warn"}>{ok ? "연결됨" : item.key === "passwordLock" ? "꺼짐" : "미설정"}</Badge>
                 </li>

@@ -311,7 +311,7 @@ export default function ThumbnailsPage() {
                     }`}
                   >
                     <span className="block text-sm font-semibold">{o.label}</span>
-                    <span className={`text-[11px] ${includeMain === o.v ? "text-white/50" : "text-stone-400"}`}>{o.hint}</span>
+                    <span className={`text-xs ${includeMain === o.v ? "text-white/70" : "text-stone-500"}`}>{o.hint}</span>
                   </button>
                 ))}
               </div>
@@ -340,7 +340,7 @@ export default function ThumbnailsPage() {
                   </button>
                 ))}
               </div>
-              <p className="mt-1.5 text-[11px] text-stone-400">0이면 서브 없이 메인만 만듭니다. 장수가 많을수록 시간·요금이 늘어납니다.</p>
+              <p className="mt-1.5 text-xs text-stone-500">0이면 서브 없이 메인만 만듭니다. 장수가 많을수록 시간·요금이 늘어납니다.</p>
             </div>
 
             <Field label="참고 메모 (선택)" hint="예: 선물용, 사람이 들고 있는 메인 원함">

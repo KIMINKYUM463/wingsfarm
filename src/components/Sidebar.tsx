@@ -58,7 +58,7 @@ function WorkingProduct() {
   if (!product) return null;
   return (
     <div className="mx-1 mb-3 rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-900 ring-1 ring-emerald-100">
-      <p className="text-[10px] font-semibold tracking-wide text-emerald-700/70">작업 중인 상품</p>
+      <p className="text-xs font-semibold tracking-wide text-emerald-700/80">작업 중인 상품</p>
       <div className="mt-0.5 flex items-center justify-between gap-2">
         <span className="truncate font-semibold" title={product}>
           {product}
@@ -83,7 +83,7 @@ export function Sidebar() {
       <nav className="flex flex-col gap-4">
         {NAV_GROUPS.map((group, gi) => (
           <div key={gi} className="flex flex-col gap-0.5">
-            {group.title && <p className="px-3 pb-1 text-[10px] font-semibold tracking-[0.2em] text-stone-400">{group.title}</p>}
+            {group.title && <p className="px-3 pb-1 text-xs font-semibold tracking-widest text-stone-500">{group.title}</p>}
             {group.items.map((item) => {
               const active = isActive(item.href, pathname);
               return (
@@ -102,7 +102,7 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-      <p className="mt-auto px-3 pt-4 text-[11px] leading-relaxed text-stone-400">데이터는 이 브라우저에만 저장됩니다. 설정에서 백업하세요.</p>
+      <p className="mt-auto px-3 pt-4 text-xs leading-relaxed text-stone-500">데이터는 이 브라우저에만 저장됩니다. 설정에서 백업하세요.</p>
     </aside>
   );
 }

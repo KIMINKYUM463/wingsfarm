@@ -241,7 +241,7 @@ export default function DashboardPage() {
                       <div className="text-2xl font-black">
                         D-<CountUp value={item.daysUntilStart} />
                       </div>
-                      <div className="text-[10px] font-medium">{item.daysUntilStart <= PREP_LEAD_DAYS ? "지금 준비" : "준비 예정"}</div>
+                      <div className="text-xs font-medium">{item.daysUntilStart <= PREP_LEAD_DAYS ? "지금 준비" : "준비 예정"}</div>
                     </div>
                   </div>
                   <p className="mt-3 text-xs leading-relaxed text-stone-500">{item.tip}</p>
@@ -383,7 +383,7 @@ function SourcingCard({ index, item, outlook, onSelect }: { index: number; item:
           <p className="text-xl font-bold text-emerald-600">
             <CountUp value={outlook.rise} format={growthText} />
           </p>
-          <p className="text-[11px] text-stone-400">작년 평균 상승</p>
+          <p className="text-xs text-stone-500">작년 평균 상승</p>
         </div>
       </div>
 
