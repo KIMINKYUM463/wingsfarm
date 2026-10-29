@@ -193,7 +193,7 @@ export default function MarginPage() {
       {mode === "board" ? (
         <MarginBoard />
       ) : mode === "single" ? (
-        <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
           <Card title="입력">
             <div className="grid grid-cols-2 gap-3">
               <Field label="판매가">
@@ -288,7 +288,7 @@ export default function MarginPage() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
           <Card title="입력">
             <div className="space-y-3">
               <Field label="kg당 공급단가" hint="산지 경락가·공급처 단가">
