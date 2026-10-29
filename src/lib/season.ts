@@ -34,6 +34,22 @@ export function seasonStatus(item: SeasonItem, today: Date): SeasonStatus {
   return { item, inSeason, daysUntilStart, endingThisMonth };
 }
 
+const compact = (s: string) => s.replace(/\s+/g, "");
+
+/** 상품명에 들어 있는 제철 품목. 흔한 표기(searchKeyword)도 보고, 여러 개면 가장 긴 이름('절임배추' > '배')을 고른다 */
+export function findSeasonItem(productName: string, items: SeasonItem[]) {
+  const name = compact(productName);
+  if (!name) return undefined;
+  let best: { item: SeasonItem; length: number } | undefined;
+  for (const item of items) {
+    for (const label of [item.name, item.searchKeyword]) {
+      const key = label && compact(label);
+      if (key && (name.includes(key) || key.includes(name)) && key.length > (best?.length ?? 0)) best = { item, length: key.length };
+    }
+  }
+  return best?.item;
+}
+
 export function seasonStatuses(items: SeasonItem[], today: Date) {
   return items.map((item) => seasonStatus(item, today));
 }

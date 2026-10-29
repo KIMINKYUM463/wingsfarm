@@ -23,6 +23,7 @@ import {
   LIVE_DURATION_MAX,
   LIVE_DURATION_MIN,
   LIVE_STYLES,
+  MARKETING_FORMATS,
   MARKETING_FORMAT_META,
   REVIEW_TYPES,
   SHORTS_DURATIONS,
@@ -60,14 +61,20 @@ function imageJobsFor(result: MarketingResult, hasProductImage: boolean): ImageJ
   return [];
 }
 
+/** 콘텐츠 캘린더에서 /marketing?studio=shorts&note=... 로 들어오면 해당 스튜디오를 연다 (ClientOnly 아래라 window 사용 가능) */
+const initialStudio = (): MarketingFormat | null => {
+  const studio = new URLSearchParams(window.location.search).get("studio");
+  return MARKETING_FORMATS.find((f) => f === studio) ?? null;
+};
+
 export default function MarketingPage() {
   const month = new Date().getMonth() + 1;
   const inSeason = useMemo(() => SEASON_ITEMS.filter((s) => s.months.includes(month)).slice(0, 10), [month]);
 
   const product = useAppStore((s) => s.workingProduct);
   const setProduct = useAppStore((s) => s.setWorkingProduct);
-  const [open, setOpen] = useState<MarketingFormat | null>(null);
-  const [note, setNote] = useState("");
+  const [open, setOpen] = useState<MarketingFormat | null>(initialStudio);
+  const [note, setNote] = useState(() => new URLSearchParams(window.location.search).get("note")?.slice(0, 300) ?? "");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<MarketingResult | null>(null);

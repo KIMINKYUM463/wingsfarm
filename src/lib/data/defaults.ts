@@ -1,6 +1,6 @@
 import type { CostDefaults, Supplier } from "@/types";
 
-/** 발주·출고 기능은 빠졌지만, 예전 백업 호환을 위해 공급처 기본값은 유지 */
+/** 발주서 도우미·도착일 계산이 쓰는 공급처 기본값 (템플릿이 비면 기본 발주서 양식을 쓴다) */
 export function emptySupplier(id: string): Supplier {
   return {
     id,

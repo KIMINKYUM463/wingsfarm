@@ -5,7 +5,7 @@
 
 import { STORES, getAll, withStore } from "@/lib/idb";
 
-export type ArchiveKind = "marketing" | "thumbnail" | "detail" | "tags" | "titles";
+export type ArchiveKind = "marketing" | "thumbnail" | "detail" | "tags" | "titles" | "reviews";
 
 export const ARCHIVE_KIND_LABEL: Record<ArchiveKind, string> = {
   marketing: "마케팅",
@@ -13,6 +13,7 @@ export const ARCHIVE_KIND_LABEL: Record<ArchiveKind, string> = {
   detail: "상세페이지",
   tags: "검색 태그",
   titles: "상품명",
+  reviews: "리뷰 분석",
 };
 
 export interface ArchiveItem {

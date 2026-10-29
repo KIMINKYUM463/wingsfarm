@@ -5,7 +5,9 @@ import { useMemo, type ReactNode } from "react";
 import { AppLink } from "@/components/AppLink";
 import { countByStatus, evaluateListings } from "@/lib/margin";
 import { opsProgress } from "@/lib/opsChecklist";
-import { percent } from "@/lib/format";
+import { percent, toDateKey, won } from "@/lib/format";
+import { inMonth, totals } from "@/lib/ledger";
+import { roadmapProgress } from "@/lib/roadmap";
 import { useAppStore } from "@/store/useAppStore";
 
 const QUICK_LINKS = [
@@ -17,7 +19,9 @@ const QUICK_LINKS = [
 ];
 
 export function TodayOps() {
-  const { skus, channels, costs, opsChecks, workingProduct } = useAppStore();
+  const { skus, channels, costs, opsChecks, workingProduct, ledger } = useAppStore();
+  const roadmap = roadmapProgress(opsChecks);
+  const month = totals(inMonth(ledger, toDateKey(new Date()).slice(0, 7)));
   const evals = useMemo(() => evaluateListings(skus, channels, costs), [skus, channels, costs]);
   const counts = countByStatus(evals);
   const worst = evals
@@ -33,7 +37,7 @@ export function TodayOps() {
   const channelName = (id: string) => channels.find((c) => c.id === id)?.name ?? id;
 
   return (
-    <section className="grid animate-fade-up gap-4 md:grid-cols-3">
+    <section className="grid animate-fade-up gap-4 md:grid-cols-2 xl:grid-cols-4">
       <OpsCard
         title="역마진 경보"
         href="/margin?tab=board"
@@ -76,6 +80,21 @@ export function TodayOps() {
           </ul>
         )}
       </OpsCard>
+
+      {roadmap.next ? (
+        <OpsCard title="수강생 로드맵" href="/roadmap" tone="default" headline={`${roadmap.done}/${roadmap.total} 단계 완료`}>
+          <div className="mb-2 h-1.5 rounded-full bg-stone-200">
+            <div className="h-full rounded-full bg-emerald-500" style={{ width: `${(roadmap.done / roadmap.total) * 100}%` }} />
+          </div>
+          <p className="truncate">다음: {roadmap.next.title}</p>
+        </OpsCard>
+      ) : (
+        <OpsCard title="이번 달 장부" href="/ledger" tone={month.profit < 0 ? "loss" : "default"} headline={`순이익 ${won(month.profit)}`}>
+          <p>
+            매출 {won(month.revenue)} · {month.count}건{month.revenue > 0 && ` · 마진율 ${percent(month.marginRate)}`}
+          </p>
+        </OpsCard>
+      )}
 
       <OpsCard title="작업 중인 상품" tone="default" headline={workingProduct || "아직 없음"}>
         <p className="mb-2">한 번 입력하면 상품명·태그·썸네일·마케팅 화면에 자동으로 채워집니다.</p>

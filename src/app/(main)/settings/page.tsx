@@ -7,7 +7,8 @@ import { SkuForm, createEmptySku } from "@/components/SkuForm";
 import { SupplierForm } from "@/components/SupplierForm";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { emptySupplier } from "@/lib/data/defaults";
-import { toDateKey, uid, won } from "@/lib/format";
+import { downloadBlob } from "@/lib/file";
+import { WEEKDAYS, toDateKey, uid, won } from "@/lib/format";
 import { pickAppData, useAppStore, type AppData } from "@/store/useAppStore";
 
 export default function SettingsPage() {
@@ -19,14 +20,8 @@ export default function SettingsPage() {
 
   const today = toDateKey(new Date());
 
-  const exportData = () => {
-    const blob = new Blob([JSON.stringify(pickAppData(store), null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `wingsfarm-ai-backup-${today}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  };
+  const exportData = () =>
+    downloadBlob(new Blob([JSON.stringify(pickAppData(store), null, 2)], { type: "application/json" }), `wingsfarm-ai-backup-${today}.json`);
 
   const onImport = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,6 +108,7 @@ export default function SettingsPage() {
             <thead>
               <tr>
                 <th>공급처</th>
+                <th>마감·출고</th>
                 <th className="text-right">연결 상품</th>
                 <th />
               </tr>
@@ -121,6 +117,9 @@ export default function SettingsPage() {
               {suppliers.map((s) => (
                 <tr key={s.id}>
                   <td className="font-medium">{s.name}</td>
+                  <td className="whitespace-nowrap text-xs text-stone-500">
+                    {s.cutoffTime} 마감 · {s.shipWeekdays.map((d) => WEEKDAYS[d]).join("")}
+                  </td>
                   <td className="text-right tabular-nums">{skus.filter((sku) => sku.supplierId === s.id).length}개</td>
                   <td className="whitespace-nowrap text-right">
                     <Button variant="ghost" onClick={() => setEditing(s)}>
@@ -215,7 +214,7 @@ export default function SettingsPage() {
         </Card>
       </div>
 
-      <Modal open={editing !== null} title={editing && suppliers.some((s) => s.id === editing.id) ? "공급처 수정" : "공급처 추가"} onClose={() => setEditing(null)}>
+      <Modal wide open={editing !== null} title={editing && suppliers.some((s) => s.id === editing.id) ? "공급처 수정" : "공급처 추가"} onClose={() => setEditing(null)}>
         {editing && <SupplierForm initial={editing} onDone={() => setEditing(null)} />}
       </Modal>
       <Modal open={editingSku !== null} title={editingSku && skus.some((s) => s.id === editingSku.id) ? "상품 수정" : "상품 추가"} onClose={() => setEditingSku(null)}>

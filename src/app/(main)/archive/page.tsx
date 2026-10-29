@@ -22,6 +22,7 @@ const KIND_TONE: Record<ArchiveKind, string> = {
   detail: "bg-orange-50 text-orange-700",
   tags: "bg-emerald-50 text-emerald-700",
   titles: "bg-sky-50 text-sky-700",
+  reviews: "bg-violet-50 text-violet-700",
 };
 
 const dateText = (ms: number) =>

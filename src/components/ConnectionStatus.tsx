@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import type { HealthResponse } from "@/app/api/health/route";
 import { Badge, Card } from "@/components/ui";
 
-const ITEMS: { key: keyof Pick<HealthResponse, "openai" | "naverDatalab" | "naverAd" | "passwordLock">; label: string; uses: string; env: string }[] = [
-  { key: "openai", label: "OpenAI", uses: "CS·상품명·태그·썸네일·마케팅·AI 분석", env: "OPENAI_API_KEY" },
+const ITEMS: { key: keyof Pick<HealthResponse, "openai" | "naverDatalab" | "naverAd" | "kamis" | "passwordLock">; label: string; uses: string; env: string }[] = [
+  { key: "openai", label: "OpenAI", uses: "CS·상품명·태그·썸네일·마케팅·리뷰 분석·문자 주문 정리", env: "OPENAI_API_KEY" },
   { key: "naverDatalab", label: "네이버 데이터랩", uses: "대시보드 트렌드·검색 추이·고객층", env: "NAVER_CLIENT_ID / SECRET" },
-  { key: "naverAd", label: "네이버 검색광고", uses: "월간 검색수·연관 키워드·상품명 수식어", env: "NAVER_AD_API_KEY 외 2개" },
+  { key: "naverAd", label: "네이버 검색광고", uses: "월간 검색수·연관 키워드·소싱 평가 검색 수요", env: "NAVER_AD_API_KEY 외 2개" },
+  { key: "kamis", label: "KAMIS 농산물 시세", uses: "도매 시세·공급가 인상 경보 (무료 키)", env: "KAMIS_CERT_KEY / KAMIS_CERT_ID" },
   { key: "passwordLock", label: "비밀번호 잠금", uses: "배포 시 남의 AI 사용 차단 (내 PC면 선택)", env: "APP_PASSWORD" },
 ];
 
@@ -43,7 +44,7 @@ export function ConnectionStatus() {
               );
             })}
           </ul>
-          {(!health.openai || !health.naverDatalab || !health.naverAd) && (
+          {(!health.openai || !health.naverDatalab || !health.naverAd || !health.kamis) && (
             <p className="mt-3 text-xs leading-relaxed text-stone-500">
               프로젝트 폴더의 <code className="rounded bg-stone-100 px-1">.env.example</code>을 <code className="rounded bg-stone-100 px-1">.env.local</code>로 복사해 키를 넣고
               개발 서버를 다시 시작하세요.

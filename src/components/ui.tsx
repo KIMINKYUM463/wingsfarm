@@ -132,11 +132,11 @@ function CommitNumberInner({ value, onCommit, placeholder, className }: CommitNu
   );
 }
 
-export function Modal({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
+export function Modal({ open, title, onClose, children, wide }: { open: boolean; title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div className={cx("max-h-[90vh] w-full overflow-y-auto rounded-2xl bg-white p-6 shadow-xl", wide ? "max-w-2xl" : "max-w-lg")} onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold">{title}</h3>
           <button type="button" onClick={onClose} className="text-stone-400 hover:text-stone-700" aria-label="닫기">
@@ -217,6 +217,37 @@ export function Table({ children }: { children: ReactNode }) {
       </table>
     </div>
   );
+}
+
+/** 화면 상단 탭 (가격·마진·CS 도우미와 같은 모양) */
+export function Tabs<T extends string>({ tabs, value, onChange, className }: { tabs: readonly { id: T; label: string }[]; value: T; onChange: (id: T) => void; className?: string }) {
+  return (
+    <div role="tablist" className={cx("inline-flex flex-wrap rounded-xl border border-stone-200 bg-white p-1", className)}>
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          role="tab"
+          aria-selected={value === tab.id}
+          onClick={() => onChange(tab.id)}
+          className={cx("rounded-lg px-4 py-2 text-sm font-medium transition", value === tab.id ? "bg-emerald-600 text-white shadow-sm" : "text-stone-600 hover:bg-stone-50")}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** 안내·경고 한 줄 박스 */
+export function Notice({ tone = "info", children, className }: { tone?: "info" | "warn" | "loss" | "good"; children: ReactNode; className?: string }) {
+  const toneClass = {
+    info: "bg-sky-50 text-sky-800",
+    warn: "bg-amber-50 text-amber-800",
+    loss: "bg-rose-50 text-rose-800",
+    good: "bg-emerald-50 text-emerald-800",
+  }[tone];
+  return <div className={cx("rounded-lg p-3 text-sm leading-relaxed", toneClass, className)}>{children}</div>;
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {

@@ -28,6 +28,7 @@ export type OrderField =
   | "message"
   | "bundleGroup"
   | "supplyPrice"
+  | "payAmount"
   | "constant";
 
 export interface TemplateColumn {
@@ -40,6 +41,8 @@ export interface TemplateColumn {
 export interface Supplier {
   id: SupplierId;
   name: string;
+  /** 발주 담당자 연락처·메일 (선택) */
+  contact?: string;
   /** 발주 마감 시각 HH:mm */
   cutoffTime: string;
   /** 출고 가능 요일 (0=일 ~ 6=토) */
@@ -88,6 +91,71 @@ export interface CostDefaults {
 }
 
 export type ClaimType = "damage" | "spoiled" | "underweight" | "quality" | "delay" | "wrongItem";
+
+export type ClaimResolution = "partial" | "refund" | "resend" | "coupon" | "none";
+
+export interface ClaimRecord {
+  id: string;
+  /** YYYY-MM-DD */
+  date: string;
+  supplierId: SupplierId;
+  skuId: string | null;
+  type: ClaimType;
+  orderNo: string;
+  resolution: ClaimResolution;
+  /** 환불·재발송 등으로 실제 잃은 금액 */
+  loss: number;
+  /** 받은 증빙 (CS 가이드의 증빙 항목 이름) */
+  evidence: string[];
+  note: string;
+}
+
+/** 매출 장부 한 줄 — 금액은 모두 그 줄의 합계(수량 반영)이고 VAT 포함 */
+export interface LedgerEntry {
+  id: string;
+  /** YYYY-MM-DD */
+  date: string;
+  channelId: ChannelId;
+  skuId: string | null;
+  label: string;
+  qty: number;
+  /** 고객 결제금액(배송비 포함) */
+  revenue: number;
+  /** 공급가·택배·포장 */
+  cost: number;
+  /** 채널 수수료 */
+  fee: number;
+  ad: number;
+  other: number;
+  taxFree: boolean;
+  source: "manual" | "orders";
+}
+
+/** 소싱 후보 평가표의 손으로 매기는 점수 (1~5, 높을수록 좋음) */
+export interface SourcingManualScores {
+  /** 경쟁이 약할수록 높게 */
+  competition: number;
+  /** 파손·변질 위험이 낮을수록 높게 */
+  safety: number;
+  /** 공급처 물량·품질이 안정적일수록 높게 */
+  supply: number;
+}
+
+export interface SourcingCandidate {
+  id: string;
+  name: string;
+  category: SeasonCategory;
+  supplyPrice: number;
+  salePrice: number;
+  /** 셀러부담 택배비 + 포장비 */
+  extraCost: number;
+  channelId: ChannelId;
+  taxFree: boolean;
+  /** 월간 검색수 (네이버 검색광고, 불러오지 않았으면 null) */
+  monthlySearch: number | null;
+  scores: SourcingManualScores;
+  note: string;
+}
 
 
 export type SeasonCategory = "과일" | "채소" | "수산" | "축산" | "가공";

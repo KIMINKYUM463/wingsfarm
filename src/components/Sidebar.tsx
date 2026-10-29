@@ -14,6 +14,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     title: "",
     items: [
       { href: "/", label: "대시보드", short: "홈", icon: "🏠" },
+      { href: "/roadmap", label: "수강생 로드맵", short: "로드맵", icon: "🎓" },
       { href: "/archive", label: "보관함", short: "보관함", icon: "🗂️" },
     ],
   },
@@ -21,7 +22,9 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     title: "찾기",
     items: [
       { href: "/keywords", label: "키워드 분석", short: "키워드", icon: "🔍" },
-      { href: "/season", label: "제철 캘린더", short: "제철", icon: "🍑" },
+      { href: "/season", label: "제철·콘텐츠 캘린더", short: "제철", icon: "🍑" },
+      { href: "/sourcing", label: "소싱 평가표", short: "소싱", icon: "⚖️" },
+      { href: "/prices", label: "도매 시세", short: "시세", icon: "📈" },
     ],
   },
   {
@@ -32,13 +35,19 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
       { href: "/thumbnails", label: "썸네일 제조기", short: "썸네일", icon: "🖼️" },
       { href: "/detail-page", label: `${BRAND} 상세페이지`, short: "상세", icon: "📄" },
       { href: "/marketing", label: `${BRAND} 마케팅`, short: "마케팅", icon: "📣" },
+      { href: "/listing-check", label: "등록 전 검수", short: "검수", icon: "🛡️" },
     ],
   },
   {
     title: "운영",
     items: [
+      { href: "/orders", label: "발주서 도우미", short: "발주", icon: "📦" },
       { href: "/margin", label: "가격·마진", short: "마진", icon: "🧮" },
+      { href: "/ledger", label: "매출 장부", short: "장부", icon: "📒" },
       { href: "/cs", label: "CS 도우미", short: "CS", icon: "💬" },
+      { href: "/reviews", label: "리뷰 분석", short: "리뷰", icon: "⭐" },
+      { href: "/claims", label: "클레임·공급처", short: "클레임", icon: "🧾" },
+      { href: "/calendar", label: "명절·택배 일정", short: "일정", icon: "📅" },
       { href: "/ops", label: "운영 체크리스트", short: "체크", icon: "✅" },
     ],
   },

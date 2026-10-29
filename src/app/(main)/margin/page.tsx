@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { MarginBoard } from "@/components/margin/MarginBoard";
+import { OptionNameMaker } from "@/components/margin/OptionNameMaker";
 import { Badge, Card, Field, NumberInput, PageHeader, Select, Stat, StatusBadge, Table, TextInput, Toggle } from "@/components/ui";
 import { calcMargin, marginStatus, solvePriceForMargin, type MarginInput } from "@/lib/margin";
 import { num, percent, won } from "@/lib/format";
@@ -355,6 +356,9 @@ export default function MarginPage() {
               )}
             </div>
           </Card>
+          <div className="lg:col-start-2">
+            <OptionNameMaker rows={optionRows} />
+          </div>
         </div>
       )}
     </>

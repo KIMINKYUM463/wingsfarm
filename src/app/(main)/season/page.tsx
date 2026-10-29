@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { SeasonCategory } from "@/types";
-import { Badge, Card, PageHeader, Table } from "@/components/ui";
+import { Badge, Card, PageHeader, Table, Tabs } from "@/components/ui";
+import { ContentCalendar } from "@/components/season/ContentCalendar";
 import { SEASON_ITEMS } from "@/lib/data/season";
 import { PREP_LEAD_DAYS, seasonStatuses } from "@/lib/season";
 import { useAppStore } from "@/store/useAppStore";
@@ -10,7 +11,34 @@ import { useAppStore } from "@/store/useAppStore";
 const FILTERS: ("전체" | SeasonCategory)[] = ["전체", "과일", "채소", "수산", "축산"];
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
+const TABS = [
+  { id: "season", label: "🍑 제철표" },
+  { id: "content", label: "🗓️ 콘텐츠 캘린더" },
+] as const;
+type Tab = (typeof TABS)[number]["id"];
+
+/** 로드맵·명절 일정에서 /season?tab=content 로 들어온다 (ClientOnly 아래라 window 사용 가능) */
+const initialTab = (): Tab => (new URLSearchParams(window.location.search).get("tab") === "content" ? "content" : "season");
+
 export default function SeasonPage() {
+  const [tab, setTab] = useState<Tab>(initialTab);
+  return (
+    <>
+      <PageHeader
+        title={tab === "season" ? "제철 캘린더" : "콘텐츠 캘린더"}
+        description={
+          tab === "season"
+            ? `시즌 시작 ${PREP_LEAD_DAYS}일 전에는 상세페이지와 상품 등록을 끝내야 검색 노출이 쌓입니다.`
+            : "무엇을 올릴지 고민하지 않도록, 제철·명절에 맞춘 주 2회 게시 계획을 드려요."
+        }
+      />
+      <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-5" />
+      {tab === "season" ? <SeasonTable /> : <ContentCalendar />}
+    </>
+  );
+}
+
+function SeasonTable() {
   const skus = useAppStore((s) => s.skus);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("전체");
   const today = useMemo(() => new Date(), []);
@@ -26,11 +54,6 @@ export default function SeasonPage() {
 
   return (
     <>
-      <PageHeader
-        title="제철 캘린더"
-        description={`시즌 시작 ${PREP_LEAD_DAYS}일 전에는 상세페이지와 상품 등록을 끝내야 검색 노출이 쌓입니다.`}
-      />
-
       <div className="mb-6 grid gap-6 md:grid-cols-2">
         <Card title="🚀 곧 시즌 오픈 — 지금 준비할 품목">
           <div className="flex flex-wrap gap-2">
