@@ -282,7 +282,7 @@ export function MoleculeHub({ onPick }: { onPick: (f: MarketingFormat) => void }
               onPointerMove={onPointerMove}
               onPointerUp={(e) => onPointerUp(e, n.id)}
               onPointerCancel={(e) => onPointerUp(e, n.id)}
-              className={`group absolute z-10 flex w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 outline-none ${
+              className={`group absolute z-10 flex w-24 flex-col items-center gap-1.5 outline-none ${
                 phase === "expanded" ? "cursor-grab active:cursor-grabbing" : "pointer-events-none"
               }`}
               style={{
