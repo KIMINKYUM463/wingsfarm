@@ -4,7 +4,8 @@
  */
 
 import 'server-only';
-import { successEnvelope } from '@/server/lever/http';
+import { notFound } from 'next/navigation';
+import { ApiError, successEnvelope } from '@/server/lever/http';
 import { getProjectDetail } from '@/server/lever/projects';
 import type { ProjectDetailResponse } from '@/features/editor/types';
 
@@ -15,10 +16,15 @@ import type { ProjectDetailResponse } from '@/features/editor/types';
  * - 조회수를 올리므로 isFirstView(최초 진입 여부)가 여기서 결정된다
  *
  * @param projectId - 프로젝트 ID
- * @returns 프로젝트 상세 데이터 (API와 같은 응답 형식)
+ * @returns 프로젝트 상세 데이터 (API와 같은 응답 형식). 없는(삭제·휴지통) 프로젝트면 404 페이지
  */
 export async function getProjectDetailForPrefetch(
   projectId: string,
 ): Promise<ProjectDetailResponse> {
-  return successEnvelope(await getProjectDetail(projectId)) as ProjectDetailResponse;
+  try {
+    return successEnvelope(await getProjectDetail(projectId)) as ProjectDetailResponse;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) notFound();
+    throw err;
+  }
 }
