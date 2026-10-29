@@ -60,7 +60,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ConnectionStatus />
 
         <Card title="채널 수수료 (%)" actions={<span className="text-xs text-stone-400">본인 카테고리·등급 기준으로 수정</span>}>
