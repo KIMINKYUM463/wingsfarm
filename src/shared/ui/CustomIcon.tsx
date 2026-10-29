@@ -15,8 +15,6 @@ import Kakao from '@/assets/icons/kakao.svg';
 import Google from '@/assets/icons/google.svg';
 import InkHighlighter from '@/assets/icons/ink_highlighter.svg';
 import Profile from '@/assets/icons/profile.svg';
-import LeverPageLogotypeBlack from '@/assets/icons/LeverPage_Logotype_Black.svg';
-import LeverPageSymbolBlack from '@/assets/icons/LeverPage_Symbol_Black.svg';
 import FolderLoading from '@/assets/icons/folder_loading.svg';
 import Ai from '@/assets/icons/ai.svg';
 import AiStar from '@/assets/icons/aiStar.svg';
@@ -40,8 +38,6 @@ const customIconMap = {
   google: Google,
   ink_highlighter: InkHighlighter,
   profile: Profile,
-  'leverpage-logotype-black': LeverPageLogotypeBlack,
-  'leverpage-symbol-black': LeverPageSymbolBlack,
   'folder-loading': FolderLoading,
   ai: Ai,
   'ai-star': AiStar,

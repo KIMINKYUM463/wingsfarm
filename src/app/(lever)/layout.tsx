@@ -13,7 +13,7 @@ import { BRAND } from '@/lib/brand';
  * 별도 루트 레이아웃으로 분리한다. 루트 레이아웃이 다르면 이동 시 전체 새로고침된다.
  */
 export const metadata: Metadata = {
-  title: { default: `상세페이지 제작 · ${BRAND}`, template: `%s · 상세페이지 제작 · ${BRAND}` },
+  title: { default: `${BRAND} 상세페이지`, template: `%s · ${BRAND} 상세페이지` },
 };
 
 export default function LeverRootLayout({ children }: { children: React.ReactNode }) {

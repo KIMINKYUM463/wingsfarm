@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import { LogoMark } from '@/components/Logo';
+import { BRAND } from '@/lib/brand';
 import { ROUTES } from '@/shared/constants/routes';
-import CustomIcon from '@/shared/ui/CustomIcon';
 
 type LogoColor = 'white' | 'black';
 
@@ -15,33 +16,33 @@ interface LogoProps {
   logoHeight?: number;
 }
 
+/** 윙스팜AI 심볼 + "윙스팜AI 상세페이지" 글자 로고 (상세페이지 화면 헤더 공용) */
 const Logo = ({
   color = 'black',
   symbolOnly = false,
   symbolClassName = '',
   logoClassName = '',
-  symbolWidth = 18.18,
   symbolHeight = 20,
-  logoWidth = 93.62,
   logoHeight = 14,
 }: LogoProps) => {
   const colorClass = color === 'white' ? 'text-white' : 'text-[#101010]';
 
   return (
-    <Link href={ROUTES.PROJECTS} className="z-50 flex cursor-pointer items-center gap-1 pl-3">
-      <CustomIcon
-        name="leverpage-symbol-black"
-        width={symbolWidth}
-        height={symbolHeight}
-        className={`${colorClass} ${symbolClassName}`}
-      />
+    <Link
+      href={ROUTES.PROJECTS}
+      aria-label={`${BRAND} 상세페이지`}
+      className="z-50 flex cursor-pointer items-center gap-1.5 pl-3"
+    >
+      <span className={`flex ${symbolClassName}`}>
+        <LogoMark size={Math.round(symbolHeight * 1.2)} />
+      </span>
       {!symbolOnly && (
-        <CustomIcon
-          name="leverpage-logotype-black"
-          width={logoWidth}
-          height={logoHeight}
-          className={`${colorClass} ${logoClassName}`}
-        />
+        <span
+          className={`font-extrabold whitespace-nowrap tracking-tight ${colorClass} ${logoClassName}`}
+          style={{ fontSize: logoHeight + 2 }}
+        >
+          {BRAND} <span className="text-(--color-point)">상세페이지</span>
+        </span>
       )}
     </Link>
   );
