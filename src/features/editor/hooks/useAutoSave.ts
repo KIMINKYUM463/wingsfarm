@@ -1,9 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  useCanvasDataStore,
-  getIsRestoringFromHistory,
-} from '@/features/editor/store/useCanvasDataStore';
+import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useAutoSaveStore } from '@/features/editor/store/useAutoSaveStore';
 import { useDebouncedCallback } from '@/shared/hooks/useDebouncedCallback';
 import { updateProjectFrame, type UpdateFrameOptions } from '@/features/editor/api';
@@ -401,15 +398,6 @@ export const useAutoSave = (projectId: string | undefined, config?: AutoSaveConf
       if (!isInitializedRef.current) return;
       // frames가 변경되지 않았으면 스킵
       if (state.frames === prevState.frames) return;
-
-      // undo/redo 복원 중이면 baseline만 갱신 (저장 스킵)
-      if (getIsRestoringFromHistory()) {
-        lastSavedFramesMapRef.current = new Map(state.frames.map((f) => [f.id, f]));
-        lastSavedFieldsMapRef.current = new Map(
-          state.frames.map((f) => [f.id, { frameOrder: f.frameOrder, name: f.name }]),
-        );
-        return;
-      }
 
       // frame mutation 진행 중이면 플래그만 설정 (mutation 완료 시 저장)
       if (hasPendingFrameMutation()) {

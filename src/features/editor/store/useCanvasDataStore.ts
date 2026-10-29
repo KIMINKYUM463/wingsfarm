@@ -16,11 +16,8 @@ import type { DraftPalette } from '@/shared/types/draft';
 /** 히스토리 저장 중복 방지 플래그 */
 let isRecordingHistory = false;
 
-/** undo/redo 복원 중 플래그 (저장 방지) */
+/** undo/redo 복원 중 플래그 (복원으로 생긴 변경을 히스토리에 다시 쌓지 않기 위함) */
 let isRestoringFromHistory = false;
-
-/** undo/redo 복원 중인지 확인 (auto-save 스킵 및 baseline 갱신용) */
-export const getIsRestoringFromHistory = () => isRestoringFromHistory;
 
 /**
  * 변경 전 상태를 히스토리에 저장 (첫 변경 시에만)
@@ -317,9 +314,17 @@ export const useCanvasDataStore = create<CanvasDataState>()(
         set({ duplicatingFrameId: frameId });
       },
 
-      restoreFromHistory: (frames: KonvaFrameElement[]) => {
+      restoreFromHistory: (snapshot: KonvaFrameElement[]) => {
         // undo/redo 복원 중 플래그 설정 (히스토리 저장 방지)
         isRestoringFromHistory = true;
+
+        // 스냅샷은 깊은 복사본이라 모든 프레임 참조가 바뀐다.
+        // 내용이 같은 프레임은 현재 참조를 유지해야 자동 저장이 실제로 바뀐 프레임만 보낸다.
+        const currentById = new Map(get().frames.map((frame) => [frame.id, frame]));
+        const frames = snapshot.map((frame) => {
+          const current = currentById.get(frame.id);
+          return current && JSON.stringify(current) === JSON.stringify(frame) ? current : frame;
+        });
 
         set({
           frames,
