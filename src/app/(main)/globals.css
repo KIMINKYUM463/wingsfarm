@@ -204,6 +204,12 @@
   }
 }
 
+/* 한글은 어절 단위로 줄바꿈 (긴 영문·URL은 넘치지 않게 끊음) */
+body {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;

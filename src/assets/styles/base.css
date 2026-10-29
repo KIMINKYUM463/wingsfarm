@@ -63,6 +63,9 @@
     /* body는 최소 화면 높이를 갖도록 하여 푸터 고정 등 레이아웃에 유리하게 만듭니다. */
     color: var(--color-text);
     @apply antialiased;
+    /* 한글은 어절 단위로 줄바꿈 (긴 영문·URL은 넘치지 않게 끊음) */
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   /* 전역 스크롤바 스타일 (html 제외) */
   *:not(html) {
