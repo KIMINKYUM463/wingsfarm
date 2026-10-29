@@ -1,7 +1,11 @@
 'use client';
 
 import { Suspense, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { ROUTES } from '@/shared/constants/routes';
+import HomeButton from '@/shared/ui/Button/HomeButton';
+import Icon from '@/shared/ui/Icon';
 import { getTemplates, getCategories, updateTemplateCategories } from './utils/api';
 import type { TemplateListItem, Category } from './utils/types';
 import FigmaSyncPanel from './_components/FigmaSyncPanel';
@@ -568,22 +572,29 @@ function Admin2Content() {
             )}
           </div>
         </div>
-        {(pendingTemplates.size > 0 || savingTemplates.size > 0) && (
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            {savingTemplates.size > 0 && (
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
-                저장 중 {savingTemplates.size}개
-              </span>
-            )}
-            {pendingTemplates.size > 0 && (
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                대기 중 {pendingTemplates.size}개
-              </span>
-            )}
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {(pendingTemplates.size > 0 || savingTemplates.size > 0) && (
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              {savingTemplates.size > 0 && (
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                  저장 중 {savingTemplates.size}개
+                </span>
+              )}
+              {pendingTemplates.size > 0 && (
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-yellow-400" />
+                  대기 중 {pendingTemplates.size}개
+                </span>
+              )}
+            </div>
+          )}
+          <Link href={ROUTES.PROJECTS} className="btn-outline flex items-center gap-1">
+            <Icon name="arrow_back" width={20} />
+            <span className="p whitespace-nowrap">내 프로젝트</span>
+          </Link>
+          <HomeButton />
+        </div>
       </div>
 
       <FigmaSyncPanel onSynced={loadData} />

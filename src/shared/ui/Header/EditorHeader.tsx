@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import Logo from '@/shared/ui/Logo';
 import IconButton from '@/shared/ui/Button/IconButton';
+import HomeButton from '@/shared/ui/Button/HomeButton';
 import Popover from '@/shared/ui/Popover/Popover';
 import CustomIcon from '@/shared/ui/CustomIcon';
 import Input from '@/shared/ui/Input/Input';
@@ -108,7 +109,7 @@ export function EditorHeader({ productName = '' }: EditorHeaderProps) {
           position: 'absolute',
           left: 'calc(var(--w-left-sidebar) + var(--tool-panel-w))',
           width:
-            'min(28.125rem, calc(100vw - var(--w-left-sidebar) - var(--tool-panel-w) - 24rem))',
+            'min(28.125rem, calc(100vw - var(--w-left-sidebar) - var(--tool-panel-w) - 27rem))',
         }}
       >
         <Input
@@ -136,6 +137,7 @@ export function EditorHeader({ productName = '' }: EditorHeaderProps) {
       </div>
 
       <div className="flex gap-2">
+        <HomeButton compact />
         <Popover
           contentType="fileUpload"
           position="alignCenter"

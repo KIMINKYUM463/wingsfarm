@@ -2,6 +2,7 @@
 import Logo from '@/shared/ui/Logo';
 import Popover from '@/shared/ui/Popover/Popover';
 import IconButton from '@/shared/ui/Button/IconButton';
+import HomeButton from '@/shared/ui/Button/HomeButton';
 import CustomIcon from '@/shared/ui/CustomIcon';
 import CreditButton from '@/shared/ui/Button/CreditButton';
 
@@ -10,6 +11,7 @@ const ProjectsHeader = () => {
     <header className="flex-center-between px-content fixed top-0 right-0 left-0 z-50 h-(--header-h) bg-white">
       <Logo />
       <div className="flex flex-row-reverse items-center gap-2 sm:flex-row">
+        <HomeButton />
         <Popover
           contentType="userProfile"
           position="alignRight"
