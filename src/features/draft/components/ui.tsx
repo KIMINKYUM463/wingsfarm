@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { storageUrl, useUploadPaths } from '../hooks';
 import type { ImageType } from '@/features/detail-page/types';
 

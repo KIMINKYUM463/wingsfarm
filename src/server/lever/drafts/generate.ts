@@ -200,6 +200,7 @@ async function runGenerate(draftId: string) {
         sectionTypeIds: plan.sections.map((s) => s.typeId),
         palette: plan.palette,
         originalPalette: plan.palette,
+        designStyle: plan.designStyle,
       },
       frames,
     });

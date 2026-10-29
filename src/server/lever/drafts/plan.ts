@@ -269,6 +269,7 @@ async function runPlan(draftId: string) {
   try {
     const draft = await getDraft(draftId);
     const input = draft.input;
+    const previousStyle = draft.plan?.designStyle;
     const gemini = await requireGemini();
     await setProgress(draftId, { step: 'photos', message: `사진 ${input.productImagePaths.length}장을 살펴보고 있어요` });
 
@@ -303,6 +304,7 @@ async function runPlan(draftId: string) {
       sections,
       palette: reuse?.palette ?? analyzed.palette,
       paletteReason: reuse ? '기존 페이지의 색 조합을 그대로 가져왔어요' : analyzed.paletteReason,
+      designStyle: reuse?.designStyle ?? previousStyle,
       analysis: analyzed.analysis,
     };
     await updateDraft(draftId, (d) => ({

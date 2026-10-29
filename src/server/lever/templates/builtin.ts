@@ -1,4 +1,5 @@
 import type { FrameNode } from '../frames/tree';
+import { buildDesignTemplates } from './designTemplates';
 import leverpageFrames from './leverpage-templates.json';
 import { boxNode, frameNode, GRAY, imageNode, INK, PAGE_WIDTH, textNode, WHITE, type TextOptions } from './nodes';
 
@@ -236,10 +237,18 @@ function leverpageSeeds(): TemplateSeed[] {
   });
 }
 
+/** 디자인 스타일 템플릿 (모던·내추럴·프리미엄·발랄 × 레이아웃 15종) */
+function designSeeds(): TemplateSeed[] {
+  return buildDesignTemplates().map(({ slug, part2, frame }) => {
+    const part = PART2_ORDER.find((p) => p.part2 === part2) ?? PART2_ORDER[3];
+    return { slug, ...part, part2SortKey: sortKeyOf(part.part2), frame };
+  });
+}
+
 /** 기본 템플릿 구성이 바뀌면 올려서 저장소에 다시 반영한다 */
-export const BUILTIN_VERSION = 2;
+export const BUILTIN_VERSION = 3;
 
 export function buildBuiltinTemplates(): TemplateSeed[] {
   seq = 0;
-  return [mainVisualA(), mainVisualB(), ...leverpageSeeds(), featureA(), featureB(), specInfo(), reviews(), purchaseGuide()];
+  return [mainVisualA(), mainVisualB(), ...leverpageSeeds(), featureA(), featureB(), specInfo(), reviews(), purchaseGuide(), ...designSeeds()];
 }

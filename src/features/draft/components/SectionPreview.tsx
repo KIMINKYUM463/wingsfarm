@@ -1,6 +1,7 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
+import { loadFont } from '@/features/editor/lib/font-loader';
 import type { PreviewNode } from '../api';
 
 /**
@@ -11,12 +12,31 @@ import type { PreviewNode } from '../api';
 function SectionPreview({ frame, cutImage, width = 200 }: { frame: PreviewNode; cutImage: (cutId: string) => string | null; width?: number }) {
   const w = Number(frame.width) || 860;
   const h = Number(frame.height) || 600;
+  useWebFonts(frame);
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={width} height={(width * h) / w} className="block rounded-md border border-gray-100" role="img" aria-label="섹션 미리보기">
       <rect width={w} height={h} fill={frame.fill ?? '#fff'} />
       {frame.children?.map((node) => <PreviewElement key={node.id} node={node} cutImage={cutImage} />)}
     </svg>
   );
+}
+
+/** 디자인 스타일이 쓰는 웹폰트(명조·세리프 등)를 불러온다 — 다 불러오면 브라우저가 알아서 다시 그린다 */
+function useWebFonts(frame: PreviewNode) {
+  const fonts = [
+    ...new Set(
+      (frame.children ?? [])
+        .filter((n) => n.type === 'text' && n.fontFamily && n.fontFamily !== 'Pretendard')
+        .map((n) => `${n.fontFamily}|${n.fontWeight ?? 400}`),
+    ),
+  ].join(',');
+  useEffect(() => {
+    if (!fonts) return;
+    for (const key of fonts.split(',')) {
+      const [family, weight] = key.split('|');
+      void loadFont(family, weight).catch(() => undefined);
+    }
+  }, [fonts]);
 }
 
 function PreviewElement({ node, cutImage }: { node: PreviewNode; cutImage: (cutId: string) => string | null }) {
@@ -29,11 +49,12 @@ function PreviewElement({ node, cutImage }: { node: PreviewNode; cutImage: (cutI
             fontSize: node.fontSize,
             fontWeight: node.fontWeight,
             lineHeight: node.lineHeight,
+            letterSpacing: node.letterSpacing,
             textAlign: (node.align as 'left' | 'center' | 'right') ?? 'left',
             color: node.fill,
             wordBreak: 'keep-all',
             whiteSpace: 'pre-wrap',
-            fontFamily: 'Pretendard, sans-serif',
+            fontFamily: `'${node.fontFamily ?? 'Pretendard'}', Pretendard, sans-serif`,
           }}
         >
           {node.text}
@@ -62,7 +83,19 @@ function PreviewElement({ node, cutImage }: { node: PreviewNode; cutImage: (cutI
       </g>
     );
   }
-  return <rect x={x} y={y} width={width} height={height} rx={node.cornerRadius} fill={node.fill} />;
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      rx={node.cornerRadius}
+      fill={node.fill}
+      stroke={node.stroke}
+      strokeWidth={node.stroke ? node.strokeWidth : undefined}
+      opacity={node.opacity}
+    />
+  );
 }
 
 export default memo(SectionPreview);

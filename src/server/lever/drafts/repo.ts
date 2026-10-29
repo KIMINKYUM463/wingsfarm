@@ -14,6 +14,7 @@ import {
   type DraftSummary,
   type SectionTypeInfo,
 } from '@/shared/types/draft';
+import { normalizeDesignStyle } from '@/shared/lib/designStyles';
 import { findCategory } from '../catalog/categories';
 import { describeWarnings, findUnsupportedClaims } from '../catalog/factGuard';
 import { normalizePalette, palettePresets } from '../catalog/palette';
@@ -280,6 +281,7 @@ export function sanitizePlan(raw: unknown, input: DraftInput, previous: DraftPla
       .filter((s): s is DraftSection => s !== null),
     palette: normalizePalette(p.palette, fallback),
     paletteReason: str(p.paletteReason, 200) || previous?.paletteReason || '',
+    designStyle: normalizeDesignStyle(p.designStyle, previous?.designStyle),
     analysis: previous?.analysis ?? null,
   };
 }
@@ -290,7 +292,7 @@ export function sectionFrames(plan: DraftPlan, categoryId: string) {
   const frames: { section: DraftSection; type: SectionType; frame: FrameNode }[] = [];
   for (const section of plan.sections) {
     const type = findSectionType(categoryId, section.typeId);
-    if (type) frames.push({ section, type, frame: buildSectionFrame(section, type, plan.palette) });
+    if (type) frames.push({ section, type, frame: buildSectionFrame(section, type, plan.palette, plan.designStyle) });
   }
   return frames;
 }

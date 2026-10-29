@@ -5,6 +5,8 @@
  * 기획(DraftPlan)은 섹션 카드 목록 + 색 팔레트 + 사진 분석 결과로 이루어진다.
  * 모든 문장은 근거(evidence)를 달고, 근거 없는 주장은 warnings로 표시된다.
  */
+import type { DesignStyleId } from '../lib/designStyles';
+
 export type DraftLength = 'short' | 'long';
 export type DraftStatus = 'editing' | 'planning' | 'plan_failed' | 'ready' | 'generating' | 'generate_failed' | 'completed';
 export type PaletteRole = 'main' | 'point' | 'bgLight' | 'bgDark';
@@ -110,6 +112,8 @@ export interface DraftPlan {
   sections: DraftSection[];
   palette: DraftPalette;
   paletteReason: string;
+  /** 디자인 스타일 (이전에 만든 초안에는 없을 수 있음 → 모던) */
+  designStyle?: DesignStyleId;
   analysis: DraftAnalysis | null;
 }
 

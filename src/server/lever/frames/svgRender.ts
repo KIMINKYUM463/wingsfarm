@@ -64,21 +64,47 @@ function wrapLines(text: string, width: number, fontSize: number, letterSpacing:
       lines.push(paragraph);
       continue;
     }
+    // 'word'(어절 단위)는 띄어쓰기에서 줄을 바꾸고, 한 어절이 한 줄보다 길 때만 글자 단위로 자른다
+    const tokens = wrap === 'word' ? paragraph.split(/(?<= )/) : [...paragraph];
     let line = '';
     let lineWidth = 0;
-    for (const ch of paragraph) {
-      const w = charWidth(ch);
-      if (lineWidth + w > width && line) {
-        lines.push(line);
+    const measure = (s: string) => [...s].reduce((sum, ch) => sum + charWidth(ch), 0);
+    for (const token of tokens) {
+      const w = measure(token);
+      const fitsWithoutTrailingSpace = lineWidth + measure(token.trimEnd()) <= width;
+      if (line && !fitsWithoutTrailingSpace) {
+        lines.push(line.trimEnd());
         line = '';
         lineWidth = 0;
       }
-      line += ch;
+      if (w > width) {
+        for (const ch of token) {
+          const cw = charWidth(ch);
+          if (lineWidth + cw > width && line) {
+            lines.push(line);
+            line = '';
+            lineWidth = 0;
+          }
+          line += ch;
+          lineWidth += cw;
+        }
+        continue;
+      }
+      line += token;
       lineWidth += w;
     }
-    lines.push(line);
+    lines.push(line.trimEnd());
   }
   return lines;
+}
+
+/** 썸네일은 <img>로 보여서 웹폰트를 못 불러온다 → 명조·세리프는 시스템 명조로 대신 */
+function fontStack(family: unknown) {
+  const name = typeof family === 'string' && family.trim() ? family.replace(/['"<>&]/g, '') : 'Pretendard';
+  const serif = /serif|myeongjo|명조/i.test(name) && !/sans/i.test(name);
+  return serif
+    ? `'${name}', 'Nanum Myeongjo', 'Batang', 'AppleMyungjo', serif`
+    : `'${name}', Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`;
 }
 
 function renderText(node: FrameNode) {
@@ -93,7 +119,7 @@ function renderText(node: FrameNode) {
   const tspans = lines
     .map((line, i) => `<tspan x="${x}" y="${(i + 0.8) * lineHeight}">${escapeXml(line) || ' '}</tspan>`)
     .join('');
-  return `${defs}<text transform="${transformOf(node)}" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-size="${fontSize}" font-weight="${weight}" text-anchor="${align}" fill="${fill === 'none' ? '#000' : fill}">${tspans}</text>`;
+  return `${defs}<text transform="${transformOf(node)}" font-family="${fontStack(node.fontFamily)}" font-size="${fontSize}" font-weight="${weight}" text-anchor="${align}" fill="${fill === 'none' ? '#000' : fill}">${tspans}</text>`;
 }
 
 function renderNode(node: FrameNode): string {

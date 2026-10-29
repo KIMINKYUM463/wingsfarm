@@ -22,6 +22,7 @@ export interface TextOptions {
   lines?: number;
   name?: string;
   letterSpacing?: number;
+  fontFamily?: string;
 }
 
 /** 글자 하나의 대략적인 폭 (Pretendard 기준, 한글은 넉넉하게) */
@@ -31,6 +32,10 @@ const charWidth = (ch: string, fontSize: number) => {
   if (/[A-Z0-9%#@&]/.test(ch)) return fontSize * 0.66;
   return fontSize * 0.55;
 };
+
+/** 한 줄 문구의 대략적인 폭 (배지·알약 라벨 크기 계산용) */
+export const textWidth = (value: string, fontSize: number, letterSpacing = 0) =>
+  [...value].reduce((sum, ch) => sum + charWidth(ch, fontSize) + letterSpacing, 0);
 
 /** 어절 단위 줄바꿈을 흉내 내 줄 수를 추정 (레이아웃 높이 계산용) */
 export function estimateLines(value: string, width: number, fontSize: number) {
@@ -70,7 +75,7 @@ export function textNode(id: string, value: string, x: number, y: number, width:
     height: Math.ceil(fontSize * lineHeight * lines),
     text: value,
     fontSize,
-    fontFamily: 'Pretendard',
+    fontFamily: o.fontFamily ?? 'Pretendard',
     fontStyle: (o.weight ?? 400) >= 600 ? 'bold' : 'normal',
     fontWeight: o.weight ?? 400,
     fill: o.color ?? INK,
@@ -94,6 +99,7 @@ export interface BoxOptions {
   colorVar?: PaletteRole;
   stroke?: string;
   strokeWidth?: number;
+  opacity?: number;
 }
 
 export const boxNode = (id: string, x: number, y: number, width: number, height: number, fill: string, o: BoxOptions = {}): FrameNode => ({
@@ -110,7 +116,7 @@ export const boxNode = (id: string, x: number, y: number, width: number, height:
   fillPriority: 'color',
   cornerRadius: o.cornerRadius ?? 0,
   visible: true,
-  opacity: 1,
+  opacity: o.opacity ?? 1,
 });
 
 /** 사진 자리 (`_image`) — cutId로 초안의 컷과 연결된다 */

@@ -67,6 +67,7 @@ export async function addTemplateFrame(projectId: string, body: AddTemplateFrame
     template,
     ghost?.frameOrder ?? body.frame_order,
     ghost?.id,
+    project.draftLayout?.palette,
   );
   await updateProject(projectId, (p) => ({
     ...p,
@@ -79,16 +80,17 @@ export async function addTemplateFrame(projectId: string, body: AddTemplateFrame
 export async function applyTemplate(projectId: string, templateId: string, body: ApplyTemplateRequest) {
   const template = await getTemplate(templateId);
   const project = await getProject(projectId);
+  const palette = project.draftLayout?.palette;
 
   let frame: ProjectFrame;
   if (body?.mode === 'overwrite') {
     if (!body.frame_id) throw badRequest('덮어쓸 frame_id가 필요합니다.');
     const target = findFrame(project.frames, body.frame_id);
-    frame = await buildTemplateFrame(projectId, template, target.frameOrder, target.id);
+    frame = await buildTemplateFrame(projectId, template, target.frameOrder, target.id, palette);
     frame.createdAt = target.createdAt;
   } else {
     if (!body?.frame_order) throw badRequest('frame_order가 필요합니다.');
-    frame = await buildTemplateFrame(projectId, template, body.frame_order);
+    frame = await buildTemplateFrame(projectId, template, body.frame_order, undefined, palette);
   }
 
   await updateProject(projectId, (p) => ({
@@ -162,7 +164,7 @@ export async function regenerateFrames(projectId: string) {
     project.frames.map(async (frame) => {
       if (frame.status !== 'active' || !frame.hasTemplatePart || !frame.part2) return frame;
       const template = await pickTemplate(frame.part2, project.categoryId, [frame.templateId]);
-      const next = await buildTemplateFrame(projectId, template, frame.frameOrder, frame.id);
+      const next = await buildTemplateFrame(projectId, template, frame.frameOrder, frame.id, project.draftLayout?.palette);
       return { ...next, frameName: frame.frameName, createdAt: frame.createdAt };
     }),
   );

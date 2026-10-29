@@ -16,6 +16,8 @@ import { draftApi, type DraftDto } from '../api';
 import { draftKey, errorMessage, useAutosave, useDraft, useDraftMutation } from '../hooks';
 import { AddSectionModal } from './AddSectionModal';
 import { PalettePanel } from '@/shared/ui/PalettePanel';
+import { designStyleOption } from '@/shared/lib/designStyles';
+import { DesignStylePanel } from './DesignStylePanel';
 import SectionCard from './SectionCard';
 import { Modal, SaveStatus } from './ui';
 
@@ -128,6 +130,7 @@ function PlanProgress({ draft }: { draft: DraftDto }) {
 const TOUR_STEPS: TourStep[] = [
   { selector: '[data-tour="cards"]', title: '여기가 기획 초안이에요', body: '문구는 "내용 수정"으로 고치고, 왼쪽 손잡이를 끌어 순서를 바꾸고, 필요 없는 섹션은 삭제하세요.' },
   { selector: '[data-tour="back"]', title: '입력으로 돌아가도 괜찮아요', body: '입력한 내용은 그대로 남아 있어요. 고친 뒤 "초안 다시 만들기"를 누르면 새로 기획해요.' },
+  { selector: '[data-tour="style"]', title: '디자인 스타일 고르기', body: '모던·내추럴·프리미엄·발랄 중에서 고르면 모든 섹션의 글꼴·바탕·카드 모양이 한 번에 바뀌어요.' },
   { selector: '[data-tour="add"]', title: '빠진 구성은 섹션 추가로', body: '카테고리에 맞는 섹션을 원하는 위치에 넣을 수 있어요. 근거 자료가 필요한 섹션은 자료를 입력하면 열려요.' },
   { selector: '[data-tour="make"]', title: '준비되면 상세페이지 생성', body: '예상 길이와 AI 사진 수를 확인하고 "이대로 만들기"를 누르세요. 내 사진 컷은 그대로 쓰여요.' },
 ];
@@ -137,6 +140,7 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
   const [plan, setPlan] = useState(initialPlan);
   const [addAt, setAddAt] = useState<number | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [styleOpen, setStyleOpen] = useState(false);
   const tour = useTour('draft-plan', true);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -225,6 +229,9 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
               ))}
             </span>
             색 바꾸기
+          </button>
+          <button type="button" data-tour="style" className="btn-outline text-sm font-medium" onClick={() => setStyleOpen(true)}>
+            디자인 · {designStyleOption(plan.designStyle).name}
           </button>
           <button type="button" className="btn-icon text-sm text-gray-400" aria-label="안내 다시 보기" onClick={tour.start}>
             ?
@@ -333,6 +340,14 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
           onShuffle={() => void shuffle()}
           shuffling={shuffling}
           onChange={(palette) => setPlan({ ...plan, palette })}
+        />
+      </Modal>
+      <Modal open={styleOpen} onClose={() => setStyleOpen(false)} title="디자인 스타일" width="max-w-xl">
+        <DesignStylePanel
+          value={designStyleOption(plan.designStyle).id}
+          palette={plan.palette}
+          onChange={(designStyle) => setPlan({ ...plan, designStyle })}
+          onApplyTone={(palette) => setPlan({ ...plan, palette })}
         />
       </Modal>
       <Tour steps={TOUR_STEPS} open={tour.open} onClose={tour.close} />

@@ -33,9 +33,14 @@ export interface PreviewNode {
   text?: string;
   fontSize?: number;
   fontWeight?: number;
+  fontFamily?: string;
+  letterSpacing?: number;
   align?: string;
   lineHeight?: number;
   cornerRadius?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  opacity?: number;
   cutId?: string;
   children?: PreviewNode[];
 }

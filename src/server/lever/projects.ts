@@ -4,7 +4,8 @@ import type { ProjectFrame } from '@/features/editor/types';
 import type { Project } from '@/features/projects/types';
 import type { KeywordGroup } from '@/features/detail-page/types';
 import type { DraftPalette } from '@/shared/types/draft';
-import { normalizePalette } from '@/shared/lib/palette';
+import type { DesignStyleId } from '@/shared/lib/designStyles';
+import { normalizePalette, recolorTree, type PaletteNode } from '@/shared/lib/palette';
 import { resolveAssetUrls } from './assets';
 import { findCategory } from './catalog/categories';
 import { asNode, cloneWithNewIds, collectAssetIds, type FrameNode } from './frames/tree';
@@ -28,6 +29,7 @@ export interface DraftLayout {
   palette: DraftPalette;
   /** 생성 당시 팔레트 (색상 탭 "초기화") */
   originalPalette?: DraftPalette;
+  designStyle?: DesignStyleId;
 }
 
 export interface ProjectRecord {
@@ -87,14 +89,16 @@ export const saveNewProject = (project: ProjectRecord) => writeJson(projectPath(
 export const sortFrames = (frames: ProjectFrame[]) =>
   [...frames].sort((a, b) => (a.frameOrder < b.frameOrder ? -1 : a.frameOrder > b.frameOrder ? 1 : 0));
 
-/** 템플릿 → 프로젝트 프레임 행 */
+/** 템플릿 → 프로젝트 프레임 행 (palette가 있으면 팔레트 역할이 달린 요소를 그 색으로 칠한다) */
 export async function buildTemplateFrame(
   projectId: string,
   template: TemplateRecord,
   frameOrder: string,
   frameId: string = newId(),
+  palette?: DraftPalette,
 ): Promise<ProjectFrame> {
   const data = await instantiateTemplate(template, frameId);
+  const frameData = palette ? recolorTree(data.frameData as PaletteNode, palette) : data.frameData;
   const now = nowIso();
   return {
     id: frameId,
@@ -107,7 +111,7 @@ export async function buildTemplateFrame(
     status: 'active',
     frameOrder,
     frameName: data.frameName,
-    frameData: data.frameData as unknown as ProjectFrame['frameData'],
+    frameData: frameData as unknown as ProjectFrame['frameData'],
     width: data.width,
     height: data.height,
     createdAt: now,

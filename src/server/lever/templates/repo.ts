@@ -145,10 +145,19 @@ export async function pickTemplate(part2: string, categoryId: string | null, exc
 }
 
 /** 초안 프로젝트 구성: part2마다 템플릿 1개씩, 정해진 순서대로 */
+/** 디자인 스타일 템플릿(builtin-ds-{스타일}-…)은 스타일별로, 나머지는 기본 묶음으로 */
+const styleGroupOf = (t: TemplateRecord) => /^builtin-ds-([a-z]+)-/.exec(t.id)?.[1] ?? 'classic';
+
+/** 구성(part2)마다 하나씩 고르되, 한 페이지 안에서는 같은 디자인 스타일을 우선한다 */
 export async function pickDraftTemplates(categoryId: string | null) {
   const usable = (await loadTemplates()).filter((t) => isUsable(t, categoryId)).sort(byOrder);
   const part2List = [...new Set(usable.map((t) => t.part2))];
-  return part2List.map((part2) => randomOf(usable.filter((t) => t.part2 === part2)));
+  const group = randomOf([...new Set(usable.map(styleGroupOf))]);
+  return part2List.map((part2) => {
+    const candidates = usable.filter((t) => t.part2 === part2);
+    const sameStyle = candidates.filter((t) => styleGroupOf(t) === group);
+    return randomOf(sameStyle.length ? sameStyle : candidates);
+  });
 }
 
 /** 템플릿 → 프로젝트 프레임 데이터 (새 id 발급 + 템플릿 이미지 연결) */
