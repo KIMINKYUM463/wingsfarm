@@ -11,14 +11,15 @@ import {
   type ArchiveItem,
   type ArchiveKind,
 } from "@/lib/archive";
-import { downloadDataUrl } from "@/lib/image";
+import { dataUrlExt, downloadDataUrl } from "@/lib/image";
 
 type Filter = "all" | ArchiveKind;
-const FILTERS: Filter[] = ["all", "marketing", "thumbnail", "tags", "titles"];
+const FILTERS: Filter[] = ["all", ...(Object.keys(ARCHIVE_KIND_LABEL) as ArchiveKind[])];
 
 const KIND_TONE: Record<ArchiveKind, string> = {
   marketing: "bg-fuchsia-50 text-fuchsia-700",
   thumbnail: "bg-amber-50 text-amber-700",
+  detail: "bg-orange-50 text-orange-700",
   tags: "bg-emerald-50 text-emerald-700",
   titles: "bg-sky-50 text-sky-700",
 };
@@ -43,7 +44,7 @@ function useArchiveList() {
 
 function downloadAll(item: ArchiveItem) {
   Object.entries(item.images).forEach(([key, src], i) => {
-    setTimeout(() => downloadDataUrl(src, `${item.product || "wingsfarm-ai"}-${key}.png`), i * 250);
+    setTimeout(() => downloadDataUrl(src, `${item.product || "wingsfarm-ai"}-${key}.${dataUrlExt(src)}`), i * 250);
   });
 }
 
@@ -62,7 +63,7 @@ export default function ArchivePage() {
     <>
       <PageHeader
         title="보관함"
-        description="AI로 만든 마케팅 글·썸네일·검색 태그·상품명이 자동으로 저장됩니다. 새로고침해도 사라지지 않아요."
+        description="AI로 만든 마케팅 글·썸네일·상세페이지·검색 태그·상품명이 자동으로 저장됩니다. 새로고침해도 사라지지 않아요."
         actions={
           items && items.length > 0 ? (
             <Button variant="danger" onClick={() => confirm("보관함을 모두 비울까요? 되돌릴 수 없습니다.") && void clearArchive()}>

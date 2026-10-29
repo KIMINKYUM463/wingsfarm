@@ -11,6 +11,7 @@ const QUICK_LINKS = [
   { href: "/titles", label: "상품명", icon: "✍️" },
   { href: "/tags", label: "검색 태그", icon: "🏷️" },
   { href: "/thumbnails", label: "썸네일", icon: "🖼️" },
+  { href: "/detail-page", label: "상세페이지", icon: "📄" },
   { href: "/marketing", label: "마케팅", icon: "📣" },
 ];
 

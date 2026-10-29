@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
+import {
+  useState,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from "react";
 import type { MarginStatus } from "@/lib/margin";
 
 const cx = (...classes: (string | false | undefined)[]) => classes.filter(Boolean).join(" ");
@@ -57,6 +64,10 @@ const inputClass =
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cx(inputClass, props.className)} />;
+}
+
+export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea {...props} className={cx(inputClass, "resize-y leading-relaxed", props.className)} />;
 }
 
 export function NumberInput({

@@ -4,9 +4,8 @@ import { useMemo, useState } from "react";
 import { Card, CopyButton, Field, NumberInput, Select, TextInput } from "@/components/ui";
 import { COMPENSATIONS, DELAY_REASONS, DELAY_TODOS, buildDelayNotices, type Compensation, type DelayReason } from "@/lib/delayNotice";
 import { toDateKey } from "@/lib/format";
+import { useStoreName } from "@/lib/useStoreName";
 import { useAppStore } from "@/store/useAppStore";
-
-const STORE_NAME_KEY = "wingsfarm-ai-store-name";
 
 const inDays = (n: number) => {
   const d = new Date();
@@ -16,7 +15,7 @@ const inDays = (n: number) => {
 
 export function DelayNotice() {
   const { skus, workingProduct } = useAppStore();
-  const [storeName, setStoreName] = useState(() => localStorage.getItem(STORE_NAME_KEY) ?? "");
+  const [storeName, saveStoreName] = useStoreName();
   const [product, setProduct] = useState(workingProduct);
   const [reason, setReason] = useState<DelayReason>("weather");
   const [newDate, setNewDate] = useState(() => inDays(2));
@@ -28,11 +27,6 @@ export function DelayNotice() {
     () => buildDelayNotices({ storeName, product, reason, newDate, compensation, couponAmount, extraItem }),
     [storeName, product, reason, newDate, compensation, couponAmount, extraItem],
   );
-
-  const saveStoreName = (v: string) => {
-    setStoreName(v);
-    localStorage.setItem(STORE_NAME_KEY, v);
-  };
 
   return (
     <div className="grid gap-6 lg:grid-cols-[360px_1fr]">

@@ -3,11 +3,14 @@
  * 브라우저 전용이며, 브라우저 데이터를 지우면 함께 사라진다.
  */
 
-export type ArchiveKind = "marketing" | "thumbnail" | "tags" | "titles";
+import { STORES, getAll, withStore } from "@/lib/idb";
+
+export type ArchiveKind = "marketing" | "thumbnail" | "detail" | "tags" | "titles";
 
 export const ARCHIVE_KIND_LABEL: Record<ArchiveKind, string> = {
   marketing: "마케팅",
   thumbnail: "썸네일",
+  detail: "상세페이지",
   tags: "검색 태그",
   titles: "상품명",
 };
@@ -25,57 +28,19 @@ export interface ArchiveItem {
   images: Record<string, string>;
 }
 
-const DB_NAME = "wingsfarm-ai-archive";
-const STORE = "items";
 const MAX_ITEMS = 200;
 export const ARCHIVE_CHANGED = "wingsfarm-archive-changed";
 
-let dbPromise: Promise<IDBDatabase> | null = null;
-
-function openDb() {
-  dbPromise ??= new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => {
-      const store = req.result.createObjectStore(STORE, { keyPath: "id" });
-      store.createIndex("createdAt", "createdAt");
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => {
-      dbPromise = null;
-      reject(req.error);
-    };
-  });
-  return dbPromise;
-}
-
-/** 한 트랜잭션 안에서 작업하고, 커밋되면 resolve */
-async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => T): Promise<T> {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, mode);
-    const value = run(tx.objectStore(STORE));
-    tx.oncomplete = () => {
-      if (mode === "readwrite") window.dispatchEvent(new Event(ARCHIVE_CHANGED));
-      resolve(value);
-    };
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
-  });
-}
+const write = (run: (store: IDBObjectStore) => void) => withStore(STORES.archive, "readwrite", run, ARCHIVE_CHANGED);
 
 export async function listArchive(): Promise<ArchiveItem[]> {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const req = db.transaction(STORE).objectStore(STORE).getAll();
-    req.onsuccess = () => resolve((req.result as ArchiveItem[]).sort((a, b) => b.createdAt - a.createdAt));
-    req.onerror = () => reject(req.error);
-  });
+  return (await getAll<ArchiveItem>(STORES.archive)).sort((a, b) => b.createdAt - a.createdAt);
 }
 
 /** 새 결과를 저장하고 id를 돌려준다. 오래된 항목은 MAX_ITEMS를 넘지 않게 정리 */
 export async function saveArchive(item: Omit<ArchiveItem, "id" | "createdAt" | "images"> & { images?: Record<string, string> }) {
   const record: ArchiveItem = { ...item, id: crypto.randomUUID(), createdAt: Date.now(), images: item.images ?? {} };
-  await withStore("readwrite", (store) => {
+  await write((store) => {
     store.put(record);
     const countReq = store.count();
     countReq.onsuccess = () => {
@@ -97,7 +62,7 @@ export async function saveArchive(item: Omit<ArchiveItem, "id" | "createdAt" | "
 
 /** 나중에 생성된 이미지를 기존 항목에 추가 (같은 트랜잭션에서 읽고 써서 동시 저장에도 안전) */
 export function patchArchiveImage(id: string, key: string | number, src: string) {
-  return withStore("readwrite", (store) => {
+  return write((store) => {
     const req = store.get(id);
     req.onsuccess = () => {
       const item = req.result as ArchiveItem | undefined;
@@ -106,8 +71,8 @@ export function patchArchiveImage(id: string, key: string | number, src: string)
   });
 }
 
-export const removeArchive = (id: string) => withStore("readwrite", (store) => void store.delete(id));
-export const clearArchive = () => withStore("readwrite", (store) => void store.clear());
+export const removeArchive = (id: string) => write((store) => void store.delete(id));
+export const clearArchive = () => write((store) => void store.clear());
 
 /** 저장 실패(용량 부족·사생활 모드 등)가 본 작업을 막지 않도록 조용히 처리 */
 export async function trySaveArchive(item: Parameters<typeof saveArchive>[0]) {
