@@ -135,7 +135,7 @@ export default function ProjectLoadingOverlay({ jobStatus }: ProjectLoadingOverl
   const isError = jobStatus?.endsWith('_failed');
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-9999 flex items-center justify-center">
+    <div className="fixed inset-0 z-9999 flex animate-overlay-in items-center justify-center bg-black/60 backdrop-blur-md">
       <div className="flex flex-col items-center">
         <Image
           src={ILLUSTRATIONS.ProjectLoading}

@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ToolSectionLayout } from '@/features/editor/components/panel/common';
-import { SparkleStars } from './SparkleStars';
+import { AiOrb } from './AiOrb';
 import type {
   SelectedStyleDisplay,
   SelectedAssetDisplay,
@@ -287,39 +287,7 @@ const ImageGenerationStatus = ({
       >
         <div className="flex flex-col gap-4">
           {/* 로딩 배경 (피그마: 323x323, #000000) */}
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-black">
-            {/* Main gradient orb: 120x120, blur 60px, 회전 2초 + 펄스 3.5초 */}
-            <div
-              className="absolute top-1/2 left-1/2"
-              style={{
-                width: '120px',
-                height: '120px',
-                marginLeft: '-60px',
-                marginTop: '-60px',
-                background:
-                  'radial-gradient(ellipse at 25% 35%, #FF1493 0%, #FF69B4 15%, #9370DB 35%, #8A2BE2 55%, #FFD700 75%, #FF6B35 100%)',
-                filter: 'blur(60px)',
-                animation: 'spin-orb 2s linear infinite, pulse-orb 3.5s ease-in-out infinite',
-              }}
-            />
-            {/* Secondary gradient orb: 120x120, blur 70px, 역회전 2.5초 + 펄스 4초 */}
-            <div
-              className="absolute top-1/2 left-1/2"
-              style={{
-                width: '120px',
-                height: '120px',
-                marginLeft: '-60px',
-                marginTop: '-60px',
-                opacity: 0.7,
-                background:
-                  'radial-gradient(circle at 65% 60%, #FF00FF 0%, #9370DB 40%, #FFD700 70%, transparent 100%)',
-                filter: 'blur(70px)',
-                animation:
-                  'spin-orb-reverse 2.5s linear infinite, pulse-orb-alt 4s ease-in-out infinite',
-              }}
-            />
-            {/* SparkleStars: 피그마 메이크와 동일한 프레임 애니메이션 */}
-            <SparkleStars />
+          <AiOrb className="aspect-square w-full rounded-lg">
             {/* 텍스트: bottom 60px, 14px, font-weight 500 */}
             <div
               className="absolute left-1/2 w-full -translate-x-1/2 px-5 text-center"
@@ -328,7 +296,7 @@ const ImageGenerationStatus = ({
               <p className="text-white">최대 3분이 소요될 수 있습니다.</p>
               <p className="text-white">잠시 다른 작업을 하셔도 괜찮습니다.</p>
             </div>
-          </div>
+          </AiOrb>
 
           {/* 프롬프트 미리보기 (피그마: 참조 이미지 45px + 프롬프트 텍스트) */}
           {hasPromptInfo && (

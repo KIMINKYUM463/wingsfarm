@@ -3,7 +3,6 @@
 import { closestCenter, DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import clsx from 'clsx';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Fragment, useEffect, useState } from 'react';
@@ -18,6 +17,7 @@ import { AddSectionModal } from './AddSectionModal';
 import { PalettePanel } from '@/shared/ui/PalettePanel';
 import { designStyleOption } from '@/shared/lib/designStyles';
 import { DesignStylePanel } from './DesignStylePanel';
+import { DraftBackdrop, ProgressDialog, ProgressStep, useElapsed, type StepState } from './ProgressDialog';
 import SectionCard from './SectionCard';
 import { Modal, SaveStatus } from './ui';
 
@@ -53,75 +53,53 @@ const PLAN_STEPS: { step: DraftProgress['step']; label: (d: DraftDto) => string 
   { step: 'copy', label: () => '전환율을 높이는 카피를 쓰고 있어요' },
 ];
 
-function useElapsed() {
-  const [start] = useState(() => Date.now());
-  const [now, setNow] = useState(start);
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  const s = Math.floor((now - start) / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
-
 function PlanProgress({ draft }: { draft: DraftDto }) {
   const elapsed = useElapsed();
   const retry = useDraftMutation(() => draftApi.plan(draft.id));
   const progress = draft.progress;
-  const activeIndex = PLAN_STEPS.findIndex((s) => s.step === progress?.step);
+  const activeIndex = progress?.step === 'done' ? PLAN_STEPS.length : PLAN_STEPS.findIndex((s) => s.step === progress?.step);
+  const copyFraction = progress?.step === 'copy' && progress.total ? progress.current / progress.total : 0.3;
+  const percent = activeIndex < 0 ? 0 : (Math.min(activeIndex + copyFraction, PLAN_STEPS.length) / PLAN_STEPS.length) * 100;
+  const backdrop = <DraftBackdrop sectionNames={progress?.outline.map((s) => s.name) ?? []} />;
 
   if (draft.status === 'plan_failed') {
     return (
-      <div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-24 text-center">
-        <div className="text-lg font-semibold text-gray-900">기획 초안을 만들지 못했어요</div>
-        <div className="text-sm text-gray-500">{draft.errorMessage}</div>
-        <div className="flex gap-2">
-          <Link className="btn-outline flex items-center text-sm" href={ROUTES.DRAFT_CREATE_FROM({ draft: draft.id })}>
-            입력 수정하기
-          </Link>
-          <button type="button" className="btn-primary text-sm" disabled={retry.isPending} onClick={() => retry.mutate(undefined)}>
-            다시 시도
-          </button>
-        </div>
-      </div>
+      <>
+        {backdrop}
+        <ProgressDialog failed title="기획 초안을 만들지 못했어요" percent={null}>
+          <p className="text-sm leading-6 text-gray-500">{draft.errorMessage}</p>
+          <div className="flex justify-end gap-2">
+            <Link className="btn-outline flex items-center text-sm" href={ROUTES.DRAFT_CREATE_FROM({ draft: draft.id })}>
+              입력 수정하기
+            </Link>
+            <button type="button" className="btn-primary text-sm" disabled={retry.isPending} onClick={() => retry.mutate(undefined)}>
+              다시 시도
+            </button>
+          </div>
+        </ProgressDialog>
+      </>
     );
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl gap-6 px-4 py-10">
-      <aside className="w-56 shrink-0">
-        <div className="mb-2 text-xs font-semibold text-gray-400">섹션 목차</div>
-        <ol className="flex flex-col gap-1">
-          {progress?.outline.map((s, i) => (
-            <li key={s.typeId} className={clsx('rounded-lg px-2 py-1.5 text-sm', i < (progress.current ?? 0) ? 'bg-white font-medium text-gray-900' : 'text-gray-400')}>
-              {i < (progress.current ?? 0) ? '✓' : '○'} {String(i + 1).padStart(2, '0')} {s.name}
-            </li>
-          ))}
-          {!progress?.outline.length && <li className="text-xs text-gray-400">구성을 정하는 중…</li>}
-        </ol>
-      </aside>
-      <div className="flex flex-1 flex-col gap-4 rounded-2xl bg-white p-6">
-        <div className="flex items-center justify-between">
-          <div className="text-lg font-semibold text-gray-900">기획 초안 만드는 중</div>
-          <span className="text-xs text-gray-400">분석 중 · 최대 2분 · {elapsed}</span>
-        </div>
-        <ul className="flex flex-col gap-2">
-          <li className="text-sm text-gray-700">✓ 사진 {draft.input.productImagePaths.length}장을 올렸어요</li>
-          {PLAN_STEPS.map((s, i) => (
-            <li key={s.step} className={clsx('text-sm', i < activeIndex ? 'text-gray-700' : i === activeIndex ? 'font-semibold text-(--color-point)' : 'text-gray-300')}>
-              {i < activeIndex ? '✓' : i === activeIndex ? '●' : '○'} {i === activeIndex ? progress?.message : s.label(draft)}
-              {s.step === 'copy' && i === activeIndex && progress?.total ? ` ${progress.current}/${progress.total}` : ''}
-            </li>
-          ))}
+    <>
+      {backdrop}
+      <ProgressDialog
+        title="기획 초안 만드는 중"
+        meta={`최대 2분 · ${elapsed}`}
+        percent={percent}
+        footer="초안까지는 무료예요. 다 되면 섹션마다 문구·사진 계획을 고칠 수 있어요."
+      >
+        <ul className="flex flex-col gap-2.5">
+          <ProgressStep state="done" label={`사진 ${draft.input.productImagePaths.length}장을 올렸어요`} />
+          {PLAN_STEPS.map((s, i) => {
+            const state: StepState = i < activeIndex ? 'done' : i === activeIndex ? 'active' : 'todo';
+            const counter = s.step === 'copy' && state === 'active' && progress?.total ? ` ${progress.current}/${progress.total}` : '';
+            return <ProgressStep key={s.step} state={state} label={(state === 'active' && progress?.message ? progress.message : s.label(draft)) + counter} />;
+          })}
         </ul>
-        {progress?.total ? (
-          <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-            <div className="h-full bg-(--color-point) transition-all" style={{ width: `${(progress.current / progress.total) * 100}%` }} />
-          </div>
-        ) : null}
-        <div className="text-xs text-gray-400">초안까지는 무료예요. 다 되면 섹션마다 문구·사진 계획을 고칠 수 있어요.</div>
-      </div>
-    </div>
+      </ProgressDialog>
+    </>
   );
 }
 
@@ -203,7 +181,7 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
   const coverage = plan.analysis?.coverageNotes ?? [];
 
   return (
-    <div className="pb-28">
+    <div className="animate-overlay-in pb-28">
       <div className="sticky top-(--header-h) z-30 border-b border-gray-100 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3">
           <div className="flex-1">
@@ -258,7 +236,7 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
           </ol>
         </aside>
 
-        <main className="flex min-w-0 flex-1 flex-col gap-2" data-tour="cards">
+        <main className="flex min-w-0 flex-1 animate-rise-in flex-col gap-2 motion-reduce:animate-none" data-tour="cards">
           {coverage.length > 0 && (
             <div className="mb-2 rounded-xl bg-white px-4 py-3 text-xs leading-5 text-gray-600">
               <b className="text-gray-800">사진 점검</b>
@@ -378,20 +356,32 @@ function GenerateProgress({ draft }: { draft: DraftDto }) {
     router.replace(ROUTES.PROJECT(draft.projectId!));
   }, [done, draft.projectId, progress?.message, router]);
 
-  const percent = progress?.total ? Math.round((progress.current / progress.total) * 100) : 0;
+  const elapsed = useElapsed();
+  const percent = done ? 100 : progress?.total ? (progress.current / progress.total) * 100 : 0;
+  const sectionNames = draft.plan?.sections.map((s) => draft.sectionTypes.find((t) => t.id === s.typeId)?.name ?? '') ?? [];
   return (
-    <div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-24 text-center">
-      <div className="text-lg font-semibold text-gray-900">{done ? '완성! 에디터로 이동해요' : '상세페이지 만드는 중'}</div>
-      <div className="text-sm text-gray-500">{progress?.message ?? '섹션 구성 대기 중'}</div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-        <div className="h-full bg-(--color-point) transition-all" style={{ width: `${percent}%` }} />
-      </div>
-      <div className="text-xs text-gray-400">이 화면을 나가도 서버에서 계속 만들어요. 작업 내역에서 다시 열 수 있어요.</div>
-      {done && (
-        <Link className="btn-primary flex items-center text-sm" href={ROUTES.PROJECT(draft.projectId!)}>
-          에디터 열기
-        </Link>
-      )}
-    </div>
+    <>
+      <DraftBackdrop sectionNames={sectionNames} />
+      <ProgressDialog
+        title={done ? '완성! 에디터로 이동해요' : '상세페이지 만드는 중'}
+        meta={done ? undefined : elapsed}
+        percent={percent}
+        footer={
+          <>
+            이 화면을 나가도 서버에서 계속 만들어요.{' '}
+            <Link className="underline" href={ROUTES.PROJECTS}>
+              작업 내역
+            </Link>
+            에서 다시 열 수 있어요.
+          </>
+        }
+      >
+        <ul className="flex flex-col gap-2.5">
+          <ProgressStep state="done" label={`섹션 ${sectionNames.length}개 기획 확정`} />
+          <ProgressStep state={done ? 'done' : 'active'} label={done ? '사진·카피를 모두 넣었어요' : (progress?.message ?? '섹션 구성 대기 중')} />
+          <ProgressStep state={done ? 'active' : 'todo'} label="에디터 열기" />
+        </ul>
+      </ProgressDialog>
+    </>
   );
 }
