@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# 상세페이지 제작 로컬 저장소 (프로젝트·이미지·템플릿)
+/.data/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

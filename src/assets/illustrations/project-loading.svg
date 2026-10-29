@@ -1,0 +1,133 @@
+<svg width="263" height="371" viewBox="0 0 263 371" fill="none" xmlns="http://www.w3.org/2000/svg">
+<style>
+  .fade-in {
+    animation: fadeIn 0.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+    opacity: 0;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
+<!-- 흰색 배경 -->
+<rect class="fade-in" width="262.497" height="370.496" rx="30" fill="white"/>
+
+<!-- 메인 이미지 영역 -->
+<rect x="131.2485" y="103.124" width="0" height="0" rx="13.4998" fill="#E5E7EB" opacity="0">
+  <!-- 1번째 사이클: 확장 -->
+  <animate attributeName="x" from="131.2485" to="30" begin="0.2s;anim_last_rev.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim1"/>
+  <animate attributeName="y" from="103.124" to="30" begin="0.2s;anim_last_rev.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="0" to="202.497" begin="0.2s;anim_last_rev.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="0" to="146.248" begin="0.2s;anim_last_rev.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="0" to="1" begin="0.2s;anim_last_rev.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+
+  <!-- 2번째 사이클: 축소 -->
+  <animate attributeName="x" from="30" to="131.2485" begin="anim5.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim1_rev"/>
+  <animate attributeName="y" from="30" to="103.124" begin="anim5.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="202.497" to="0" begin="anim5.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="146.248" to="0" begin="anim5.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="1" to="0" begin="anim5.end+0.5s" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+</rect>
+
+<!-- 제목 영역 -->
+<rect x="131.2488" y="224.6228" width="0" height="0" rx="13.4998" fill="#6B7280" opacity="0">
+  <!-- 1번째 사이클: 확장 -->
+  <animate attributeName="x" from="131.2488" to="90.7493" begin="anim1.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim2"/>
+  <animate attributeName="y" from="224.6228" to="211.123" begin="anim1.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="0" to="80.999" begin="anim1.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="0" to="26.9997" begin="anim1.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="0" to="1" begin="anim1.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+
+  <!-- 2번째 사이클: 축소 -->
+  <animate attributeName="x" from="90.7493" to="131.2488" begin="anim1_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim2_rev"/>
+  <animate attributeName="y" from="211.123" to="224.6228" begin="anim1_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="80.999" to="0" begin="anim1_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="26.9997" to="0" begin="anim1_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="1" to="0" begin="anim1_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+</rect>
+
+<!-- 설명 첫 줄 -->
+<rect x="131.2485" y="262.8719" width="0" height="0" rx="5.62493" fill="#D1D5DB" opacity="0">
+  <!-- 1번째 사이클: 확장 -->
+  <animate attributeName="x" from="131.2485" to="30" begin="anim2.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim3"/>
+  <animate attributeName="y" from="262.8719" to="257.247" begin="anim2.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="0" to="202.497" begin="anim2.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="0" to="11.2499" begin="anim2.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="0" to="1" begin="anim2.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+
+  <!-- 2번째 사이클: 축소 -->
+  <animate attributeName="x" from="30" to="131.2485" begin="anim2_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim3_rev"/>
+  <animate attributeName="y" from="257.247" to="262.8719" begin="anim2_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="202.497" to="0" begin="anim2_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="11.2499" to="0" begin="anim2_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="1" to="0" begin="anim2_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+</rect>
+
+<!-- 설명 둘째 줄 -->
+<rect x="131.2485" y="280.8719" width="0" height="0" rx="5.62493" fill="#D1D5DB" opacity="0">
+  <!-- 1번째 사이클: 확장 -->
+  <animate attributeName="x" from="131.2485" to="66.562" begin="anim3.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim4"/>
+  <animate attributeName="y" from="280.8719" to="275.247" begin="anim3.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="0" to="129.373" begin="anim3.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="0" to="11.2499" begin="anim3.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="0" to="1" begin="anim3.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+
+  <!-- 2번째 사이클: 축소 -->
+  <animate attributeName="x" from="66.562" to="131.2485" begin="anim3_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim4_rev"/>
+  <animate attributeName="y" from="275.247" to="280.8719" begin="anim3_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="129.373" to="0" begin="anim3_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="11.2499" to="0" begin="anim3_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="1" to="0" begin="anim3_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+</rect>
+
+<!-- 버튼 1 (왼쪽) -->
+<rect x="70.4995" y="332.0584" width="0" height="0" rx="8.43739" fill="#D1D5DB" opacity="0">
+  <!-- 1번째 사이클: 확장 -->
+  <animate attributeName="x" from="70.4995" to="45.1873" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim5"/>
+  <animate attributeName="y" from="332.0584" to="323.621" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="0" to="50.6244" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="0" to="16.8748" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="0" to="1" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+
+  <!-- 2번째 사이클: 축소 (3개 버튼 동시) -->
+  <animate attributeName="x" from="45.1873" to="70.4995" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim5_rev"/>
+  <animate attributeName="y" from="323.621" to="332.0584" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="50.6244" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="16.8748" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="1" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+</rect>
+
+<!-- 버튼 2 (중앙) -->
+<rect x="131.2492" y="332.0584" width="0" height="0" rx="8.43739" fill="#D1D5DB" opacity="0">
+  <!-- 1번째 사이클: 확장 (버튼1과 동시) -->
+  <animate attributeName="x" from="131.2492" to="105.937" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="y" from="332.0584" to="323.621" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="0" to="50.6244" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="0" to="16.8748" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="0" to="1" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+
+  <!-- 2번째 사이클: 축소 (버튼1과 동시) -->
+  <animate attributeName="x" from="105.937" to="131.2492" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim6_rev"/>
+  <animate attributeName="y" from="323.621" to="332.0584" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="50.6244" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="16.8748" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="1" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+</rect>
+
+<!-- 버튼 3 (오른쪽) - 마지막 요소 -->
+<rect x="191.9982" y="332.0584" width="0" height="0" rx="8.43739" fill="#D1D5DB" opacity="0">
+  <!-- 1번째 사이클: 확장 (버튼1과 동시) -->
+  <animate attributeName="x" from="191.9982" to="166.686" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="y" from="332.0584" to="323.621" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="0" to="50.6244" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="0" to="16.8748" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="0" to="1" begin="anim4.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+
+  <!-- 2번째 사이클: 축소 (버튼1과 동시, 이것이 끝나면 처음으로 반복) -->
+  <animate attributeName="x" from="166.686" to="191.9982" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1" id="anim_last_rev"/>
+  <animate attributeName="y" from="323.621" to="332.0584" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="width" from="50.6244" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="height" from="16.8748" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+  <animate attributeName="opacity" from="1" to="0" begin="anim4_rev.end" dur="0.5s" fill="freeze" calcMode="spline" keySplines="0.65 0 0.35 1"/>
+</rect>
+</svg>

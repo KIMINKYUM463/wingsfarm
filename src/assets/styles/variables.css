@@ -1,0 +1,100 @@
+:root {
+  --color-bg: #f8f8f9;
+  --color-sub-bg: #ffffff;
+  --color-bg-hover: #e5e7eb;
+  --color-btn-bg: #f8f9fa;
+  --color-border: #e5e7eb;
+  --color-card-bg: #ffffff;
+  --color-text: #2b2b2e;
+  --color-sub-text: #6b7280;
+  --color-primary: #2b2b2e;
+  --color-toast-bg: #fff;
+  --color-secondary: #f3faf8;
+  --color-accent: #f97316; /* orange-500 */
+  --color-success: #2bc280;
+  --color-credit-text: #ffce48;
+  --color-credit-bg: #fff9ea;
+  --color-error: #dc2626;
+  --color-input-bg: #fff; /* red-500 */
+  --color-placeholder: #9ca3af;
+  --color-bg-emphasis: #ee877e33;
+  --color-emphasis: #c12c2c;
+  --color-bg-point: #f9fbfd;
+  --color-point: #5dadec;
+  --color-primary-100: #f0f7ff;
+  --color-gray-900: #2b2b2e;
+  --color-gray-400: #6b7280;
+  --color-gray-300: #9ca3af;
+  --color-gray-200: #d1d5db;
+  --color-gray-150: #d9d9d9; /* 이미지 placeholder 배경색 */
+  --color-gray-100: #e5e7eb;
+  --color-gray-50: #f8f8f9;
+  --color-white: #ffffff;
+  --color-ai-1: linear-gradient(to right, #eb1e79 0%, #682d8c 100%);
+  --color-ai-2: linear-gradient(to right, #f4d7e8 30%, #ffc2b2 100%);
+
+  --shadow-1: 0px 4px 16px rgba(117, 117, 117, 0.18);
+  --shadow-md: 0px 8px 16px -2px rgba(29, 53, 87, 0.06);
+  --header-shadow: 0px 4px 16px rgba(117, 117, 117, 0.05);
+  --blue-shadow: 0px 0px 16px rgba(93, 218, 236, 0.16);
+
+  --color-konva-element: #4a90e2;
+  --color-landing-strong-text: #5dadec;
+  /* 사이드바 관련 변수 */
+  --w-left-sidebar: 3.5rem; /* 56px */
+  --m-left-sidebar: 0.74rem;
+  --header-h: 3.5rem; /* 56px */
+  --footer-h: 3.5rem; /* 56px (EditorFooter) */
+  --frame-top-offset: 7.5rem; /* 120px - 캔버스 상단에서 첫 프레임까지 */
+  --frame-gap: 6.25rem; /* 100px - 프레임 간 간격 (각 Stage가 50px씩 분담) */
+  --tool-panel-w: 23.125rem;
+  --right-sidebar-w: 17rem; /* 272px (FrameListPanel) */
+  --right-sidebar-gap: 0.5rem; /* 8px (right margin) */
+  --btn-h: 2.5rem; /* form controls (buttons, inputs, dropdowns) spacing */
+  --control-x: 1rem; /* 12px (px-3) */
+  --control-y: 0.5625rem;
+  /* Tailwind CSS 변수들 */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 3.9%;
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+  --radius: 0.5rem;
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+
+  /* 카카오톡 색상 */
+  --color-kakao-yellow: #fee500;
+  --color-kakao-brown: #3c1e1e;
+  --color-kakao-gray: #f2f3f5;
+  --color-kakao-yellow-hover: #fdd835;
+  --color-kakao-brown-light: #5a3a3a;
+
+  --shadow: 0px 4px 16px 0px #7575752e;
+  --shadow-hover: 0 4px 16px 0 rgba(117, 117, 117, 0.18);
+}

@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+
+@theme {
+  --breakpoint-tablet: 47.375rem; /* 758px */
+  --breakpoint-desktop: 73.75rem; /* 1180px */
+  --breakpoint-wide: 94.4375rem; /* 1511px */
+
+  /* Modal widths */
+  --max-w-modal-sm: 24rem; /* 384px - 기본 */
+  --max-w-modal-md: 35rem; /* 560px - EmailModal */
+  --max-w-modal-lg: 41.375rem; /* 672px */
+
+  /* Confirm width */
+  --max-w-confirm: 23rem; /* 368px */
+}
+
+/* 0. fonts (Konva 캔버스용 @font-face) → 가장 먼저 */
+@import './fonts.css';
+
+/* 1. variables (CSS custom properties, theme tokens) → 제일 먼저 */
+@import './variables.css';
+
+/* 2. base (reset, html/body 기본 스타일) → tailwind base 다음 */
+@import './base.css';
+
+/* 3. components (버튼, 카드 같은 구조적 스타일) → tailwind components 다음 */
+@import './components.css';
+
+/* 4. utilities (helper 클래스, one-off 스타일) → tailwind utilities 다음 */
+@import './utilities.css';
+
+/* 5. custom variants (dark, media query 확장 등) → 맨 마지막 */
+@custom-variant dark (&:where(.dark, .dark *));

@@ -1,14 +1,15 @@
 /**
- * 브라우저 IndexedDB 공용 연결 — 보관함·상세페이지 프로젝트가 같은 DB를 쓴다.
+ * 브라우저 IndexedDB 공용 연결.
  * 스토어를 추가할 때는 DB_VERSION을 올리고 STORES에 이름을 더한다.
+ * 이미 배포된 버전(2)보다 낮추면 열기가 실패하므로 버전은 내리지 않는다.
  */
 
 const DB_NAME = "wingsfarm-ai-archive";
 const DB_VERSION = 2;
-export const STORES = { archive: "items", detailProjects: "detailProjects", detailSummaries: "detailSummaries" } as const;
+export const STORES = { archive: "items" } as const;
 type StoreName = (typeof STORES)[keyof typeof STORES];
 /** 스토어별 정렬용 시간 인덱스 */
-const TIME_INDEX: Record<StoreName, string> = { items: "createdAt", detailProjects: "updatedAt", detailSummaries: "updatedAt" };
+const TIME_INDEX: Record<StoreName, string> = { items: "createdAt" };
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
