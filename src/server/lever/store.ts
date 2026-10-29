@@ -34,13 +34,36 @@ export async function readJson<T>(relPath: string, fallback: T): Promise<T> {
   }
 }
 
+const TRANSIENT_RENAME_CODES = new Set(['EPERM', 'EACCES', 'EBUSY']);
+const RENAME_RETRY_LIMIT_MS = 2000;
+
+/**
+ * Windows에선 다른 요청이 대상 파일을 읽는 중이면 rename이 EPERM으로 실패한다.
+ * 잠깐 기다렸다 다시 시도한다 (graceful-fs와 같은 방식).
+ */
+async function renameWithRetry(from: string, to: string) {
+  const startedAt = Date.now();
+  for (let delay = 10; ; delay = Math.min(delay * 2, 100)) {
+    try {
+      return await rename(from, to);
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException)?.code ?? '';
+      if (!TRANSIENT_RENAME_CODES.has(code) || Date.now() - startedAt > RENAME_RETRY_LIMIT_MS) {
+        await rm(from, { force: true });
+        throw err;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
 /** 임시 파일에 쓴 뒤 rename → 쓰는 도중 종료돼도 파일이 깨지지 않음 */
 export async function writeData(relPath: string, data: string | Buffer) {
   const full = resolveDataPath(relPath);
   await mkdir(path.dirname(full), { recursive: true });
   const tmp = `${full}.${randomUUID()}.tmp`;
   await writeFile(tmp, data);
-  await rename(tmp, full);
+  await renameWithRetry(tmp, full);
 }
 
 export const writeJson = (relPath: string, data: unknown) =>
