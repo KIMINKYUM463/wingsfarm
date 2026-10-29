@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, type ReactNode } from "react";
+import { AppLink } from "@/components/AppLink";
 import { countByStatus, evaluateListings } from "@/lib/margin";
 import { opsProgress } from "@/lib/opsChecklist";
 import { percent } from "@/lib/format";
@@ -80,9 +81,9 @@ export function TodayOps() {
         <p className="mb-2">한 번 입력하면 상품명·태그·썸네일·마케팅 화면에 자동으로 채워집니다.</p>
         <div className="flex flex-wrap gap-1.5">
           {QUICK_LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-stone-700 ring-1 ring-stone-200 hover:ring-emerald-300">
+            <AppLink key={l.href} href={l.href} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-stone-700 ring-1 ring-stone-200 hover:ring-emerald-300">
               {l.icon} {l.label}
-            </Link>
+            </AppLink>
           ))}
         </div>
       </OpsCard>

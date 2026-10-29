@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AppLink } from "@/components/AppLink";
 import { Logo, LogoMark } from "@/components/Logo";
 import { BRAND } from "@/lib/brand";
 import { useAppStore } from "@/store/useAppStore";
@@ -86,7 +87,7 @@ export function Sidebar() {
             {group.items.map((item) => {
               const active = isActive(item.href, pathname);
               return (
-                <Link
+                <AppLink
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
@@ -95,7 +96,7 @@ export function Sidebar() {
                 >
                   <span aria-hidden>{item.icon}</span>
                   {item.label}
-                </Link>
+                </AppLink>
               );
             })}
           </div>
@@ -114,13 +115,13 @@ export function MobileNav() {
         <LogoMark size={28} />
       </Link>
       {NAV.map((item) => (
-        <Link
+        <AppLink
           key={item.href}
           href={item.href}
           className={`shrink-0 rounded-lg px-3 py-1.5 text-xs ${isActive(item.href, pathname) ? "bg-emerald-50 font-semibold text-emerald-700" : "text-stone-600"}`}
         >
           {item.icon} {item.short}
-        </Link>
+        </AppLink>
       ))}
     </nav>
   );

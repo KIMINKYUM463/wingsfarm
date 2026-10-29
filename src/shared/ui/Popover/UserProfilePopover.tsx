@@ -42,7 +42,8 @@ export default function UserProfilePopover() {
     {
       icon: 'home',
       label: '윙스팜AI 대시보드',
-      onClick: () => router.push(ROUTES.HOME),
+      // 메인은 루트 레이아웃이 달라 전체 페이지로 이동
+      onClick: () => window.location.assign(ROUTES.HOME),
     },
   ];
 
