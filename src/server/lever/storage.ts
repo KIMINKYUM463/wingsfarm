@@ -63,6 +63,7 @@ const MIME_BY_EXT: Record<string, string> = {
   webp: 'image/webp',
   gif: 'image/gif',
   svg: 'image/svg+xml',
+  mp4: 'video/mp4',
 };
 
 export const mimeFromPath = (storagePath: string) =>

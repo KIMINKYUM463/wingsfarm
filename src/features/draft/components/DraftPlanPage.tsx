@@ -10,7 +10,8 @@ import { toast } from 'sonner';
 import ProjectsHeader from '@/shared/ui/Header/ProjectsHeader';
 import { Tour, useTour, type TourStep } from '@/shared/ui/Tour';
 import { ROUTES } from '@/shared/constants/routes';
-import type { DraftPlan, DraftProgress, PalettePreset } from '@/shared/types/draft';
+import { formatCost } from '@/shared/lib/draftMedia';
+import type { CutSource, DraftPlan, DraftProgress, HeroMotion, PalettePreset } from '@/shared/types/draft';
 import { draftApi, type DraftDto } from '../api';
 import { draftKey, errorMessage, useAutosave, useDraft, useDraftMutation } from '../hooks';
 import { AddSectionModal } from './AddSectionModal';
@@ -20,6 +21,8 @@ import { DesignStylePanel } from './DesignStylePanel';
 import { DraftBackdrop, ProgressDialog, ProgressStep, useElapsed, type StepState } from './ProgressDialog';
 import SectionCard from './SectionCard';
 import { Modal, SaveStatus } from './ui';
+
+const MOTION_LABELS: Record<Exclude<HeroMotion, 'off'>, string> = { pan: '줌·이동', video: 'AI 영상' };
 
 /** /detail-page/drafts/[id] — 기획 중 진행 표시 → 섹션 카드 편집 → 생성 진행 */
 export default function DraftPlanPage({ id }: { id: string }) {
@@ -179,6 +182,8 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
   const warningCount = plan.sections.reduce((n, s) => n + (serverSections.get(s.id)?.warnings.length ?? 0), 0);
   const estimate = draft.estimate;
   const coverage = plan.analysis?.coverageNotes ?? [];
+  const setAllCutSources = (source: CutSource) =>
+    setPlan({ ...plan, sections: plan.sections.map((s) => ({ ...s, cuts: s.cuts.map((c) => ({ ...c, source })) })) });
 
   return (
     <div className="animate-overlay-in pb-28">
@@ -281,9 +286,20 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
             <span className="text-sm font-semibold text-gray-900">
               총 섹션 {estimate.sectionCount}개 · 약 {estimate.heightPx.toLocaleString()}px
             </span>
-            <span className="text-xs text-gray-500" title="AI 사진은 Gemini API 사용량으로 계산돼요. 내 사진 컷과 카피는 추가 비용이 없어요.">
-              ✦ AI 사진 {estimate.aiCutCount}장 · 내 사진 {estimate.ownCutCount}장 · 카피 무료
+            <span className="text-xs text-gray-500" title="AI 사진·AI 영상은 등록한 Gemini API 키 사용량으로 청구돼요. 내 사진·빈 자리·줌 이동 컷과 카피는 추가 비용이 없어요.">
+              ✦ AI 사진 {estimate.aiCutCount}장 · 내 사진 {estimate.ownCutCount}장
+              {estimate.blankCutCount > 0 && ` · 빈 자리 ${estimate.blankCutCount}곳`}
+              {estimate.heroMotion !== 'off' && ` · 움직이는 컷 ${MOTION_LABELS[estimate.heroMotion]}`} · 예상 {formatCost(estimate.costUsd)}
               {warningCount > 0 && <span className="ml-2 text-amber-600">사실 확인 필요 {warningCount}건</span>}
+            </span>
+            <span className="mt-0.5 flex gap-2 text-xs">
+              <span className="text-gray-400">사진 컷 한꺼번에</span>
+              <button type="button" className="font-semibold text-(--color-point)" onClick={() => setAllCutSources('ai')}>
+                모두 AI 생성
+              </button>
+              <button type="button" className="font-semibold text-gray-600" onClick={() => setAllCutSources('blank')}>
+                모두 비워두기
+              </button>
             </span>
           </div>
           <SaveStatus saving={saving} savedAt={savedAt} />
@@ -294,6 +310,7 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
             disabled={!plan.sections.length || generate.isPending}
             onClick={() => {
               if (warningCount && !window.confirm(`근거를 확인해야 하는 문구가 ${warningCount}건 있어요. 그대로 만들까요?`)) return;
+              if (estimate.heroMotion === 'video' && !window.confirm(`AI 영상이 포함돼 ${formatCost(estimate.costUsd)} 정도가 Gemini 키로 청구돼요. 만들까요?`)) return;
               generate.mutate(undefined);
             }}
           >
@@ -379,6 +396,9 @@ function GenerateProgress({ draft }: { draft: DraftDto }) {
         <ul className="flex flex-col gap-2.5">
           <ProgressStep state="done" label={`섹션 ${sectionNames.length}개 기획 확정`} />
           <ProgressStep state={done ? 'done' : 'active'} label={done ? '사진·카피를 모두 넣었어요' : (progress?.message ?? '섹션 구성 대기 중')} />
+          {draft.estimate.heroMotion !== 'off' && (
+            <ProgressStep state="todo" label={`맨 위 움직이는 컷(${MOTION_LABELS[draft.estimate.heroMotion]})은 에디터에서 이어서 만들어요`} />
+          )}
           <ProgressStep state={done ? 'active' : 'todo'} label="에디터 열기" />
         </ul>
       </ProgressDialog>

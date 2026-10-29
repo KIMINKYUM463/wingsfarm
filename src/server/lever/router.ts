@@ -41,6 +41,7 @@ import {
   updateFrame,
 } from './frames';
 import { isValidGeminiKey } from './gemini';
+import { buildHeroGif, getHeroMotion, startHeroMotion } from './media/heroMotion';
 import { confirmGeneration, getGenerationJob, getGenerationJobStatus, startGeneration } from './generation';
 import { ApiError, badRequest, createContext, fail, noContent, notFound, ok, toResponse, type RouteHandler } from './http';
 import { MY_SUBSCRIPTION, PAYMENT_LISTS, creditBalance, paymentNotSupported } from './payments';
@@ -92,6 +93,10 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['GET', 'projects/:id/estimate', ({ params }) => estimateProject(params.id)],
   ['POST', 'projects/:id/generate', async ({ params, body }) => created(startGeneration(params.id, await body()))],
   ['POST', 'projects/:id/generate/keywords', async ({ params, body }) => generateKeywords(params.id, await body())],
+  ['GET', 'projects/:id/hero-motion', ({ params }) => getHeroMotion(params.id)],
+  ['POST', 'projects/:id/hero-motion', async ({ params, body }) =>
+    startHeroMotion(params.id, (await body<{ kind?: string }>()).kind === 'video' ? 'video' : 'pan')],
+  ['POST', 'projects/:id/hero-motion/gif', async ({ params, body }) => buildHeroGif(params.id, await body())],
 
   // ===== 초안 (입력 → 무료 기획 초안 → 생성) =====
   ['GET', 'drafts', () => listDrafts()],
@@ -199,7 +204,16 @@ function matchRoute(method: string, path: string) {
 
 const IMMUTABLE_PREFIXES = ['assets/', 'uploads/', 'templates/images/'];
 
-async function serveStorage(storagePath: string) {
+/** `bytes=a-b` → [시작, 끝] (영상 탐색용, 잘못된 범위면 null) */
+function parseRange(header: string | null, size: number): [number, number] | null {
+  const match = header?.match(/^bytes=(\d*)-(\d*)$/);
+  if (!match || (!match[1] && !match[2])) return null;
+  const start = match[1] ? Number(match[1]) : Math.max(0, size - Number(match[2]));
+  const end = match[1] && match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
+  return start <= end && start < size ? [start, end] : null;
+}
+
+async function serveStorage(storagePath: string, rangeHeader: string | null) {
   const graphic = findGraphicSvg(storagePath);
   if (graphic) {
     return new Response(graphic, {
@@ -209,12 +223,20 @@ async function serveStorage(storagePath: string) {
   const data = await loadFile(storagePath);
   if (!data) return fail(404, '파일을 찾을 수 없습니다.');
   const immutable = IMMUTABLE_PREFIXES.some((prefix) => storagePath.startsWith(prefix));
-  return new Response(new Uint8Array(data), {
-    headers: {
-      'Content-Type': mimeFromPath(storagePath),
-      'Cache-Control': immutable ? 'public, max-age=31536000, immutable' : 'no-cache',
-    },
-  });
+  const headers = {
+    'Content-Type': mimeFromPath(storagePath),
+    'Cache-Control': immutable ? 'public, max-age=31536000, immutable' : 'no-cache',
+    'Accept-Ranges': 'bytes',
+  };
+  const range = parseRange(rangeHeader, data.length);
+  if (range) {
+    const [start, end] = range;
+    return new Response(new Uint8Array(data.subarray(start, end + 1)), {
+      status: 206,
+      headers: { ...headers, 'Content-Range': `bytes ${start}-${end}/${data.length}` },
+    });
+  }
+  return new Response(new Uint8Array(data), { headers });
 }
 
 async function uploadStorage(req: Request, storagePath: string, token: string | null) {
@@ -257,7 +279,7 @@ export async function handleLeverRequest(req: Request, segments: string[]) {
       return await uploadStorage(req, toStoragePath(path.slice('storage/upload/'.length)), url.searchParams.get('token'));
     }
     if (path.startsWith('storage/') && method === 'GET') {
-      return await serveStorage(toStoragePath(path.slice('storage/'.length)));
+      return await serveStorage(toStoragePath(path.slice('storage/'.length)), req.headers.get('range'));
     }
     if (path.startsWith('realtime/') && method === 'GET') {
       return ok({ record: await realtimeRecord(decodeURIComponent(path.slice('realtime/'.length))) });

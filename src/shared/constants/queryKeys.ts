@@ -22,6 +22,7 @@ export const queryKeys = {
     projectDetails: () => [...queryKeys.EDITOR.all, 'projectDetail'] as const,
     projectDetail: (projectId: string) =>
       [...queryKeys.EDITOR.projectDetails(), projectId] as const,
+    heroMotion: (projectId: string) => [...queryKeys.EDITOR.all, 'heroMotion', projectId] as const,
   },
   PROJECTS: {
     all: ['projects'] as const,

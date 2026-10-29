@@ -57,6 +57,8 @@ export const ENDPOINTS = {
     DETAIL: (projectId: string) => `/functions/v1/projects/${projectId}`,
     THUMBNAIL: (projectId: string) => `/functions/v1/projects/${projectId}/thumbnail`,
     ESTIMATE: (projectId: string) => `/functions/v1/projects/${projectId}/estimate`,
+    HERO_MOTION: (projectId: string) => `/functions/v1/projects/${projectId}/hero-motion`,
+    HERO_MOTION_GIF: (projectId: string) => `/functions/v1/projects/${projectId}/hero-motion/gif`,
     GENERATE: (projectId: string) => `/functions/v1/projects/${projectId}/generate`,
     GENERATE_KEYWORDS: (projectId: string) =>
       `/functions/v1/projects/${projectId}/generate/keywords`,

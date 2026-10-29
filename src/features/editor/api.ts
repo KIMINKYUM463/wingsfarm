@@ -4,6 +4,7 @@ import { CustomError } from '@/shared/lib/CustomError';
 import type { CreatePageFromFigmaOutput } from '@/shared/types/actions';
 import type { KonvaFrameElement } from '@/shared/types/konva';
 import type { ChatEditRequest, ChatEditResult } from '@/shared/types/chatEdit';
+import type { HeroMotionInfo, HeroMotionKind } from '@/shared/types/heroMotion';
 import type {
   ExternalApiResponse,
   ProjectDetailResponse,
@@ -330,6 +331,37 @@ export const restoreProjectVersion = async (projectId: string, versionId: string
 
 export const deleteProjectVersion = (projectId: string, versionId: string) =>
   httpClient.delete(ENDPOINTS.PROJECTS.VERSION(projectId, versionId), { withAuth: true });
+
+// ===== 맨 위 움직이는 컷 =====
+
+type HeroMotionResponse = ExternalApiResponse<{ heroMotion: HeroMotionInfo | null }>;
+
+export const getHeroMotion = async (projectId: string) =>
+  (await httpClient.get<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION(projectId), { withAuth: true })).data.heroMotion;
+
+export const startHeroMotion = async (projectId: string, kind: HeroMotionKind) =>
+  (await httpClient.post<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION(projectId), { kind }, { withAuth: true })).data.heroMotion;
+
+export interface HeroGifRequest {
+  below: string;
+  above: string;
+  rect: { x: number; y: number; width: number; height: number };
+  outWidth: number;
+}
+
+/** 섹션 레이어 + 움직이는 컷 → GIF (응답이 JSON이 아니라 파일이라 fetch로 직접 받는다) */
+export async function requestHeroGif(projectId: string, body: HeroGifRequest) {
+  const res = await fetch(`/api/lever${ENDPOINTS.PROJECTS.HERO_MOTION_GIF(projectId)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const error = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new CustomError(res.status, error?.message ?? 'GIF를 만들지 못했어요.');
+  }
+  return res.blob();
+}
 
 /**
  * AI 이미지 생성 스타일 목록 조회 (공개 API)

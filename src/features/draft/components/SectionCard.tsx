@@ -4,11 +4,11 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import clsx from 'clsx';
 import { useState } from 'react';
-import { DRAFT_LIMITS, type DraftCut, type DraftItem, type DraftLine, type DraftSection } from '@/shared/types/draft';
+import { DRAFT_LIMITS, type CutSource, type DraftCut, type DraftItem, type DraftLine, type DraftSection } from '@/shared/types/draft';
 import type { PreviewNode } from '../api';
 import { editedLine, lineEvidence } from '../evidence';
 import { storageUrl, useUploadPaths } from '../hooks';
-import SectionPreview from './SectionPreview';
+import SectionPreview, { type CutPreview } from './SectionPreview';
 import { inputClass } from './ui';
 
 interface SectionCardProps {
@@ -33,10 +33,11 @@ export default function SectionCard({ index, section, typeName, preview, warning
   const [showEvidence, setShowEvidence] = useState(false);
   const { uploadFiles, uploading } = useUploadPaths('reference');
 
-  const cutImage = (cutId: string) => {
+  const cutImage = (cutId: string): CutPreview => {
     const cut = section.cuts.find((c) => c.id === cutId);
+    if (cut?.source === 'blank') return 'blank';
     const photo = cut?.source === 'own' ? photos[cut.photoIndexes[0] ?? 0] : null;
-    return photo ? storageUrl(photo) : null;
+    return photo ? { src: storageUrl(photo) } : 'ai';
   };
 
   const updateCut = (cutId: string, patch: Partial<DraftCut>) =>
@@ -226,7 +227,19 @@ function SectionEditor({ value, onChange, onSave, onCancel }: { value: DraftSect
   );
 }
 
-/** 사진 컷 한 줄: 장면 이름 · 참고 사진 · AI 생성/내 사진 토글 · 컷 수정 */
+const CUT_SOURCE_OPTIONS: { source: CutSource; label: string }[] = [
+  { source: 'ai', label: '✦ AI 생성' },
+  { source: 'own', label: '내 사진' },
+  { source: 'blank', label: '비워두기' },
+];
+
+const CUT_SOURCE_HINTS: Record<CutSource, string> = {
+  ai: 'AI가 고른 사진(최대 3장)을 참고해 이 장면으로 연출해요. 실패하면 빈 자리로 두고 에디터에서 다시 만들 수 있어요.',
+  own: '첫 번째로 고른 사진을 그대로 넣어요.',
+  blank: '사진 자리를 비워 두고, 에디터에서 직접 사진을 넣어요.',
+};
+
+/** 사진 컷 한 줄: 장면 이름 · 참고 사진 · AI 생성/내 사진/비워두기 · 컷 수정 */
 function CutRow({ index, cut, photos, onChange }: { index: number; cut: DraftCut; photos: string[]; onChange: (patch: Partial<DraftCut>) => void }) {
   const [editing, setEditing] = useState(false);
   const togglePhoto = (i: number) => {
@@ -248,15 +261,15 @@ function CutRow({ index, cut, photos, onChange }: { index: number; cut: DraftCut
           )}
         </div>
         <div className="flex overflow-hidden rounded-lg border border-gray-200 text-xs">
-          {(['ai', 'own'] as const).map((source) => (
+          {CUT_SOURCE_OPTIONS.map(({ source, label }) => (
             <button
               key={source}
               type="button"
               disabled={source === 'own' && !photos.length}
               onClick={() => onChange({ source })}
-              className={clsx('px-2 py-1 font-medium', cut.source === source ? 'bg-gray-900 text-white' : 'bg-white text-gray-500')}
+              className={clsx('px-2 py-1 font-medium disabled:opacity-40', cut.source === source ? 'bg-gray-900 text-white' : 'bg-white text-gray-500')}
             >
-              {source === 'ai' ? '✦ AI 생성' : '내 사진'}
+              {label}
             </button>
           ))}
         </div>
@@ -269,9 +282,7 @@ function CutRow({ index, cut, photos, onChange }: { index: number; cut: DraftCut
         <div className="flex flex-col gap-2">
           <input className={inputClass} value={cut.scene} maxLength={60} placeholder="장면 이름" onChange={(e) => onChange({ scene: e.target.value })} />
           <textarea className={clsx(inputClass, 'min-h-16')} value={cut.plan} maxLength={500} placeholder="배경·구도·조명을 적어 주세요" onChange={(e) => onChange({ plan: e.target.value })} />
-          <div className="text-xs text-gray-500">
-            {cut.source === 'own' ? '첫 번째로 고른 사진을 그대로 넣어요.' : 'AI가 고른 사진(최대 3장)을 참고해 연출해요.'}
-          </div>
+          <div className="text-xs text-gray-500">{CUT_SOURCE_HINTS[cut.source]}</div>
           <div className="flex flex-wrap gap-1.5">
             {photos.map((p, i) => (
               <button key={p} type="button" onClick={() => togglePhoto(i)} className={clsx('relative h-12 w-12 overflow-hidden rounded-md border-2', cut.photoIndexes.includes(i) ? 'border-(--color-point)' : 'border-transparent')}>

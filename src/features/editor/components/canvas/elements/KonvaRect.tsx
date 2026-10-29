@@ -12,7 +12,7 @@ import { useKonvaElementHandlers } from '@/features/editor/hooks/useKonvaElement
 import { useImagePattern } from '@/features/editor/hooks/useImagePattern';
 import { ImageControlOverlay } from '@/features/editor/components/canvas/layout/ImageHoverLayout';
 import { isImageElement, hasAssetImage } from '@/features/editor/lib/element-finder';
-import ImagePlaceholder from './ImagePlaceholder';
+import SlotPlaceholder from './SlotPlaceholder';
 
 interface KonvaRectProps {
   element: KonvaRectElement;
@@ -129,12 +129,8 @@ const KonvaRect = forwardRef<Konva.Rect, KonvaRectProps>(
               // Performance: fill+stroke 동시 사용 시 2x draw 방지
               perfectDrawEnabled={false}
             />
-            {/* 이미지 플레이스홀더 아이콘 (28x28, 중앙 배치) */}
             {showPlaceholder && (
-              <ImagePlaceholder
-                x={element.x + element.width / 2 - 14}
-                y={element.y + element.height / 2 - 14}
-              />
+              <SlotPlaceholder x={element.x} y={element.y} width={element.width} height={element.height} blank={!storeAssetId} />
             )}
           </Group>
       </ImageControlOverlay>

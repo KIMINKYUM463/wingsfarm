@@ -1,6 +1,7 @@
 import 'server-only';
 import { ApiError } from './http';
 import { getGeminiApiKey } from './settings';
+import { parseVideoResponse, videoRequestBody, type ParsedVideo, type VideoAspect } from './media/motion';
 import { loadFile, mimeFromPath, toStoragePath } from './storage';
 
 /**
@@ -95,7 +96,40 @@ export class GeminiClient {
     if (!image) throw new ApiError(503, '이미지가 생성되지 않았습니다. 다시 시도해주세요.');
     return { mimeType: image.mimeType || 'image/png', data: Buffer.from(image.data, 'base64') };
   }
+
+  /** 사진 → 짧은 영상 (Gemini Omni, Interactions API · 1~3분 걸림) → MP4 */
+  async generateVideo(image: InlineImage, prompt: string, aspect: VideoAspect) {
+    const res = await fetch(`${API}/interactions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this.apiKey },
+      body: JSON.stringify(videoRequestBody(image, prompt, aspect)),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(VIDEO_TIMEOUT_MS),
+    });
+    const body = (await res.json().catch(() => ({}))) as GeminiResponse;
+    if (!res.ok) throw toApiError(res.status, body);
+    let video: ParsedVideo;
+    try {
+      video = parseVideoResponse(body);
+    } catch (err) {
+      throw new ApiError(503, `AI 영상: ${err instanceof Error ? err.message : '응답을 해석하지 못했어요'}`);
+    }
+    return video.kind === 'data' ? Buffer.from(video.data, 'base64') : this.downloadVideo(video.uri);
+  }
+
+  /** 큰 영상은 주소로 오고, 처리가 끝날 때까지 잠깐 기다려야 받을 수 있다 */
+  private async downloadVideo(uri: string) {
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const res = await fetch(uri, { headers: { 'x-goog-api-key': this.apiKey }, cache: 'no-store', signal: AbortSignal.timeout(60_000) });
+      if (res.ok && res.headers.get('content-type')?.startsWith('video/')) return Buffer.from(await res.arrayBuffer());
+      await new Promise((resolve) => setTimeout(resolve, 5_000));
+    }
+    throw new ApiError(503, 'AI 영상을 내려받지 못했어요. 다시 시도해주세요.');
+  }
 }
+
+/** undici 기본 응답 대기(300초)보다 조금 짧게 — 넘으면 실패로 처리하고 줌·이동으로 대신한다 */
+const VIDEO_TIMEOUT_MS = 290_000;
 
 export async function requireGemini() {
   const apiKey = await getGeminiApiKey();

@@ -4,6 +4,7 @@ import type { ProjectFrame } from '@/features/editor/types';
 import type { Project } from '@/features/projects/types';
 import type { KeywordGroup } from '@/features/detail-page/types';
 import type { DraftPalette } from '@/shared/types/draft';
+import type { HeroMotionInfo } from '@/shared/types/heroMotion';
 import type { DesignStyleId } from '@/shared/lib/designStyles';
 import { normalizePalette, recolorTree, type PaletteNode } from '@/shared/lib/palette';
 import { resolveAssetUrls } from './assets';
@@ -56,7 +57,29 @@ export interface ProjectRecord {
   favorite?: boolean;
   /** 휴지통으로 옮긴 시각 */
   deletedAt?: string;
+  /** 맨 위 움직이는 컷 */
+  heroMotion?: HeroMotionRecord;
 }
+
+export type HeroMotionRecord = Omit<HeroMotionInfo, 'clipUrl'> & { clipPath: string | null; width: number; height: number };
+
+/** 서버가 꺼져 작업이 끊기면 pending으로 남는다 → 일정 시간이 지나면 실패로 보여준다 */
+const STALE_MOTION_MS = 10 * 60 * 1000;
+
+export const isMotionRunning = (motion: HeroMotionRecord | undefined) =>
+  motion?.status === 'pending' && Date.now() - Date.parse(motion.updatedAt) < STALE_MOTION_MS;
+
+export const toHeroMotionInfo = (motion: HeroMotionRecord | undefined): HeroMotionInfo | null => {
+  if (!motion) return null;
+  const { clipPath, width: _w, height: _h, ...info } = motion;
+  const stale = motion.status === 'pending' && !isMotionRunning(motion);
+  return {
+    ...info,
+    status: stale ? 'failed' : motion.status,
+    notice: stale ? '작업이 중간에 멈췄어요. 다시 만들어 주세요.' : motion.notice,
+    clipUrl: clipPath ? publicUrl(clipPath) : null,
+  };
+};
 
 const projectPath = (id: string) => `projects/${id}.json`;
 
@@ -213,6 +236,7 @@ export async function toProjectDetail(project: ProjectRecord) {
     categoryName: findCategory(project.categoryId)?.name ?? '',
     palette: project.draftLayout?.palette ?? null,
     originalPalette: project.draftLayout ? (project.draftLayout.originalPalette ?? project.draftLayout.palette) : null,
+    heroMotion: toHeroMotionInfo(project.heroMotion),
   };
 }
 
@@ -273,6 +297,8 @@ export async function duplicateProject(id: string) {
     createdAt: now,
     updatedAt: now,
     frames: [],
+    // 사본은 요소 id가 새로 발급돼 원본의 움직이는 컷과 연결되지 않는다
+    heroMotion: undefined,
   };
   copy.frames = source.frames.map((frame) => {
     const frameId = newId();

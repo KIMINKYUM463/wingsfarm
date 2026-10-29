@@ -2,6 +2,7 @@ import 'server-only';
 import { generateNKeysBetween } from 'fractional-indexing';
 import pLimit from 'p-limit';
 import type { ProjectFrame } from '@/features/editor/types';
+import { effectiveHeroMotion } from '@/shared/lib/draftMedia';
 import type { DraftCut, DraftRecord, DraftSection } from '@/shared/types/draft';
 import { createAssetFromBuffer } from '../assets';
 import { IMAGE_RULES } from '../ai';
@@ -11,14 +12,16 @@ import { ApiError, badRequest } from '../http';
 import { saveNewProject } from '../projects';
 import { loadFile, mimeFromPath } from '../storage';
 import { newId, nowIso } from '../store';
-import { getDraft, sectionFrames, updateDraft } from './repo';
+import { startHeroMotion } from '../media/heroMotion';
+import { getDraft, heroCutOf, sectionFrames, updateDraft } from './repo';
 
 /**
  * 초안 → 상세페이지 프로젝트 생성 Job
  *
  * - 카피는 초안에서 승인한 그대로 들어간다 (생성 단계에서 다시 쓰지 않음)
  * - "내 사진" 컷은 올린 사진을 그대로 배치 (AI 비용 없음)
- * - "AI 생성" 컷은 고른 참고 사진으로 Gemini가 연출 (실패하면 내 사진으로 대체)
+ * - "AI 생성" 컷은 고른 참고 사진으로 Gemini가 연출 (실패하면 빈 자리)
+ * - "빈 자리" 컷은 비워 둔다 (에디터에서 직접 넣기)
  * - 섹션 단위로 n/N 진행 상황을 기록 → 화면은 폴링으로 표시
  */
 const sectionLimit = pLimit(2);
@@ -63,6 +66,7 @@ function imagePrompt(ctx: GenerateContext, cut: DraftCut, hasStyleRef: boolean) 
     `Product: ${input.productName}.`,
     identity && `Product details: ${[identity.colorFinish, identity.material, identity.scale].filter(Boolean).join(', ')}.`,
     `Scene: ${cut.scene}. Direction (Korean): ${cut.plan || cut.scene}.`,
+    'Keep the product exactly as in the reference photos (color, shape, size, count, packaging); only the setting, props, lighting and camera distance change.',
     cut.modelAllowed && input.model.enabled
       ? `A person may appear naturally${input.model.description ? `: ${input.model.description}` : ''}.`
       : 'No people and no hands in the image.',
@@ -102,19 +106,18 @@ async function aiCutAsset(ctx: GenerateContext, section: DraftSection, cut: Draf
   return asset.id;
 }
 
+/** 빈 자리는 그대로 두고, AI 사진이 실패해도 올린 사진으로 바꾸지 않는다 (에디터에서 다시 만들기) */
 async function fillSlot(ctx: GenerateContext, section: DraftSection, slot: FrameNode, sectionIndex: number) {
   const cut = section.cuts.find((c) => c.id === slot.cutId);
-  if (!cut) return;
-  const ownPath = ctx.draft.input.productImagePaths[cut.photoIndexes[0] ?? 0];
-  let assetId: string | null = null;
-  if (cut.source === 'ai' && ctx.gemini) {
-    assetId = await imageLimit(() => aiCutAsset(ctx, section, cut, slot, sectionIndex)).catch((err) => {
-      console.error('[lever] cut image failed', cut.id, err);
-      ctx.failedCuts += 1;
-      return null;
-    });
-  }
-  assetId ??= await ownPhotoAsset(ctx, ownPath);
+  if (!cut || cut.source === 'blank') return;
+  const assetId =
+    cut.source === 'own'
+      ? await ownPhotoAsset(ctx, ctx.draft.input.productImagePaths[cut.photoIndexes[0] ?? 0])
+      : await imageLimit(() => aiCutAsset(ctx, section, cut, slot, sectionIndex)).catch((err) => {
+          console.error('[lever] cut image failed', cut.id, err);
+          ctx.failedCuts += 1;
+          return null;
+        });
   if (assetId) slot.assetId = assetId;
 }
 
@@ -211,9 +214,12 @@ async function runGenerate(draftId: string) {
       generateProgress: {
         current: total,
         total,
-        message: ctx.failedCuts ? `완료 · AI 사진 ${ctx.failedCuts}장은 만들지 못해 올린 사진으로 대신 넣었어요` : '완료',
+        message: ctx.failedCuts ? `완료 · AI 사진 ${ctx.failedCuts}장은 만들지 못해 빈 자리로 두었어요. 에디터에서 다시 만들 수 있어요` : '완료',
       },
     }));
+    // 움직이는 컷은 페이지를 연 뒤에도 이어서 만든다 (AI 영상은 1~3분)
+    const motion = effectiveHeroMotion(input.heroMotion, heroCutOf(built)?.source ?? null);
+    if (motion !== 'off') await startHeroMotion(ctx.projectId, motion).catch((err) => console.error('[lever] hero motion not started', err));
   } catch (err) {
     console.error('[lever] draft generate failed', err);
     const message = err instanceof ApiError ? err.message : '상세페이지를 만들지 못했어요. 다시 시도해주세요.';

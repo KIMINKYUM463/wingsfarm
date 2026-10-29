@@ -91,6 +91,14 @@ export const isImageElement = (element: { name?: string; type?: string }): boole
   return element.type === 'path' || element.type === 'rect';
 };
 
+/** 사진이 아직 없는 이미지 자리 (숨긴 요소 제외) — 다운로드 전 안내·빈 자리 이동에 사용 */
+export const findBlankImageSlots = (elements: KonvaElement[]): KonvaElement[] =>
+  elements.flatMap((element) => {
+    if (element.visible === false) return [];
+    if (isKonvaGroupElement(element) || isKonvaFrameElement(element)) return findBlankImageSlots(element.children);
+    return isImageElement(element) && !('assetId' in element && element.assetId) ? [element] : [];
+  });
+
 /**
  * 이미지가 채워진 도형인지 확인 (그래픽 패널에서 편집)
  * - assetId가 있는 rect

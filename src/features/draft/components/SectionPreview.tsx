@@ -9,7 +9,10 @@ import type { PreviewNode } from '../api';
  * 문구는 foreignObject로 그려 실제와 같은 어절 줄바꿈을 보여 준다.
  * 사진 칸은 "내 사진" 컷이면 그 사진을, "AI 생성" 컷이면 회색 칸 + AI 표시.
  */
-function SectionPreview({ frame, cutImage, width = 200 }: { frame: PreviewNode; cutImage: (cutId: string) => string | null; width?: number }) {
+/** 컷 미리보기: 올린 사진 / AI가 만들 자리 / 빈 자리 */
+export type CutPreview = { src: string } | 'ai' | 'blank';
+
+function SectionPreview({ frame, cutImage, width = 200 }: { frame: PreviewNode; cutImage: (cutId: string) => CutPreview; width?: number }) {
   const w = Number(frame.width) || 860;
   const h = Number(frame.height) || 600;
   useWebFonts(frame);
@@ -39,7 +42,7 @@ function useWebFonts(frame: PreviewNode) {
   }, [fonts]);
 }
 
-function PreviewElement({ node, cutImage }: { node: PreviewNode; cutImage: (cutId: string) => string | null }) {
+function PreviewElement({ node, cutImage }: { node: PreviewNode; cutImage: (cutId: string) => CutPreview }) {
   const { x = 0, y = 0, width = 0, height = 0 } = node;
   if (node.type === 'text') {
     return (
@@ -63,21 +66,29 @@ function PreviewElement({ node, cutImage }: { node: PreviewNode; cutImage: (cutI
     );
   }
   if (node.name === '_image') {
-    const src = node.cutId ? cutImage(node.cutId) : null;
+    const view = node.cutId ? cutImage(node.cutId) : 'ai';
     const clipId = `clip-${node.id}`;
+    const label = (text: string, fill: string) => (
+      <text x={x + width / 2} y={y + height / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.min(64, height / 4)} fontWeight={700} fill={fill}>
+        {text}
+      </text>
+    );
     return (
       <g>
         <clipPath id={clipId}>
           <rect x={x} y={y} width={width} height={height} rx={node.cornerRadius} />
         </clipPath>
-        {src ? (
-          <image href={src} x={x} y={y} width={width} height={height} preserveAspectRatio="xMidYMid slice" clipPath={`url(#${clipId})`} />
+        {typeof view === 'object' ? (
+          <image href={view.src} x={x} y={y} width={width} height={height} preserveAspectRatio="xMidYMid slice" clipPath={`url(#${clipId})`} />
+        ) : view === 'blank' ? (
+          <>
+            <rect x={x} y={y} width={width} height={height} rx={node.cornerRadius} fill="#F3F4F6" stroke="#9CA3AF" strokeWidth={6} strokeDasharray="24 16" />
+            {label('사진 자리', '#9CA3AF')}
+          </>
         ) : (
           <>
             <rect x={x} y={y} width={width} height={height} rx={node.cornerRadius} fill="#D9DEE5" />
-            <text x={x + width / 2} y={y + height / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.min(64, height / 4)} fontWeight={700} fill="#8A94A3">
-              ✦ AI
-            </text>
+            {label('✦ AI', '#8A94A3')}
           </>
         )}
       </g>

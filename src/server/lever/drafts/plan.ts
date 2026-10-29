@@ -1,5 +1,6 @@
 import 'server-only';
 import pLimit from 'p-limit';
+import { defaultCutSource, sceneIdeas } from '@/shared/lib/draftMedia';
 import type { DraftAnalysis, DraftInput, DraftPlan, DraftProgress, DraftRecord, DraftSection, PhotoAnalysis } from '@/shared/types/draft';
 import { CATEGORIES, findCategory } from '../catalog/categories';
 import { derivePalette, normalizePalette, palettePresets, TONE_PRESETS } from '../catalog/palette';
@@ -31,7 +32,9 @@ const IMAGE_PLAN_RULES = `컷(사진) 계획 규칙:
 - scene: 짧은 장면 이름(15자 이내). plan: 배경·구도·조명·소품을 구체적으로 한두 문장(한국어).
 - 상품 외형·색·포장·수량은 사진 그대로. 내부 구조·제조 시설·사용 전후 효과는 지어내지 않는다. 광고 문구는 컷이 아니라 카피에 쓴다.
 - photoIndexes: 참고할 상품 사진 번호(0부터). role: hero/proof/comparison/benefit/detail 중 하나.
-- 실제 증거가 되는 컷(proof, detail)은 올린 사진을 그대로 쓰는 편이 좋다.`;
+- 장면은 섹션마다 달라야 한다. 같은 각도·같은 배경의 반복 컷 금지. 배경·소품·거리(전경/중경/클로즈업)·시간대를 바꿔 다양하게.
+- 장면이 달라도 상품의 색·모양·크기·수량·포장은 사진과 똑같이 유지한다(과장 연출 금지).
+- 실제 증거가 되는 컷(proof)은 올린 사진을 그대로 쓰는 편이 좋다.`;
 
 // ===== 진행 표시 =====
 
@@ -166,7 +169,13 @@ function photoList(ctx: SectionContext) {
     .join('\n');
 }
 
-async function writeSection(gemini: GeminiClient, ctx: SectionContext, type: SectionType, neighbors: string): Promise<DraftSection> {
+/** 섹션 위치마다 다른 장면 후보를 줘서 페이지 전체 장면이 겹치지 않게 한다 */
+const sceneHint = (ctx: SectionContext, position: number) => {
+  const ideas = sceneIdeas(ctx.input.categoryId);
+  return `이번 섹션 컷 장면 후보(다른 섹션과 겹치지 않게 이 방향 우선): ${ideas[position % ideas.length]}, ${ideas[(position + 3) % ideas.length]}`;
+};
+
+async function writeSection(gemini: GeminiClient, ctx: SectionContext, type: SectionType, neighbors: string, position: number): Promise<DraftSection> {
   const [minItems, maxItems] = type.items;
   const cutRule =
     type.cuts === 'none'
@@ -192,6 +201,7 @@ ${ctx.analysis ? `[사진 분석] 크기감 ${ctx.analysis.identity.scale} / 용
 작성 가이드: ${type.guide}
 항목 수: ${minItems}~${maxItems}개
 ${cutRule}
+${type.cuts === 'none' ? '' : sceneHint(ctx, position)}
 ${modelRule}
 [페이지 흐름] ${neighbors}
 
@@ -205,11 +215,11 @@ JSON 형식:
  "items":[{"title":{"text":"항목 제목","evidence":["..."]} 또는 null,"text":{"text":"항목 내용","evidence":["..."]}}],
  "cuts":[{"scene":"장면 이름","plan":"촬영 지시문","role":"hero","photoIndexes":[0],"itemIndex":null,"modelAllowed":false}]}`,
   );
-  return finalizeSection(result, type, ctx);
+  return finalizeSection(result, type, ctx, position);
 }
 
-/** AI 결과를 정리: 항목·컷 수를 섹션 종류에 맞추고 기본 컷 출처(내 사진/AI)를 정한다 */
-function finalizeSection(raw: Record<string, unknown>, type: SectionType, ctx: SectionContext): DraftSection {
+/** AI 결과를 정리: 항목·컷 수를 섹션 종류에 맞추고 기본 컷 출처(AI/내 사진/빈 자리)를 정한다 */
+function finalizeSection(raw: Record<string, unknown>, type: SectionType, ctx: SectionContext, position: number): DraftSection {
   const section = sanitizeSection({ ...raw, id: newId(), typeId: type.id, cuts: [] }, ctx.input, ctx.evidence)!;
   section.items = section.items.slice(0, type.items[1]);
   const photoCount = ctx.input.productImagePaths.length;
@@ -219,8 +229,9 @@ function finalizeSection(raw: Record<string, unknown>, type: SectionType, ctx: S
     const cut = sanitizeCut(rawCuts[i], photoCount, section.items.length);
     if (type.cuts === 'perItem') cut.itemIndex = i;
     if (type.cuts === 'one') cut.itemIndex = null;
-    if (!(rawCuts[i] as { photoIndexes?: unknown })?.photoIndexes && photoCount) cut.photoIndexes = [i % photoCount];
-    cut.source = photoCount && (cut.role === 'proof' || cut.role === 'detail') ? 'own' : 'ai';
+    // 참고 사진도 섹션마다 돌려 써서 같은 사진만 반복되지 않게
+    if (!(rawCuts[i] as { photoIndexes?: unknown })?.photoIndexes && photoCount) cut.photoIndexes = [(position + i) % photoCount];
+    cut.source = defaultCutSource(ctx.input.imageMode, cut.role, photoCount);
     if (!ctx.input.model.enabled || !type.modelCapable) cut.modelAllowed = false;
     return cut;
   });
@@ -228,9 +239,9 @@ function finalizeSection(raw: Record<string, unknown>, type: SectionType, ctx: S
 }
 
 /** AI가 실패했을 때 판매자가 직접 채울 수 있는 빈 섹션 */
-function placeholderSection(type: SectionType, ctx: SectionContext, reason: string): DraftSection {
+function placeholderSection(type: SectionType, ctx: SectionContext, position: number, reason: string): DraftSection {
   const items = Array.from({ length: type.items[0] }, (_, i) => ({ title: { text: `항목 ${i + 1}`, evidence: [] }, text: { text: '[입력 필요]', evidence: [] } }));
-  const section = finalizeSection({ title: { text: type.name, evidence: [] }, items }, type, ctx);
+  const section = finalizeSection({ title: { text: type.name, evidence: [] }, items }, type, ctx, position);
   section.warnings = [reason];
   return section;
 }
@@ -244,9 +255,9 @@ async function writeSections(draftId: string, gemini: GeminiClient, ctx: Section
     types.map((type, i) =>
       sectionLimit(async () => {
         const neighbors = names.map((n, j) => (j === i ? `[${n}]` : n)).join(' → ');
-        const section = await writeSection(gemini, ctx, type, neighbors).catch((err) => {
+        const section = await writeSection(gemini, ctx, type, neighbors, i).catch((err) => {
           console.error('[lever] draft section failed', type.id, err);
-          return placeholderSection(type, ctx, 'AI가 이 섹션 문구를 쓰지 못했어요. 직접 입력해 주세요.');
+          return placeholderSection(type, ctx, i, 'AI가 이 섹션 문구를 쓰지 못했어요. 직접 입력해 주세요.');
         });
         done += 1;
         await setProgress(draftId, { step: 'copy', message: '전환율을 높이는 카피를 쓰고 있어요', current: done, total: types.length });
@@ -364,13 +375,15 @@ export async function addSection(draftId: string, body: { typeId?: string; index
 
   const ctx = sectionContext(draft.input, draft.plan.analysis);
   const names = draft.plan.sections.map((s) => findSectionType(draft.input.categoryId, s.typeId)?.name ?? s.typeId);
+  const clampIndex = (length: number) => (Number.isInteger(body.index) ? Math.min(Math.max(Number(body.index), 0), length) : length);
+  const position = clampIndex(names.length);
   const section = await requireGemini()
-    .then((gemini) => writeSection(gemini, ctx, type, names.join(' → ')))
-    .catch(() => placeholderSection(type, ctx, 'AI 문구 작성에 실패해 빈 섹션을 넣었어요. 직접 입력해 주세요.'));
+    .then((gemini) => writeSection(gemini, ctx, type, names.join(' → '), position))
+    .catch(() => placeholderSection(type, ctx, position, 'AI 문구 작성에 실패해 빈 섹션을 넣었어요. 직접 입력해 주세요.'));
 
   return updateDraft(draftId, (d) => {
     const sections = [...(d.plan?.sections ?? [])];
-    const index = Number.isInteger(body.index) ? Math.min(Math.max(Number(body.index), 0), sections.length) : sections.length;
+    const index = clampIndex(sections.length);
     sections.splice(index, 0, section);
     return { ...d, plan: { ...d.plan!, sections }, revision: d.revision + 1 };
   });

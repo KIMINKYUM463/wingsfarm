@@ -7,7 +7,8 @@ import { useRef, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { PRODUCT_CATEGORIES } from '@/shared/constants/productCategories';
 import { ROUTES } from '@/shared/constants/routes';
-import { DRAFT_LIMITS, type DraftInput } from '@/shared/types/draft';
+import { formatCost, HERO_VIDEO_USD, MEDIA_COST } from '@/shared/lib/draftMedia';
+import { DRAFT_LIMITS, type DraftInput, type HeroMotion } from '@/shared/types/draft';
 import { draftApi, type DraftDto } from '../api';
 import { useAutosave, useDraftMutation } from '../hooks';
 import { PlanGuideModal } from './PlanGuideModal';
@@ -179,6 +180,8 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
       >
         <ImageUploader paths={input.productImagePaths} onChange={(v) => update('productImagePaths', v)} max={DRAFT_LIMITS.productImages} />
       </Field>
+
+      <ImageModeField input={input} update={update} />
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-[#AFDCFF] bg-[#F7FBFF] p-4">
         <div className="flex-1 text-sm text-gray-700">
@@ -415,6 +418,53 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
 
       {draftId && <PlanGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} draftId={draftId} />}
     </div>
+  );
+}
+
+const MOTION_OPTIONS: { value: HeroMotion; title: string; description: string }[] = [
+  { value: 'pan', title: '천천히 줌·이동', description: '맨 위 사진이 살아 움직이듯 · 무료' },
+  { value: 'video', title: '✦ AI 영상', description: `과즙·김·물방울까지 움직여요 · ${MEDIA_COST.heroVideoSeconds}초 ${formatCost(HERO_VIDEO_USD)}` },
+  { value: 'off', title: '움직이지 않게', description: '정지 사진으로 둬요' },
+];
+
+/** 사진 연출: AI로 장면 사진 만들기 / 사진 자리 비워두기 + 맨 위 움직이는 컷 */
+function ImageModeField({ input, update }: { input: DraftInput; update: <K extends keyof DraftInput>(key: K, value: DraftInput[K]) => void }) {
+  const photoCount = input.productImagePaths.length;
+  return (
+    <Field label="사진 연출" required hint="기획 초안에서 컷마다 AI 생성 · 내 사진 · 비워두기를 다시 고를 수 있어요.">
+      <div className="flex gap-2">
+        <ChoiceCard
+          selected={input.imageMode === 'ai'}
+          onClick={() => update('imageMode', 'ai')}
+          title="✦ AI로 연출 사진 만들기"
+          description={`올린 사진${photoCount ? ` ${photoCount}장` : ''}을 참고해 섹션마다 다른 장면(산지·수확·단면·플레이팅 등)으로 만들어요 · 장당 ${formatCost(MEDIA_COST.aiImageUsd)}`}
+        />
+        <ChoiceCard
+          selected={input.imageMode === 'blank'}
+          onClick={() => update('imageMode', 'blank')}
+          title="사진 자리 비워두기"
+          description="AI 사진 없이 빈 자리로 두고, 에디터에서 직접 사진을 넣어요 · 이미지 비용 없음"
+        />
+      </div>
+      {input.imageMode === 'ai' && (
+        <div className="flex flex-col gap-2 rounded-xl bg-gray-50 p-3">
+          <div className="text-[13px] font-semibold text-gray-800">
+            맨 위 움직이는 컷 <span className="font-normal text-gray-500">— 스마트스토어·쿠팡에 GIF로 올려 첫 화면에서 눈길을 끌어요</span>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {MOTION_OPTIONS.map((option) => (
+              <ChoiceCard
+                key={option.value}
+                selected={input.heroMotion === option.value}
+                onClick={() => update('heroMotion', option.value)}
+                title={option.title}
+                description={option.description}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </Field>
   );
 }
 

@@ -16,6 +16,7 @@ import { useBeforeUnload } from '@/features/editor/hooks/useBeforeUnload';
 import { useAiGuideModal } from '@/features/editor/hooks/useAiGuideModal';
 import { useEditorKeyboard } from '@/features/editor/hooks/useEditorKeyboard';
 import { FrameLoadingPlaceholder } from '@/features/editor/components/FrameLoadingPlaceholder';
+import { EditorMediaBar } from '@/features/editor/components/overlay/EditorMediaBar';
 import type { KonvaFrameElement } from '@/shared/types/konva';
 
 interface KonvaEditorProps {
@@ -86,6 +87,7 @@ export function KonvaEditor({
       <LeftSideBar />
       <FrameListPanel />
       <AiChatPanel />
+      {!isLoading && <EditorMediaBar projectId={projectId} />}
       <div
         className={clsx(
           'relative z-0 flex-1 overflow-hidden pb-(--footer-h)',

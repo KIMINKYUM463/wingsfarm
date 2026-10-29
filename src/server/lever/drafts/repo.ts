@@ -15,6 +15,7 @@ import {
   type SectionTypeInfo,
 } from '@/shared/types/draft';
 import { normalizeDesignStyle } from '@/shared/lib/designStyles';
+import { effectiveHeroMotion, estimateCostUsd, isHeroMotion, normalizeCutSource } from '@/shared/lib/draftMedia';
 import { findCategory } from '../catalog/categories';
 import { describeWarnings, findUnsupportedClaims } from '../catalog/factGuard';
 import { normalizePalette, palettePresets } from '../catalog/palette';
@@ -30,7 +31,8 @@ const draftPath = (id: string) => `drafts/${id}.json`;
 export async function getDraft(id: string) {
   const draft = await readJson<DraftRecord | null>(draftPath(id), null);
   if (!draft) throw notFound('초안을 찾을 수 없습니다.');
-  return draft;
+  // 이전 버전에서 만든 초안에는 새 입력 항목(사진 연출 등)이 없다
+  return { ...draft, input: { ...emptyDraftInput(), ...draft.input } };
 }
 
 export const saveDraft = (draft: DraftRecord) => writeJson(draftPath(draft.id), draft);
@@ -99,6 +101,8 @@ export function sanitizeInput(raw: unknown, base: DraftInput = emptyDraftInput()
     reuseSourceProjectId: typeof r.reuseSourceProjectId === 'string' ? r.reuseSourceProjectId : null,
     productName: str(r.productName, DRAFT_LIMITS.productName),
     productImagePaths: imagePaths(r.productImagePaths, DRAFT_LIMITS.productImages),
+    imageMode: r.imageMode === 'blank' ? 'blank' : 'ai',
+    heroMotion: isHeroMotion(r.heroMotion) ? r.heroMotion : base.heroMotion,
     categoryId: findCategory(r.categoryId) ? String(r.categoryId) : '',
     features: str(r.features, DRAFT_LIMITS.features),
     options: pairs(r.options, ['name', 'spec'], DRAFT_LIMITS.options, 100),
@@ -230,7 +234,7 @@ export function sanitizeCut(raw: unknown, photoCount: number, itemCount: number)
     scene: str(c.scene, 60).trim() || '상품 컷',
     plan: str(c.plan, 500).trim(),
     role: ROLES.includes(c.role as CutRole) ? (c.role as CutRole) : 'detail',
-    source: c.source === 'own' && photoCount > 0 ? 'own' : 'ai',
+    source: normalizeCutSource(c.source, photoCount),
     photoIndexes: indexes.length || !photoCount ? indexes : [0],
     modelAllowed: bool(c.modelAllowed),
     itemIndex,
@@ -297,20 +301,34 @@ export function sectionFrames(plan: DraftPlan, categoryId: string) {
   return frames;
 }
 
-export function estimatePlan(plan: DraftPlan | null, categoryId: string): DraftEstimate {
-  if (!plan) return { sectionCount: 0, heightPx: 0, aiCutCount: 0, ownCutCount: 0 };
-  const frames = sectionFrames(plan, categoryId);
+const collectCutIds = (frame: FrameNode) => (frame.children ?? []).map((n) => n.cutId).filter((id): id is string => typeof id === 'string');
+
+/** 페이지 맨 위(가장 먼저 나오는) 사진 자리의 컷 — 움직이는 컷의 원본 */
+export function heroCutOf(frames: ReturnType<typeof sectionFrames>) {
+  for (const { section, frame } of frames) {
+    const cutId = collectCutIds(frame)[0];
+    if (cutId) return section.cuts.find((c) => c.id === cutId) ?? null;
+  }
+  return null;
+}
+
+export function estimatePlan(plan: DraftPlan | null, input: DraftInput): DraftEstimate {
+  if (!plan) return { sectionCount: 0, heightPx: 0, aiCutCount: 0, ownCutCount: 0, blankCutCount: 0, heroMotion: 'off', costUsd: 0 };
+  const frames = sectionFrames(plan, input.categoryId);
   const cutIds = new Set(frames.flatMap(({ frame }) => collectCutIds(frame)));
   const usedCuts = plan.sections.flatMap((s) => s.cuts).filter((c) => cutIds.has(c.id));
+  const count = (source: DraftCut['source']) => usedCuts.filter((c) => c.source === source).length;
+  const heroMotion = effectiveHeroMotion(input.heroMotion, heroCutOf(frames)?.source ?? null);
   return {
     sectionCount: plan.sections.length,
     heightPx: frames.reduce((sum, { frame }) => sum + Number(frame.height ?? 0), 0),
-    aiCutCount: usedCuts.filter((c) => c.source === 'ai').length,
-    ownCutCount: usedCuts.filter((c) => c.source === 'own').length,
+    aiCutCount: count('ai'),
+    ownCutCount: count('own'),
+    blankCutCount: count('blank'),
+    heroMotion,
+    costUsd: estimateCostUsd(count('ai'), heroMotion),
   };
 }
-
-const collectCutIds = (frame: FrameNode) => (frame.children ?? []).map((n) => n.cutId).filter((id): id is string => typeof id === 'string');
 
 // ===== 응답 =====
 
@@ -322,7 +340,7 @@ export function toDraftDto(draft: DraftRecord) {
     ...draft,
     imageUrls: Object.fromEntries(allImagePaths(draft).map((p) => [p, publicUrl(p)])),
     previews,
-    estimate: estimatePlan(draft.plan, draft.input.categoryId),
+    estimate: estimatePlan(draft.plan, draft.input),
     sectionTypes: draft.input.categoryId ? sectionTypeInfos(draft.input, draft.plan?.analysis?.reviewQuotes) : [],
   };
 }

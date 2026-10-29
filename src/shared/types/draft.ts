@@ -8,6 +8,12 @@
 import type { DesignStyleId } from '../lib/designStyles';
 
 export type DraftLength = 'short' | 'long';
+/** ai: 올린 사진을 참고해 장면별 연출 사진 생성 / blank: 사진 자리를 비워 두고 에디터에서 직접 넣기 */
+export type DraftImageMode = 'ai' | 'blank';
+/** 맨 위 사진을 움직이는 컷(GIF)으로 — pan: 무료 줌·이동 / video: AI 영상(유료) */
+export type HeroMotion = 'off' | 'pan' | 'video';
+/** ai: AI가 참고 사진으로 연출 / own: 올린 사진 그대로 / blank: 빈 자리 */
+export type CutSource = 'ai' | 'own' | 'blank';
 export type DraftStatus = 'editing' | 'planning' | 'plan_failed' | 'ready' | 'generating' | 'generate_failed' | 'completed';
 export type PaletteRole = 'main' | 'point' | 'bgLight' | 'bgDark';
 export type DraftPalette = Record<PaletteRole, string>;
@@ -27,6 +33,8 @@ export interface DraftInput {
   reuseSourceProjectId: string | null;
   productName: string;
   productImagePaths: string[];
+  imageMode: DraftImageMode;
+  heroMotion: HeroMotion;
   categoryId: string;
   features: string;
   options: DraftOption[];
@@ -68,8 +76,7 @@ export interface DraftCut {
   /** 촬영 지시문 (배경·구도·조명) */
   plan: string;
   role: CutRole;
-  /** ai: AI가 참고 사진으로 연출 / own: 올린 사진 그대로 */
-  source: 'ai' | 'own';
+  source: CutSource;
   /** 참고할 상품 사진 (productImagePaths의 인덱스) */
   photoIndexes: number[];
   modelAllowed: boolean;
@@ -185,6 +192,11 @@ export interface DraftEstimate {
   heightPx: number;
   aiCutCount: number;
   ownCutCount: number;
+  blankCutCount: number;
+  /** 실제로 만들 움직이는 컷 (맨 위 사진 자리가 비면 off) */
+  heroMotion: HeroMotion;
+  /** Gemini 예상 비용 (달러) */
+  costUsd: number;
 }
 
 export const emptyDraftInput = (): DraftInput => ({
@@ -192,6 +204,8 @@ export const emptyDraftInput = (): DraftInput => ({
   reuseSourceProjectId: null,
   productName: '',
   productImagePaths: [],
+  imageMode: 'ai',
+  heroMotion: 'pan',
   categoryId: '',
   features: '',
   options: [],

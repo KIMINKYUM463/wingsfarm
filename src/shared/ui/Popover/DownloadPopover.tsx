@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import clsx from 'clsx';
 import Button from '@/shared/ui/Button/Button';
 import { useImageDownload } from '@/features/editor/hooks/useImageDownload';
+import { findBlankImageSlots } from '@/features/editor/lib/element-finder';
 import {
   CANVAS_WIDTH,
   estimateBytes,
@@ -86,6 +87,13 @@ const DownloadPopover = () => {
   const scale = widthValid ? width / CANVAS_WIDTH : 0;
   const totalHeight = Math.round(heights.reduce((sum, h) => sum + h, 0) * scale);
   const canDownload = widthValid && Boolean(pageIndexes?.length) && !isDownloading;
+  const blankCount = (pageIndexes ?? []).reduce((sum, i) => sum + (frames[i] ? findBlankImageSlots(frames[i].children).length : 0), 0);
+
+  const startDownload = () => {
+    if (!pageIndexes) return;
+    if (blankCount && !window.confirm(`빈 사진 자리 ${blankCount}곳이 있어요. 연회색 박스로 그대로 받을까요?\n(취소하고 에디터 위쪽 "빈 사진 자리" 버튼으로 이동할 수 있어요)`)) return;
+    download({ format: effectiveFormat, width, quality, pageIndexes, bundle: effectiveFormat === 'html' ? 'zip' : bundle });
+  };
 
   const choosePlatform = (id: PlatformId) => {
     setPlatform(id);
@@ -207,18 +215,11 @@ const DownloadPopover = () => {
             </dd>
           </div>
         </dl>
-        <Button
-          className="btn-primary w-full"
-          onClick={() =>
-            pageIndexes &&
-            download({ format: effectiveFormat, width, quality, pageIndexes, bundle: effectiveFormat === 'html' ? 'zip' : bundle })
-          }
-          isLoading={isDownloading}
-          disabled={!canDownload}
-        >
+        {blankCount > 0 && <p className="mb-2 text-xs text-amber-700">빈 사진 자리 {blankCount}곳 — 그대로 받으면 연회색 박스로 나와요</p>}
+        <Button className="btn-primary w-full" onClick={startDownload} isLoading={isDownloading} disabled={!canDownload}>
           <span className="p-bold">다운로드</span>
         </Button>
-        <p className="mt-2 text-center text-xs text-gray-400">다운로드는 무료 · 무제한이에요</p>
+        <p className="mt-2 text-center text-xs text-gray-400">다운로드는 무료 · 무제한이에요 · 움직이는 컷 GIF는 에디터 위쪽 ▶ 버튼에서 받아요</p>
       </div>
     </div>
   );

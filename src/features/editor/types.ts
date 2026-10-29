@@ -1,5 +1,6 @@
 import type { KonvaFrameElement, FrameStatus } from '@/shared/types/konva';
 import type { DraftPalette } from '@/shared/types/draft';
+import type { HeroMotionInfo } from '@/shared/types/heroMotion';
 
 export type { FrameStatus };
 
@@ -63,6 +64,8 @@ export interface ProjectDetailData {
   palette: DraftPalette | null;
   /** 생성 당시 팔레트 (색상 탭 "초기화") */
   originalPalette: DraftPalette | null;
+  /** 맨 위 움직이는 컷 (없으면 null) */
+  heroMotion: HeroMotionInfo | null;
 }
 
 export interface ExternalApiResponse<T> {

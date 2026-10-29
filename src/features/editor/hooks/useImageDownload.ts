@@ -52,7 +52,7 @@ const downloadFile = (href: string, fileName: string) => {
   document.body.removeChild(link);
 };
 
-const downloadBlob = (blob: Blob, fileName: string) => {
+export const downloadBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
   downloadFile(url, fileName);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -78,6 +78,71 @@ const getMainLayer = (stage: Konva.Stage): Konva.Layer | null => {
   const layers = stage.getLayers();
   return layers.length > 1 ? layers[1] : layers[0] || null;
 };
+
+const frameRect = (frame: KonvaFrameElement) => ({ x: 0, y: 0, width: frame.width || CANVAS_WIDTH, height: frame.height || 1080 });
+
+/** 편집 UI(선택·호버·빈 자리 안내)·프레임 테두리·다른 레이어를 숨기고 배율을 1로 맞춘 상태에서 render를 실행한 뒤 되돌린다 */
+export function withExportState<T>(stage: Konva.Stage, mainLayer: Konva.Layer, render: () => T): T {
+  const uiElements = EXPORT_HIDDEN.flatMap((selector) => stage.find(selector));
+  const originalVisibility = uiElements.map((node) => node.visible());
+  uiElements.forEach((node) => node.visible(false));
+  const frameBackground = mainLayer.findOne('.frame-background') as Konva.Rect | null;
+  const originalStroke = frameBackground?.strokeWidth() ?? 1;
+  frameBackground?.strokeWidth(0);
+  const allLayers = stage.getLayers();
+  const layerVisibility = allLayers.map((l) => l.visible());
+  allLayers.forEach((l) => l !== mainLayer && l.visible(false));
+  const originalTransform = { offsetX: mainLayer.offsetX(), offsetY: mainLayer.offsetY(), scaleX: mainLayer.scaleX(), scaleY: mainLayer.scaleY() };
+  mainLayer.offsetX(0);
+  mainLayer.offsetY(0);
+  mainLayer.scaleX(1);
+  mainLayer.scaleY(1);
+  stage.draw();
+  try {
+    return render();
+  } finally {
+    mainLayer.offsetX(originalTransform.offsetX);
+    mainLayer.offsetY(originalTransform.offsetY);
+    mainLayer.scaleX(originalTransform.scaleX);
+    mainLayer.scaleY(originalTransform.scaleY);
+    allLayers.forEach((l, i) => l.visible(layerVisibility[i]));
+    uiElements.forEach((node, i) => node.visible(originalVisibility[i]));
+    frameBackground?.strokeWidth(originalStroke);
+    stage.draw();
+  }
+}
+
+const EXPORT_HIDDEN = ['._hover-overlay', '._hover-outline', '._selection-ui', '._group-overlay', '._frame-overlay', '._blank-guide'];
+
+/**
+ * 움직이는 컷 GIF용 레이어 두 장 (원본 배율)
+ * - below: 사진 자리보다 아래에 그려지는 것(배경 등) — 사진 자리부터 위는 숨김
+ * - above: 사진 자리보다 위에 그려지는 것(어두운 막·문구) — 투명 배경
+ */
+export function exportHeroLayers(stage: Konva.Stage, frame: KonvaFrameElement, elementId: string) {
+  const mainLayer = getMainLayer(stage);
+  const slot = mainLayer?.findOne(`#${elementId}`);
+  if (!mainLayer || !slot) return null;
+  return withExportState(stage, mainLayer, () => {
+    const shapes = mainLayer.find('Shape');
+    const slotIndex = shapes.indexOf(slot);
+    const rect = slot.getClientRect({ relativeTo: mainLayer });
+    const renderWith = (visible: (index: number) => boolean) => {
+      const original = shapes.map((s) => s.visible());
+      shapes.forEach((s, i) => s.visible(original[i] && visible(i)));
+      try {
+        return mainLayer.toDataURL({ mimeType: 'image/png', pixelRatio: 1, ...frameRect(frame) });
+      } finally {
+        shapes.forEach((s, i) => s.visible(original[i]));
+      }
+    };
+    return {
+      below: renderWith((i) => i < slotIndex),
+      above: renderWith((i) => i > slotIndex),
+      rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+    };
+  });
+}
 
 /** 자사몰용 상세 HTML (images 폴더와 함께 올려 쓰는 정적 페이지) */
 const buildDetailHtml = (title: string, width: number, fileNames: string[]) => `<!doctype html>
@@ -120,50 +185,16 @@ export const useImageDownload = () => {
     const mainLayer = stage && getMainLayer(stage);
     if (!stage || !mainLayer) return null;
 
-    const frameWidth = frame.width || CANVAS_WIDTH;
-    const frameHeight = frame.height || 1080;
-
-    // UI 요소·프레임 테두리·다른 레이어 숨기기
-    const uiElements = [
-      ...stage.find('._hover-overlay'),
-      ...stage.find('._hover-outline'),
-      ...stage.find('._selection-ui'),
-      ...stage.find('._group-overlay'),
-      ...stage.find('._frame-overlay'),
-    ];
-    const originalVisibility = uiElements.map((node) => node.visible());
-    uiElements.forEach((node) => node.visible(false));
-    const frameBackground = mainLayer.findOne('.frame-background') as Konva.Rect | null;
-    const originalStroke = frameBackground?.strokeWidth() ?? 1;
-    frameBackground?.strokeWidth(0);
-    const allLayers = stage.getLayers();
-    const layerVisibility = allLayers.map((l) => l.visible());
-    allLayers.forEach((l) => l !== mainLayer && l.visible(false));
-
-    // Layer offset/scale 임시 제거
-    const originalTransform = {
-      offsetX: mainLayer.offsetX(),
-      offsetY: mainLayer.offsetY(),
-      scaleX: mainLayer.scaleX(),
-      scaleY: mainLayer.scaleY(),
-    };
-    mainLayer.offsetX(0);
-    mainLayer.offsetY(0);
-    mainLayer.scaleX(1);
-    mainLayer.scaleY(1);
-    stage.draw();
-
     let dataUrl: string | null = null;
     try {
-      dataUrl = mainLayer.toDataURL({
-        mimeType: MIME_TYPES[config.format],
-        pixelRatio: config.pixelRatio,
-        x: 0,
-        y: 0,
-        width: frameWidth,
-        height: frameHeight,
-        ...(config.format !== 'png' && { quality: config.quality }),
-      });
+      dataUrl = withExportState(stage, mainLayer, () =>
+        mainLayer.toDataURL({
+          mimeType: MIME_TYPES[config.format],
+          pixelRatio: config.pixelRatio,
+          ...frameRect(frame),
+          ...(config.format !== 'png' && { quality: config.quality }),
+        }),
+      );
 
       // Safari 메모리 부족 시 빈 문자열 반환 체크
       if (!dataUrl || !dataUrl.startsWith('data:')) {
@@ -174,17 +205,6 @@ export const useImageDownload = () => {
     } catch (err) {
       console.error('[Download] Frame export failed:', frame.id, err);
     }
-
-    // 복원
-    mainLayer.offsetX(originalTransform.offsetX);
-    mainLayer.offsetY(originalTransform.offsetY);
-    mainLayer.scaleX(originalTransform.scaleX);
-    mainLayer.scaleY(originalTransform.scaleY);
-    allLayers.forEach((l, i) => l.visible(layerVisibility[i]));
-    uiElements.forEach((node, i) => node.visible(originalVisibility[i]));
-    frameBackground?.strokeWidth(originalStroke);
-    stage.draw();
-
     return dataUrl;
   };
 
