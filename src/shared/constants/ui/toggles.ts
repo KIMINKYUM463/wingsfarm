@@ -3,6 +3,7 @@ export const LEFT_SIDEBAR_TOGGLE = [
   { name: 'text', label: '텍스트', iconName: 'insert_text' },
   { name: 'image', label: 'AI 이미지', iconName: 'image' },
   { name: 'shape', label: '요소', iconName: 'category' },
+  { name: 'color', label: '색상', iconName: 'palette' },
   { name: 'file', label: '업로드', iconName: 'backup' },
   { name: 'project', label: '프로젝트', iconName: 'folder' },
 ] as const;
@@ -14,6 +15,7 @@ export const TOGGLE_STATES = {
   IMAGE: 'image',
   SHAPE: 'shape',
   GROUP: 'group',
+  COLOR: 'color',
   FILE: 'file',
   PROJECT: 'project',
   BLOCK_MORE: 'block_more',

@@ -1,12 +1,11 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import LeftSideBar from '@/shared/ui/Sidebar/LeftSideBar';
 import FrameListPanel from '@/features/editor/components/panel/frame/FrameListPanel';
 import CanvasFrame from '@/features/editor/components/canvas/CanvasFrame';
-import { getProjectDetail } from '@/features/editor/api';
-import { queryKeys } from '@/shared/constants/queryKeys';
+import { useProjectDetail } from '@/features/editor/hooks/useProjectDetail';
+import { AiChatPanel } from '@/features/editor/components/chat/AiChatPanel';
 import { useIsToolPanelOpen } from '@/features/editor/store/useToolPanelStore';
 import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useEditorInitialization } from '@/features/editor/hooks/useEditorInitialization';
@@ -60,13 +59,7 @@ export function KonvaEditor({
   const activatingFrameId = useCanvasDataStore((state) => state.activatingFrameId);
 
   // 프로젝트 데이터 조회 (서버 prefetch 데이터 사용)
-  const { data: projectData } = useQuery({
-    queryKey: queryKeys.EDITOR.projectDetail(projectId),
-    queryFn: () => getProjectDetail(projectId),
-    refetchOnMount: false, // 서버 prefetch 데이터 사용
-    refetchOnWindowFocus: false, // 탭 전환 시 재요청 불필요
-  });
-  const project = projectData?.data;
+  const { data: project } = useProjectDetail(projectId);
 
   // 에디터 초기화 (상태 클리어 + 초안 시 쿼리 파라미터 정리)
   useEditorInitialization();
@@ -92,6 +85,7 @@ export function KonvaEditor({
     <main className="flex-1 bg-gray-50">
       <LeftSideBar />
       <FrameListPanel />
+      <AiChatPanel />
       <div
         className={clsx(
           'relative z-0 flex-1 overflow-hidden pb-(--footer-h)',

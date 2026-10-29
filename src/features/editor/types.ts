@@ -1,4 +1,5 @@
 import type { KonvaFrameElement, FrameStatus } from '@/shared/types/konva';
+import type { DraftPalette } from '@/shared/types/draft';
 
 export type { FrameStatus };
 
@@ -58,6 +59,10 @@ export interface ProjectDetailData {
   productName: string;
   /** 카테고리명 (예: "식품/건강") */
   categoryName: string;
+  /** 색상 탭 팔레트 (AI 초안으로 만든 페이지만, 아니면 null) */
+  palette: DraftPalette | null;
+  /** 생성 당시 팔레트 (색상 탭 "초기화") */
+  originalPalette: DraftPalette | null;
 }
 
 export interface ExternalApiResponse<T> {

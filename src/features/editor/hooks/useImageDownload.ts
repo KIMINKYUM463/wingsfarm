@@ -4,16 +4,14 @@ import JSZip from 'jszip';
 import { KonvaFrameElement } from '@/shared/types/konva';
 import { useActiveFrames, useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useStageRefStore } from '@/features/editor/store/useStageRefStore';
-import { combineImagesClient } from '@/features/editor/utils/combineImagesClient';
+import { combineImagesClient, MIME_TYPES, type CombineFormat } from '@/features/editor/utils/combineImagesClient';
+import { CANVAS_WIDTH, qualityValue, type DownloadOptions } from '@/features/editor/lib/download-options';
 import { showToast } from '@/utils/toast';
 
-type ImageFormat = 'png' | 'jpg';
-
 interface ExportConfig {
-  format: ImageFormat;
-  mimeType: 'image/png' | 'image/jpeg';
+  format: CombineFormat;
   quality: number;
-  extension: string;
+  /** 캔버스 폭 대비 배율 (780px → 0.907) */
   pixelRatio: number;
 }
 
@@ -22,11 +20,94 @@ interface ExportedFrame {
   fileName: string;
 }
 
+const EXTENSIONS: Record<CombineFormat, string> = { jpg: 'jpg', png: 'png', webp: 'webp' };
+
+// 파일명에 사용 불가능한 문자만 제거 (띄어쓰기 유지)
+const sanitizeFileName = (name: string): string => name.replace(/[<>:"/\\|?*]/g, '').trim();
+
+const escapeHtml = (text: string) =>
+  text.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]!);
+
+const loadImage = (src: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+const generateFrameFileName = (index: number, part2: string | undefined, frameName: string | undefined, extension: string) => {
+  const parts = [String(index + 1).padStart(3, '0')];
+  if (part2) parts.push(sanitizeFileName(part2));
+  if (frameName && frameName !== part2) parts.push(sanitizeFileName(frameName));
+  return `${parts.join('_')}.${extension}`;
+};
+
+const downloadFile = (href: string, fileName: string) => {
+  const link = document.createElement('a');
+  link.download = fileName;
+  link.href = href;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  downloadFile(url, fileName);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+/** JPG는 투명 영역을 흰 배경으로 */
+const applyWhiteBackground = async (dataUrl: string, quality: number) => {
+  const img = await loadImage(dataUrl);
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0);
+  return canvas.toDataURL(MIME_TYPES.jpg, quality);
+};
+
+const getMainLayer = (stage: Konva.Stage): Konva.Layer | null => {
+  for (const layer of stage.getLayers()) {
+    if (layer.findOne('.clip-group') || layer.findOne('[name="clip-group"]')) return layer;
+  }
+  const layers = stage.getLayers();
+  return layers.length > 1 ? layers[1] : layers[0] || null;
+};
+
+/** 자사몰용 상세 HTML (images 폴더와 함께 올려 쓰는 정적 페이지) */
+const buildDetailHtml = (title: string, width: number, fileNames: string[]) => `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(title)}</title>
+<style>
+  body { margin: 0; }
+  .detail-page { max-width: ${width}px; margin: 0 auto; }
+  .detail-page img { display: block; width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<!-- 자사몰 상세 편집기에는 .detail-page 블록만 붙여 넣고, images 폴더를 쇼핑몰 서버에 올린 주소로 바꿔 주세요 -->
+<div class="detail-page">
+${fileNames.map((name, i) => `  <img src="images/${name}" alt="${escapeHtml(title)} ${i + 1}" loading="${i < 2 ? 'eager' : 'lazy'}">`).join('\n')}
+</div>
+</body>
+</html>
+`;
+
 /**
- * 이미지 다운로드 훅
+ * 상세페이지 다운로드 훅
  *
- * - 한 장 이미지: 클라이언트 Canvas API로 합성 (Vercel 4.5MB 제한 우회)
- * - 개별 이미지: ZIP으로 묶어서 다운로드
+ * - 판매처 폭(860·780·1080·직접 지정)에 맞춰 렌더링 배율을 정한다
+ * - 한 장 이미지: 클라이언트 Canvas API로 합성 (형식별 최대 높이를 넘으면 자동 분할)
+ * - 페이지별 이미지: ZIP으로 묶어서 다운로드
+ * - HTML: index.html + images/ 를 ZIP으로
  */
 export const useImageDownload = () => {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -34,84 +115,15 @@ export const useImageDownload = () => {
   const productName = useCanvasDataStore((state) => state.productName);
   const getStage = useStageRefStore((state) => state.getStage);
 
-  // ===== 유틸리티 함수 =====
-
-  // 파일명에 사용 불가능한 문자만 제거 (띄어쓰기 유지)
-  const sanitizeFileName = (name: string): string => name.replace(/[<>:"/\\|?*]/g, '').trim();
-
-  const getExportConfig = (format: ImageFormat): ExportConfig => ({
-    format,
-    mimeType: format === 'jpg' ? 'image/jpeg' : 'image/png',
-    quality: format === 'jpg' ? 0.92 : 1,
-    extension: format === 'jpg' ? 'jpg' : 'png',
-    pixelRatio: 2,
-  });
-
-  const getMainLayer = (stage: Konva.Stage): Konva.Layer | null => {
-    for (const layer of stage.getLayers()) {
-      if (layer.findOne('.clip-group') || layer.findOne('[name="clip-group"]')) {
-        return layer;
-      }
-    }
-    const layers = stage.getLayers();
-    return layers.length > 1 ? layers[1] : layers[0] || null;
-  };
-
-  const loadImage = (src: string): Promise<HTMLImageElement> =>
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = src;
-    });
-
-  const generateFrameFileName = (
-    index: number,
-    part2: string | undefined,
-    frameName: string | undefined,
-    extension: string,
-  ): string => {
-    const paddedIndex = String(index + 1).padStart(3, '0');
-    const parts = [paddedIndex];
-
-    if (part2) parts.push(sanitizeFileName(part2));
-    if (frameName) parts.push(sanitizeFileName(frameName));
-
-    return `${parts.join('_')}.${extension}`;
-  };
-
-  const applyWhiteBackground = async (
-    dataUrl: string,
-    mimeType: string,
-    quality: number,
-  ): Promise<string> => {
-    const img = await loadImage(dataUrl);
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d')!;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
-    return canvas.toDataURL(mimeType, quality);
-  };
-
-  // ===== 프레임 Export 핵심 로직 =====
-
-  const exportFrame = async (
-    frame: KonvaFrameElement,
-    config: ExportConfig,
-  ): Promise<string | null> => {
+  const exportFrame = async (frame: KonvaFrameElement, config: ExportConfig): Promise<string | null> => {
     const stage = getStage(frame.id);
-    if (!stage) return null;
+    const mainLayer = stage && getMainLayer(stage);
+    if (!stage || !mainLayer) return null;
 
-    const mainLayer = getMainLayer(stage);
-    if (!mainLayer) return null;
-
-    const frameWidth = frame.width || 860;
+    const frameWidth = frame.width || CANVAS_WIDTH;
     const frameHeight = frame.height || 1080;
 
-    // UI 요소 숨기기
+    // UI 요소·프레임 테두리·다른 레이어 숨기기
     const uiElements = [
       ...stage.find('._hover-overlay'),
       ...stage.find('._hover-outline'),
@@ -121,13 +133,9 @@ export const useImageDownload = () => {
     ];
     const originalVisibility = uiElements.map((node) => node.visible());
     uiElements.forEach((node) => node.visible(false));
-
-    // 프레임 테두리 숨기기
     const frameBackground = mainLayer.findOne('.frame-background') as Konva.Rect | null;
     const originalStroke = frameBackground?.strokeWidth() ?? 1;
     frameBackground?.strokeWidth(0);
-
-    // 다른 레이어 숨기기
     const allLayers = stage.getLayers();
     const layerVisibility = allLayers.map((l) => l.visible());
     allLayers.forEach((l) => l !== mainLayer && l.visible(false));
@@ -139,24 +147,22 @@ export const useImageDownload = () => {
       scaleX: mainLayer.scaleX(),
       scaleY: mainLayer.scaleY(),
     };
-
     mainLayer.offsetX(0);
     mainLayer.offsetY(0);
     mainLayer.scaleX(1);
     mainLayer.scaleY(1);
     stage.draw();
 
-    // Export
     let dataUrl: string | null = null;
     try {
       dataUrl = mainLayer.toDataURL({
-        mimeType: config.mimeType,
+        mimeType: MIME_TYPES[config.format],
         pixelRatio: config.pixelRatio,
         x: 0,
         y: 0,
         width: frameWidth,
         height: frameHeight,
-        ...(config.format === 'jpg' && { quality: config.quality }),
+        ...(config.format !== 'png' && { quality: config.quality }),
       });
 
       // Safari 메모리 부족 시 빈 문자열 반환 체크
@@ -164,11 +170,7 @@ export const useImageDownload = () => {
         console.error('[Download] Frame export returned invalid data:', frame.id);
         dataUrl = null;
       }
-
-      // JPG는 흰색 배경 합성
-      if (config.format === 'jpg' && dataUrl) {
-        dataUrl = await applyWhiteBackground(dataUrl, config.mimeType, config.quality);
-      }
+      if (config.format === 'jpg' && dataUrl) dataUrl = await applyWhiteBackground(dataUrl, config.quality);
     } catch (err) {
       console.error('[Download] Frame export failed:', frame.id, err);
     }
@@ -186,146 +188,82 @@ export const useImageDownload = () => {
     return dataUrl;
   };
 
-  // ===== 다운로드 함수 =====
-
-  const downloadFile = (dataUrl: string, fileName: string) => {
-    const link = document.createElement('a');
-    link.download = fileName;
-    link.href = dataUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const exportFrames = async (targets: KonvaFrameElement[], config: ExportConfig) => {
+    const exported: ExportedFrame[] = [];
+    for (const frame of targets) {
+      const dataUrl = await exportFrame(frame, config);
+      if (!dataUrl) continue;
+      exported.push({
+        dataUrl,
+        fileName: generateFrameFileName(frames.indexOf(frame), frame.part2, frame.name, EXTENSIONS[config.format]),
+      });
+    }
+    return exported;
   };
 
-  const downloadAllPagesAsImage = async (format: ImageFormat) => {
-    if (!frames.length) return;
+  const download = async (options: DownloadOptions) => {
+    const targets = options.pageIndexes.map((i) => frames[i]).filter(Boolean);
+    if (!targets.length) return;
     setIsDownloading(true);
 
     try {
-      const config = getExportConfig(format);
-      const stageImages: string[] = [];
+      const format: CombineFormat = options.format === 'html' ? 'jpg' : options.format;
+      const config: ExportConfig = {
+        format,
+        quality: qualityValue(options.quality),
+        pixelRatio: options.width / (targets[0].width || CANVAS_WIDTH),
+      };
+      const exported = await exportFrames(targets, config);
 
-      for (const frame of frames) {
-        const dataUrl = await exportFrame(frame, config);
-        if (dataUrl) stageImages.push(dataUrl);
-      }
-
-      // 모든 프레임 export 실패
-      if (!stageImages.length) {
+      if (!exported.length) {
         showToast.error('이미지를 내보낼 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.');
         return;
       }
-
-      // 일부 프레임만 성공한 경우 알림
-      if (stageImages.length < frames.length) {
-        showToast.warn(
-          `${frames.length}개 중 ${stageImages.length}개만 다운로드됩니다. 일부 이미지를 불러오지 못했습니다.`,
-        );
+      if (format === 'webp' && !exported[0].dataUrl.startsWith('data:image/webp')) {
+        showToast.error('이 브라우저는 WEBP 저장을 지원하지 않아요. JPG나 PNG로 받아주세요.');
+        return;
+      }
+      if (exported.length < targets.length) {
+        showToast.warn(`${targets.length}개 중 ${exported.length}개만 다운로드됩니다. 일부 이미지를 불러오지 못했습니다.`);
       }
 
-      // 클라이언트에서 이미지 합성 (Vercel 4.5MB 제한 우회)
+      const baseName = productName ? sanitizeFileName(productName) : `detail-page-${Date.now()}`;
+
+      if (options.format === 'html' || options.bundle === 'zip') {
+        const zip = new JSZip();
+        const folder = zip.folder(baseName)!;
+        const imageFolder = options.format === 'html' ? folder.folder('images')! : folder;
+        exported.forEach(({ dataUrl, fileName }) => imageFolder.file(fileName, dataUrl.split(',')[1], { base64: true }));
+        if (options.format === 'html') {
+          folder.file('index.html', buildDetailHtml(productName || baseName, options.width, exported.map((e) => e.fileName)));
+        }
+        downloadBlob(await zip.generateAsync({ type: 'blob' }), `${baseName}.zip`);
+        return;
+      }
+
+      // 한 장 이미지: 클라이언트에서 합성 (Vercel 4.5MB 제한 우회)
       const result = await combineImagesClient({
-        images: stageImages,
+        images: exported.map((e) => e.dataUrl),
         format,
-        quality: format === 'jpg' ? 0.92 : undefined,
+        quality: config.quality,
       });
-
-      // 분할된 경우 알림
       if (result.splitCount > 1) {
-        const browserNotes: Record<string, string> = {
-          safari: ' (Safari 브라우저 제한)',
-          firefox: ' (Firefox 브라우저 제한)',
-          chrome: '',
-        };
-        const browserNote = browserNotes[result.splitBrowser] ?? '';
-        showToast.warn(`이미지 크기가 커서 ${result.splitCount}개로 나누어 다운로드됩니다.${browserNote}`);
+        const browserNotes: Record<string, string> = { safari: ' (Safari 브라우저 제한)', firefox: ' (Firefox 브라우저 제한)', chrome: '' };
+        const formatNote = format === 'webp' ? ' (WEBP 최대 높이 16,383px)' : '';
+        showToast.warn(`이미지 크기가 커서 ${result.splitCount}개로 나누어 다운로드됩니다.${formatNote || (browserNotes[result.splitBrowser] ?? '')}`);
       }
-
-      // 다운로드
-      const fileName = productName ? sanitizeFileName(productName) : `lever-page-${Date.now()}`;
-
       for (let i = 0; i < result.dataUrls.length; i++) {
         const suffix = result.splitCount > 1 ? `-${i + 1}` : '';
-        downloadFile(result.dataUrls[i], `${fileName}${suffix}.${config.extension}`);
-
-        if (i < result.dataUrls.length - 1) {
-          await new Promise((resolve) => setTimeout(resolve, 300));
-        }
+        downloadFile(result.dataUrls[i], `${baseName}${suffix}.${EXTENSIONS[format]}`);
+        if (i < result.dataUrls.length - 1) await new Promise((resolve) => setTimeout(resolve, 300));
       }
     } catch (error) {
-      console.error('[Download] 이미지 다운로드 실패:', error);
-      showToast.error('이미지 다운로드에 실패했습니다. 다시 시도해주세요.');
+      console.error('[Download] 다운로드 실패:', error);
+      showToast.error('다운로드에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsDownloading(false);
     }
   };
 
-  const downloadIndividualImages = async (format: ImageFormat) => {
-    if (!frames.length) return;
-    setIsDownloading(true);
-
-    try {
-      const config = getExportConfig(format);
-      const exportedFrames: ExportedFrame[] = [];
-
-      // 모든 프레임 Export
-      for (let i = 0; i < frames.length; i++) {
-        const frame = frames[i];
-        const dataUrl = await exportFrame(frame, config);
-        if (!dataUrl) continue;
-
-        exportedFrames.push({
-          dataUrl,
-          fileName: generateFrameFileName(i, frame.part2, frame.name, config.extension),
-        });
-      }
-
-      // 모든 프레임 export 실패
-      if (!exportedFrames.length) {
-        showToast.error('이미지를 내보낼 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.');
-        return;
-      }
-
-      // 일부 프레임만 성공한 경우 알림
-      if (exportedFrames.length < frames.length) {
-        showToast.warn(
-          `${frames.length}개 중 ${exportedFrames.length}개만 다운로드됩니다. 일부 이미지를 불러오지 못했습니다.`,
-        );
-      }
-
-      // ZIP 파일로 묶어서 다운로드
-      await downloadAsZip(exportedFrames);
-    } catch (error) {
-      console.error('[Download] 개별 이미지 다운로드 실패:', error);
-      showToast.error('이미지 다운로드에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  const downloadAsZip = async (exportedFrames: ExportedFrame[]) => {
-    const zip = new JSZip();
-    const folderName = productName ? sanitizeFileName(productName) : `lever-page-${Date.now()}`;
-    const folder = zip.folder(folderName)!;
-
-    // 이미지 파일들을 폴더에 추가
-    for (const { dataUrl, fileName } of exportedFrames) {
-      const base64Data = dataUrl.split(',')[1];
-      folder.file(fileName, base64Data, { base64: true });
-    }
-
-    // ZIP 생성 및 다운로드
-    const blob = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(blob);
-    downloadFile(url, `${folderName}.zip`);
-    URL.revokeObjectURL(url);
-  };
-
-  return {
-    downloadAllPagesAsPng: () => downloadAllPagesAsImage('png'),
-    downloadAllPagesAsJpg: () => downloadAllPagesAsImage('jpg'),
-    downloadIndividualAsPng: () => downloadIndividualImages('png'),
-    downloadIndividualAsJpg: () => downloadIndividualImages('jpg'),
-    isDownloading,
-  };
+  return { download, isDownloading, frames };
 };

@@ -6,3 +6,4 @@
 
 export { useProjects } from './useProjects';
 export { useUpdateProject } from './useUpdateProject';
+export { useDeleteProject, useDuplicateProject, useRestoreProject, useToggleFavorite } from './useProjectActions';

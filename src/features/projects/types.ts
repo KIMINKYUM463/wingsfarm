@@ -1,3 +1,5 @@
+import type { DraftPalette } from '@/shared/types/draft';
+
 /**
  * Projects 관련 타입 정의
  */
@@ -5,7 +7,10 @@
 /**
  * 프로젝트 상태
  */
-export type ProjectStatus = 'active' | 'deleted';
+export type ProjectStatus = 'active' | 'trashed' | 'deleted';
+
+/** 작업 내역 필터: 전체 · 즐겨찾기 · 휴지통 */
+export type ProjectFilter = 'all' | 'favorite' | 'trash';
 
 /**
  * 프로젝트 정렬 옵션 (UI용)
@@ -37,6 +42,11 @@ export interface Project {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
+  favorite: boolean;
+  /** 휴지통으로 옮긴 시각 */
+  deletedAt: string | null;
+  /** AI 초안으로 만든 페이지 → "이 페이지로 다른 상품 만들기" 가능 */
+  reusable: boolean;
 }
 
 /**
@@ -71,6 +81,8 @@ export interface ProjectListParams {
   sortOrder?: ProjectSortOrder;
   /** 검색 키워드 (제목 또는 상품명, 1-100자) */
   search?: string;
+  /** 즐겨찾기·휴지통 필터 */
+  filter?: ProjectFilter;
 }
 
 /**
@@ -93,6 +105,9 @@ export interface UpdateProjectRequest {
   categoryId?: string | null;
   /** 프로젝트 설명 (최대 1000자, null 허용) */
   description?: string | null;
+  favorite?: boolean;
+  /** 색상 탭 팔레트 (AI 초안으로 만든 페이지만) */
+  palette?: DraftPalette;
 }
 
 /**

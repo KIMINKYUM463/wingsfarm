@@ -9,10 +9,12 @@ import { CustomError } from '@/shared/lib/CustomError';
 
 // ===== Types =====
 
+export type CombineFormat = 'png' | 'jpg' | 'webp';
+
 interface CombineImagesRequest {
   images: string[]; // base64 data URL 배열
-  format: 'png' | 'jpg';
-  quality?: number; // 0-1 (jpg only)
+  format: CombineFormat;
+  quality?: number; // 0-1 (jpg·webp)
 }
 
 interface CombineImagesResponse {
@@ -34,6 +36,15 @@ interface LoadedImage {
 
 /** JPEG 포맷 최대 높이 제한 (스펙상 65535, 안전 마진 확보) */
 const JPEG_MAX_HEIGHT = 60000;
+
+/** WEBP 포맷 최대 높이 (스펙상 16383) */
+const WEBP_MAX_HEIGHT = 16383;
+
+export const MIME_TYPES: Record<CombineFormat, string> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  webp: 'image/webp',
+};
 
 /**
  * 브라우저별 Canvas API 제한
@@ -91,7 +102,7 @@ const createCombinedCanvas = (
   images: LoadedImage[],
   totalWidth: number,
   totalHeight: number,
-  format: 'png' | 'jpg',
+  format: CombineFormat,
   quality: number,
 ): string => {
   const canvas = document.createElement('canvas');
@@ -116,8 +127,7 @@ const createCombinedCanvas = (
     currentY += height;
   }
 
-  const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-  const dataUrl = canvas.toDataURL(mimeType, format === 'jpg' ? quality : undefined);
+  const dataUrl = canvas.toDataURL(MIME_TYPES[format], format === 'png' ? undefined : quality);
 
   // 캔버스 크기 초과 시 빈 데이터 반환 체크
   if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
@@ -130,12 +140,15 @@ const createCombinedCanvas = (
 // ===== Height Calculation =====
 
 /** 브라우저/포맷별 최대 높이 계산 */
-const calculateMaxHeight = (totalWidth: number, format: 'png' | 'jpg', browser: BrowserType): number => {
+const calculateMaxHeight = (totalWidth: number, format: CombineFormat, browser: BrowserType): number => {
   const { maxPixels, maxDimension } = CANVAS_LIMITS[browser];
 
   if (format === 'jpg') {
     // JPG: Safari만 캔버스 제한, 나머지는 JPEG 스펙 제한만
     return browser === 'safari' ? Math.min(JPEG_MAX_HEIGHT, maxDimension) : JPEG_MAX_HEIGHT;
+  }
+  if (format === 'webp') {
+    return Math.min(WEBP_MAX_HEIGHT, maxDimension, Math.floor(maxPixels / totalWidth));
   }
 
   // PNG: 픽셀 수와 최대 차원 중 작은 값

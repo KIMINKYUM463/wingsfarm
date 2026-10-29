@@ -28,6 +28,11 @@ export const ROUTES = {
   PRICING_HISTORY: BASE as Route,
   PRICING_METHODS: BASE as Route,
   PROJECT: (id: string) => `${BASE}/${id}` as Route,
+  // 후커블식 생성 흐름: 입력 폼 → 기획 초안(섹션 카드) → 생성
+  DRAFT_CREATE: `${BASE}/create` as Route,
+  DRAFT_CREATE_FROM: (params: { draft?: string; reuse?: string }) =>
+    `${BASE}/create?${new URLSearchParams(params as Record<string, string>).toString()}` as Route,
+  DRAFT: (id: string) => `${BASE}/drafts/${id}` as Route,
   PROJECT_GENERATING: (jobId: string, options?: { source?: string; create?: boolean }) => {
     const base = `${BASE}/generating/${jobId}`;
     const params = new URLSearchParams();

@@ -14,6 +14,7 @@ import { useManualSave } from '@/features/editor/hooks/useManualSave';
 import { useAutoSaveStore } from '@/features/editor/store/useAutoSaveStore';
 import { useUpdateProject } from '@/features/projects/hooks';
 import { useHistory } from '@/features/editor/hooks/useHistory';
+import { VersionHistoryButton } from '@/features/editor/components/overlay/VersionHistory';
 
 interface EditorHeaderProps {
   productName?: string;
@@ -100,6 +101,7 @@ export function EditorHeader({ productName = '' }: EditorHeaderProps) {
               disabled={isDisabled || saveStatus === 'saving'}
             />
           </ActionTooltip>
+          <VersionHistoryButton />
         </div>
       </div>
 
@@ -171,6 +173,7 @@ export function EditorHeader({ productName = '' }: EditorHeaderProps) {
               textClassName="p"
               text="다운로드"
               className="btn-primary"
+              data-tour="editor-export"
             />
           }
         />

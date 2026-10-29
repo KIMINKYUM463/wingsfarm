@@ -12,6 +12,7 @@ import { badRequest, notFound, noContent, ok } from './http';
 import { buildTemplateFrame, frameAssetUrls, getProject, sortFrames, updateProject } from './projects';
 import { newId, nowIso } from './store';
 import { getTemplate, pickTemplate } from './templates/repo';
+import { autoBackup } from './versions';
 
 /**
  * 프레임 규칙 (레버페이지와 동일)
@@ -99,6 +100,7 @@ export async function applyTemplate(projectId: string, templateId: string, body:
 
 /** PATCH /projects/{id}/frames/{frameId} — 부분 수정 (저장·순서·이름·크기) */
 export async function updateFrame(projectId: string, frameId: string, body: UpdateFrameRequest) {
+  if (body.frame_data) await autoBackup(projectId);
   let updated: ProjectFrame | undefined;
   await updateProject(projectId, (p) => {
     const frame = findFrame(p.frames, frameId);

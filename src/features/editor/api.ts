@@ -3,7 +3,9 @@ import { ENDPOINTS } from '@/shared/constants/endpoints';
 import { CustomError } from '@/shared/lib/CustomError';
 import type { CreatePageFromFigmaOutput } from '@/shared/types/actions';
 import type { KonvaFrameElement } from '@/shared/types/konva';
+import type { ChatEditRequest, ChatEditResult } from '@/shared/types/chatEdit';
 import type {
+  ExternalApiResponse,
   ProjectDetailResponse,
   AddFrameRequest,
   AddFrameResponse,
@@ -300,6 +302,34 @@ export const regenerateProjectFrames = async (
 
   return response;
 };
+
+// ===== AI 채팅 수정 =====
+
+export const chatEditProject = async (projectId: string, request: ChatEditRequest) =>
+  (await httpClient.post<ExternalApiResponse<ChatEditResult>>(ENDPOINTS.DETAIL_PAGE.AI_CHAT(projectId), request, { withAuth: true })).data;
+
+// ===== 버전 기록 =====
+
+export interface ProjectVersion {
+  id: string;
+  kind: 'manual' | 'auto';
+  label: string;
+  createdAt: string;
+  frameCount: number;
+  totalHeight: number;
+}
+
+export const getProjectVersions = async (projectId: string) =>
+  (await httpClient.get<ExternalApiResponse<{ versions: ProjectVersion[] }>>(ENDPOINTS.PROJECTS.VERSIONS(projectId), { withAuth: true })).data.versions;
+
+export const createProjectVersion = async (projectId: string, label: string) =>
+  (await httpClient.post<ExternalApiResponse<ProjectVersion>>(ENDPOINTS.PROJECTS.VERSIONS(projectId), { label }, { withAuth: true })).data;
+
+export const restoreProjectVersion = async (projectId: string, versionId: string) =>
+  httpClient.post<ProjectDetailResponse>(ENDPOINTS.PROJECTS.VERSION_RESTORE(projectId, versionId), {}, { withAuth: true });
+
+export const deleteProjectVersion = (projectId: string, versionId: string) =>
+  httpClient.delete(ENDPOINTS.PROJECTS.VERSION(projectId, versionId), { withAuth: true });
 
 /**
  * AI 이미지 생성 스타일 목록 조회 (공개 API)

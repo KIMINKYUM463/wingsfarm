@@ -1,5 +1,6 @@
 import type { FrameNode } from '../frames/tree';
 import leverpageFrames from './leverpage-templates.json';
+import { boxNode, frameNode, GRAY, imageNode, INK, PAGE_WIDTH, textNode, WHITE, type TextOptions } from './nodes';
 
 /**
  * 기본 제공 템플릿
@@ -31,71 +32,23 @@ export const PART2_ORDER = [
 
 const sortKeyOf = (part2: string) => PART2_ORDER.findIndex((p) => p.part2 === part2) + 1;
 
-// ===== 요소 빌더 =====
-const W = 860;
-const DARK = 'rgba(17, 24, 39, 1)';
-const GRAY = 'rgba(107, 114, 128, 1)';
+// ===== 요소 빌더 (공용 노드 빌더에 slug 기반 고정 id를 붙인다) =====
+const W = PAGE_WIDTH;
+const DARK = INK;
 const POINT = 'rgba(37, 99, 235, 1)';
-const WHITE = 'rgba(255, 255, 255, 1)';
 
 let seq = 0;
 const nextId = (slug: string) => `${slug}:${++seq}`;
 
-interface TextOptions {
-  weight?: number;
-  color?: string;
-  align?: 'left' | 'center' | 'right';
-  lineHeight?: number;
-  lines?: number;
-}
+/** 기본 템플릿 문구는 줄바꿈(\n) 그대로 줄 수를 잡는다 */
+const text = (slug: string, value: string, x: number, y: number, width: number, fontSize: number, o: TextOptions = {}) =>
+  textNode(nextId(slug), value, x, y, width, fontSize, { lines: value.split('\n').length, ...o });
 
-const text = (slug: string, value: string, x: number, y: number, width: number, fontSize: number, o: TextOptions = {}): FrameNode => {
-  const lineHeight = o.lineHeight ?? 1.35;
-  const lines = o.lines ?? value.split('\n').length;
-  return {
-    type: 'text',
-    id: nextId(slug),
-    name: value.split('\n')[0].slice(0, 30),
-    x,
-    y,
-    width,
-    height: Math.ceil(fontSize * lineHeight * lines),
-    text: value,
-    fontSize,
-    fontFamily: 'Pretendard',
-    fontStyle: (o.weight ?? 400) >= 600 ? 'bold' : 'normal',
-    fontWeight: o.weight ?? 400,
-    fill: o.color ?? DARK,
-    fillPriority: 'color',
-    align: o.align ?? 'center',
-    verticalAlign: 'top',
-    lineHeight,
-    letterSpacing: 0,
-    wrap: 'word',
-    ellipsis: false,
-    padding: 0,
-    visible: true,
-    opacity: 1,
-  };
-};
-
-const box = (slug: string, x: number, y: number, width: number, height: number, fill: string, cornerRadius = 0, name = 'Rectangle'): FrameNode => ({
-  type: 'rect',
-  id: nextId(slug),
-  name,
-  x,
-  y,
-  width,
-  height,
-  fill,
-  fillPriority: 'color',
-  cornerRadius,
-  visible: true,
-  opacity: 1,
-});
+const box = (slug: string, x: number, y: number, width: number, height: number, fill: string, cornerRadius = 0, name = 'Rectangle') =>
+  boxNode(nextId(slug), x, y, width, height, fill, { cornerRadius, name });
 
 const image = (slug: string, x: number, y: number, width: number, height: number, cornerRadius = 0) =>
-  box(slug, x, y, width, height, 'rgba(51, 51, 51, 1)', cornerRadius, '_image');
+  imageNode(nextId(slug), x, y, width, height, cornerRadius);
 
 const prompt = (slug: string, guide: string): FrameNode => ({
   ...text(slug, guide, 30, 30, 800, 28, { color: 'rgba(255, 0, 0, 1)', align: 'left' }),
@@ -103,20 +56,8 @@ const prompt = (slug: string, guide: string): FrameNode => ({
   visible: false,
 });
 
-const frame = (slug: string, name: string, height: number, fill: string, children: FrameNode[]): FrameNode => ({
-  type: 'frame',
-  id: `${slug}:root`,
-  name,
-  x: 0,
-  y: 0,
-  width: W,
-  height,
-  fill,
-  fillPriority: 'color',
-  children,
-  visible: true,
-  opacity: 1,
-});
+const frame = (slug: string, name: string, height: number, fill: string, children: FrameNode[]) =>
+  frameNode(`${slug}:root`, name, height, fill, children);
 
 // ===== 기본 템플릿 =====
 function mainVisualA(): TemplateSeed {

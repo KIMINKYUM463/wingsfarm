@@ -3,9 +3,11 @@ import { generateNKeysBetween } from 'fractional-indexing';
 import type { ProjectFrame } from '@/features/editor/types';
 import type { Project } from '@/features/projects/types';
 import type { KeywordGroup } from '@/features/detail-page/types';
+import type { DraftPalette } from '@/shared/types/draft';
+import { normalizePalette } from '@/shared/lib/palette';
 import { resolveAssetUrls } from './assets';
 import { findCategory } from './catalog/categories';
-import { asNode, collectAssetIds, type FrameNode } from './frames/tree';
+import { asNode, cloneWithNewIds, collectAssetIds, type FrameNode } from './frames/tree';
 import { badRequest, notFound } from './http';
 import { publicUrl, saveFile } from './storage';
 import { listFiles, newId, nowIso, readJson, updateJson, writeJson } from './store';
@@ -20,10 +22,19 @@ export interface ProductContext {
   keywords: string[];
 }
 
+export interface DraftLayout {
+  draftId: string;
+  sectionTypeIds: string[];
+  palette: DraftPalette;
+  /** 생성 당시 팔레트 (색상 탭 "초기화") */
+  originalPalette?: DraftPalette;
+}
+
 export interface ProjectRecord {
   id: string;
   title: string;
-  status: 'active' | 'deleted';
+  /** trashed: 휴지통 (복원 가능) · deleted: 영구 삭제 */
+  status: 'active' | 'trashed' | 'deleted';
   productName: string;
   categoryId: string;
   description: string;
@@ -38,19 +49,31 @@ export interface ProjectRecord {
   context?: ProductContext;
   keywords?: KeywordGroup[];
   frames: ProjectFrame[];
+  /** 초안으로 만든 페이지: 섹션 구성·색 팔레트 ("기존 페이지 활용하기"와 색상 탭에서 사용) */
+  draftLayout?: DraftLayout;
+  favorite?: boolean;
+  /** 휴지통으로 옮긴 시각 */
+  deletedAt?: string;
 }
 
 const projectPath = (id: string) => `projects/${id}.json`;
 
-export async function getProject(id: string) {
+async function readProject(id: string, allowTrashed: boolean) {
   const project = await readJson<ProjectRecord | null>(projectPath(id), null);
-  if (!project || project.status === 'deleted') throw notFound('프로젝트를 찾을 수 없습니다.');
+  const visible = project?.status === 'active' || (allowTrashed && project?.status === 'trashed');
+  if (!project || !visible) throw notFound('프로젝트를 찾을 수 없습니다.');
   return project;
 }
 
-/** 프로젝트 파일을 잠금 안에서 수정 */
-export async function updateProject(id: string, mutate: (project: ProjectRecord) => ProjectRecord | Promise<ProjectRecord>) {
-  await getProject(id);
+export const getProject = (id: string) => readProject(id, false);
+
+/** 프로젝트 파일을 잠금 안에서 수정 (allowTrashed: 휴지통 복원·영구 삭제용) */
+export async function updateProject(
+  id: string,
+  mutate: (project: ProjectRecord) => ProjectRecord | Promise<ProjectRecord>,
+  { allowTrashed = false } = {},
+) {
+  await readProject(id, allowTrashed);
   return updateJson<ProjectRecord | null, ProjectRecord>(
     projectPath(id),
     null,
@@ -137,21 +160,30 @@ const toProjectDto = (p: ProjectRecord): Project => ({
   viewCount: p.viewCount,
   createdAt: p.createdAt,
   updatedAt: p.updatedAt,
+  favorite: Boolean(p.favorite),
+  deletedAt: p.deletedAt ?? null,
+  reusable: Boolean(p.draftLayout),
 });
+
+export async function listProjectRecords(status: ProjectRecord['status'] = 'active') {
+  const files = (await listFiles('projects')).filter((f) => f.endsWith('.json'));
+  const records = await Promise.all(files.map((f) => readJson<ProjectRecord | null>(`projects/${f}`, null)));
+  return records.filter((p): p is ProjectRecord => p?.status === status);
+}
 
 const SORT_FIELDS = { createdAt: 'createdAt', updatedAt: 'updatedAt', title: 'title' } as const;
 
-/** GET /projects (검색·정렬·커서 페이지네이션) */
+/** GET /projects (검색·정렬·커서 페이지네이션 · filter=favorite|trash) */
 export async function listProjects(query: URLSearchParams) {
   const search = query.get('search')?.trim().toLowerCase();
+  const filter = query.get('filter');
   const sortBy = SORT_FIELDS[(query.get('sortBy') ?? 'updatedAt') as keyof typeof SORT_FIELDS] ?? 'updatedAt';
   const direction = query.get('sortOrder') === 'asc' ? 1 : -1;
   const limit = Math.min(Math.max(Number(query.get('limit')) || 20, 1), 50);
   const offset = Number(Buffer.from(query.get('cursor') ?? '', 'base64').toString() || 0);
 
-  const files = (await listFiles('projects')).filter((f) => f.endsWith('.json'));
-  const projects = (await Promise.all(files.map((f) => readJson<ProjectRecord | null>(`projects/${f}`, null))))
-    .filter((p): p is ProjectRecord => p?.status === 'active')
+  const projects = (await listProjectRecords(filter === 'trash' ? 'trashed' : 'active'))
+    .filter((p) => filter !== 'favorite' || p.favorite)
     .filter((p) => !search || p.title.toLowerCase().includes(search) || p.productName.toLowerCase().includes(search))
     .sort((a, b) => direction * a[sortBy].localeCompare(b[sortBy], 'ko'));
 
@@ -164,9 +196,8 @@ export async function listProjects(query: URLSearchParams) {
   };
 }
 
-/** GET /projects/{id} — 에디터 데이터 (최초 조회 여부 포함) */
-export async function getProjectDetail(id: string) {
-  const project = await updateProject(id, (p) => ({ ...p, viewCount: p.viewCount + 1 }));
+/** 에디터가 받는 프로젝트 상세 (조회·버전 복원이 함께 사용) */
+export async function toProjectDetail(project: ProjectRecord) {
   const frames = sortFrames(project.frames);
   return {
     ...toProjectDto(project),
@@ -176,22 +207,77 @@ export async function getProjectDetail(id: string) {
     assetUrls: await frameAssetUrls(frames),
     productName: project.productName,
     categoryName: findCategory(project.categoryId)?.name ?? '',
+    palette: project.draftLayout?.palette ?? null,
+    originalPalette: project.draftLayout ? (project.draftLayout.originalPalette ?? project.draftLayout.palette) : null,
   };
 }
 
-export async function patchProject(id: string, body: Partial<Pick<ProjectRecord, 'title' | 'productName' | 'categoryId' | 'description'>>) {
+/** GET /projects/{id} — 에디터 데이터 (최초 조회 여부 포함) */
+export async function getProjectDetail(id: string) {
+  return toProjectDetail(await updateProject(id, (p) => ({ ...p, viewCount: p.viewCount + 1 })));
+}
+
+type ProjectPatch = Partial<Pick<ProjectRecord, 'title' | 'productName' | 'categoryId' | 'description' | 'favorite'>> & {
+  palette?: Partial<DraftPalette>;
+};
+
+export async function patchProject(id: string, body: ProjectPatch) {
   if (body.title !== undefined && !body.title.trim()) throw badRequest('프로젝트 제목을 입력해주세요.');
-  const project = await updateProject(id, (p) => ({
-    ...p,
-    ...(body.title !== undefined && { title: body.title.trim().slice(0, 100) }),
-    ...(body.productName != null && { productName: body.productName.slice(0, 100) }),
-    ...(body.categoryId != null && { categoryId: body.categoryId }),
-    ...(body.description != null && { description: body.description.slice(0, 1000) }),
-  }));
+  const project = await updateProject(id, (p) => {
+    if (body.palette && !p.draftLayout) throw badRequest('AI 초안으로 만든 페이지에서만 색상을 바꿀 수 있어요.');
+    return {
+      ...p,
+      ...(body.title !== undefined && { title: body.title.trim().slice(0, 100) }),
+      ...(body.productName != null && { productName: body.productName.slice(0, 100) }),
+      ...(body.categoryId != null && { categoryId: body.categoryId }),
+      ...(body.description != null && { description: body.description.slice(0, 1000) }),
+      ...(body.favorite !== undefined && { favorite: Boolean(body.favorite) }),
+      ...(body.palette &&
+        p.draftLayout && { draftLayout: { ...p.draftLayout, palette: normalizePalette(body.palette, p.draftLayout.palette) } }),
+    };
+  });
   return toProjectDto(project);
 }
 
-export const deleteProject = (id: string) => updateProject(id, (p) => ({ ...p, status: 'deleted' }));
+/** DELETE /projects/{id} — 휴지통으로 (permanent=true면 휴지통에서 영구 삭제) */
+export async function deleteProject(id: string, permanent: boolean) {
+  const project = await updateProject(
+    id,
+    (p) => (permanent ? { ...p, status: 'deleted' } : { ...p, status: 'trashed', deletedAt: nowIso() }),
+    { allowTrashed: permanent },
+  );
+  return toProjectDto(project);
+}
+
+/** POST /projects/{id}/restore — 휴지통에서 꺼내기 */
+export async function restoreProject(id: string) {
+  const project = await updateProject(id, ({ deletedAt: _removed, ...p }) => ({ ...p, status: 'active' }), { allowTrashed: true });
+  return toProjectDto(project);
+}
+
+/** POST /projects/{id}/duplicate — 사본 만들기 (프레임·요소 id는 새로 발급) */
+export async function duplicateProject(id: string) {
+  const source = await getProject(id);
+  const now = nowIso();
+  const copy: ProjectRecord = {
+    ...source,
+    id: newId(),
+    title: `${source.title} (사본)`.slice(0, 100),
+    generationJobId: null,
+    viewCount: 0,
+    favorite: false,
+    createdAt: now,
+    updatedAt: now,
+    frames: [],
+  };
+  copy.frames = source.frames.map((frame) => {
+    const frameId = newId();
+    const frameData = frame.status === 'active' ? cloneWithNewIds(asNode(frame.frameData), frameId) : {};
+    return { ...frame, id: frameId, projectId: copy.id, frameData: frameData as ProjectFrame['frameData'], createdAt: now, updatedAt: now };
+  });
+  await saveNewProject(copy);
+  return toProjectDto(copy);
+}
 
 /** PUT /projects/{id}/thumbnail (multipart file) */
 export async function saveThumbnail(id: string, req: Request) {

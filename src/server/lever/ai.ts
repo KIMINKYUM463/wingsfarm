@@ -12,7 +12,7 @@ import { getProject, updateProject } from './projects';
 import { extFromMime } from './storage';
 import { newId, nowIso, readJson, updateJson, writeJson } from './store';
 
-const IMAGE_RULES =
+export const IMAGE_RULES =
   'Keep the exact same product as the reference photos (shape, color, label, logo, packaging). ' +
   'Photorealistic commercial product photography for a Korean e-commerce detail page. ' +
   'Do not add any text, letters, watermark, logo overlay, frame or border.';

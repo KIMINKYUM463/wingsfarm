@@ -167,6 +167,7 @@ export default function FrameListPanel() {
 
   return (
     <aside
+      data-tour="editor-sections"
       className="fixed z-40 bg-white rounded-lg flex flex-col overflow-hidden"
       style={{
         right: 'var(--right-sidebar-gap)',

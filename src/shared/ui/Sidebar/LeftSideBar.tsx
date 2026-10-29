@@ -23,7 +23,7 @@ const ToolLayout = () => {
       : selectedTool;
 
   return (
-    <aside className={clsx('flex fixed z-50 left-0 h-full bg-white')}>
+    <aside data-tour="editor-tools" className={clsx('flex fixed z-50 left-0 h-full bg-white')}>
       <ToggleGroup
         items={LEFT_SIDEBAR_TOGGLE}
         wrapClassName="w-(--w-left-sidebar) flex-column items-center gap-4 py-content border-r border-(--color-border)"

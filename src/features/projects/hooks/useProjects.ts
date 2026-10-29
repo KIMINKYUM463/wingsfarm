@@ -9,7 +9,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { getProjectsWithPagination } from '../api';
 import { queryKeys } from '@/shared/constants/queryKeys';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import type { ProjectSortOption, ProjectSortBy, ProjectSortOrder } from '../types';
+import type { ProjectFilter, ProjectSortOption, ProjectSortBy, ProjectSortOrder } from '../types';
 
 interface UseProjectsOptions {
   /** 한 번에 가져올 프로젝트 수 */
@@ -39,6 +39,7 @@ const getSortParams = (
 export const useProjects = ({ limit }: UseProjectsOptions) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sort, setSort] = useState<ProjectSortOption>('recent');
+  const [filter, setFilter] = useState<ProjectFilter>('all');
 
   const debouncedSearch = useDebounce(searchQuery, 300);
   const searchParam = debouncedSearch || undefined;
@@ -46,7 +47,7 @@ export const useProjects = ({ limit }: UseProjectsOptions) => {
   const { sortBy, sortOrder } = getSortParams(sort);
 
   const query = useInfiniteQuery({
-    queryKey: queryKeys.PROJECTS.list({ limit, sortBy, sortOrder, search: searchParam }),
+    queryKey: queryKeys.PROJECTS.list({ limit, sortBy, sortOrder, search: searchParam, filter }),
     queryFn: ({ pageParam }) =>
       getProjectsWithPagination({
         cursor: pageParam,
@@ -54,6 +55,7 @@ export const useProjects = ({ limit }: UseProjectsOptions) => {
         sortBy,
         sortOrder,
         search: searchParam,
+        filter,
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -86,6 +88,8 @@ export const useProjects = ({ limit }: UseProjectsOptions) => {
     // 검색/정렬 상태
     searchQuery,
     sort,
+    filter,
+    setFilter,
     setSearchQuery: (value: string) => setSearchQuery(value),
     setSort: handleSortChange,
     /** Dropdown용 핸들러 */

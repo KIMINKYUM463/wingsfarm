@@ -6,6 +6,8 @@ import { isKonvaGroupElement, isKonvaFrameElement } from '@/shared/types/konva';
 import { updateFrameChildren, updateElementInChildren } from '../lib/frame-utils';
 import { injectRootIdToFrame } from '../lib/rootId-utils';
 import { useHistoryStore } from './useHistoryStore';
+import { recolorTree, type PaletteNode } from '@/shared/lib/palette';
+import type { DraftPalette } from '@/shared/types/draft';
 
 // ============================================================
 // 히스토리 저장 헬퍼 (중앙 집중)
@@ -66,6 +68,10 @@ const flattenElements = (elements: KonvaElement[]): KonvaElement[] => {
   return result;
 };
 
+/** active 프레임의 모든 요소를 id → 요소 Map으로 (ghost는 children이 없음) */
+const toFlatMap = (frames: KonvaFrameElement[]) =>
+  new Map(flattenElements(frames.filter((f) => f.status === 'active')).map((el) => [el.id, el]));
+
 /**
  * 캔버스 데이터 저장소 (하이브리드 방식)
  *
@@ -124,6 +130,8 @@ interface CanvasDataState {
   setDuplicatingFrameId: (frameId: string | null) => void;
   // 히스토리에서 frames 복원 (undo/redo용)
   restoreFromHistory: (frames: KonvaFrameElement[]) => void;
+  // 색상 탭: 팔레트 역할(colorVar)이 달린 요소를 한 번에 다시 칠하기 (실행 취소 가능)
+  applyPalette: (palette: DraftPalette) => void;
 }
 
 export const useCanvasDataStore = create<CanvasDataState>()(
@@ -174,19 +182,9 @@ export const useCanvasDataStore = create<CanvasDataState>()(
           };
         });
 
-        // active 프레임의 요소만 평탄화 (ghost는 children이 없음)
-        const activeFrames = frames.filter((f) => f.status === 'active');
-        const allElements = flattenElements(activeFrames);
-
-        // Map으로 변환 (id를 key로 사용)
-        const elementsMap = new Map<string, KonvaElement>();
-        allElements.forEach((element) => {
-          elementsMap.set(element.id, element);
-        });
-
         set({
           frames,
-          flatElements: elementsMap,
+          flatElements: toFlatMap(frames),
           assetUrls,
           isInitialized: true,
           productName,
@@ -323,23 +321,25 @@ export const useCanvasDataStore = create<CanvasDataState>()(
         // undo/redo 복원 중 플래그 설정 (히스토리 저장 방지)
         isRestoringFromHistory = true;
 
-        // active 프레임의 요소만 평탄화
-        const activeFrames = frames.filter((f) => f.status === 'active');
-        const allElements = flattenElements(activeFrames);
-
-        // Map으로 변환
-        const elementsMap = new Map<string, KonvaElement>();
-        allElements.forEach((element) => {
-          elementsMap.set(element.id, element);
-        });
-
         set({
           frames,
-          flatElements: elementsMap,
+          flatElements: toFlatMap(frames),
         });
 
         // 플래그 리셋
         isRestoringFromHistory = false;
+      },
+
+      applyPalette: (palette: DraftPalette) => {
+        const { frames } = get();
+        const recolored = frames.map((frame) =>
+          frame.status === 'active'
+            ? (recolorTree(frame as PaletteNode, palette) as unknown as KonvaFrameElement)
+            : frame,
+        );
+        if (recolored.every((frame, i) => frame === frames[i])) return;
+        recordHistoryIfNeeded();
+        set({ frames: recolored, flatElements: toFlatMap(recolored) });
       },
     }),
     { name: 'canvas-data-store' },

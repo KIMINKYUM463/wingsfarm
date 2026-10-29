@@ -14,6 +14,7 @@ export const ENDPOINTS = {
     MARK_AI_IMAGE_READY: (projectId: string, assetId: string) =>
       `/functions/v1/projects/${projectId}/ai/images/${assetId}/ready`,
     GENERATE_AI_TEXT: (projectId: string) => `/functions/v1/projects/${projectId}/ai/texts`,
+    AI_CHAT: (projectId: string) => `/functions/v1/projects/${projectId}/ai/chat`,
     GET_START_FORM: '/functions/v1/categories',
     MATCH_CATEGORY: '/functions/v1/categories/match',
     GET: '/detail-page/create',
@@ -61,6 +62,13 @@ export const ENDPOINTS = {
       `/functions/v1/projects/${projectId}/generate/keywords`,
     REGENERATE_FRAMES: (projectId: string) =>
       `/functions/v1/projects/${projectId}/frames/regenerate`,
+    RESTORE: (projectId: string) => `/functions/v1/projects/${projectId}/restore`,
+    DUPLICATE: (projectId: string) => `/functions/v1/projects/${projectId}/duplicate`,
+    VERSIONS: (projectId: string) => `/functions/v1/projects/${projectId}/versions`,
+    VERSION: (projectId: string, versionId: string) =>
+      `/functions/v1/projects/${projectId}/versions/${versionId}`,
+    VERSION_RESTORE: (projectId: string, versionId: string) =>
+      `/functions/v1/projects/${projectId}/versions/${versionId}/restore`,
   },
   TEMPLATES: {
     LIST: '/functions/v1/templates',

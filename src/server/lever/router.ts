@@ -13,6 +13,22 @@ import {
 } from './ai';
 import { toCategoryList } from './catalog/categories';
 import { findGraphicSvg, listGraphicElements } from './catalog/graphics';
+import {
+  addSection,
+  autofillDraft,
+  createDraft,
+  deleteDraft,
+  getDraftDto,
+  listDrafts,
+  listReuseSources,
+  paletteCatalog,
+  patchDraft,
+  planGuidePrompt,
+  shufflePalettes,
+  startGenerate,
+  startPlan,
+} from './drafts';
+import { toDraftDto } from './drafts/repo';
 import { IMAGE_STYLE_MAJORS } from './catalog/styles';
 import {
   addFrame,
@@ -31,11 +47,15 @@ import { MY_SUBSCRIPTION, PAYMENT_LISTS, creditBalance, paymentNotSupported } fr
 import {
   createProject,
   deleteProject,
+  duplicateProject,
   getProjectDetail,
   listProjects,
   patchProject,
+  restoreProject,
   saveThumbnail,
 } from './projects';
+import { chatEdit } from './chat';
+import { createVersion, deleteVersion, listVersions, restoreVersion } from './versions';
 import { getApiKeyInfo, updateSettings } from './settings';
 import { loadFile, mimeFromPath, saveFile, toStoragePath, verifyUploadToken } from './storage';
 import { getFigmaStatus, syncFigmaTemplates } from './templates/figmaSync';
@@ -61,14 +81,32 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['POST', 'projects/generation/:jobId/confirm', async ({ params, body }) => confirmGeneration(params.jobId, await body())],
   ['GET', 'projects/:id', ({ params }) => getProjectDetail(params.id)],
   ['PATCH', 'projects/:id', async ({ params, body }) => patchProject(params.id, await body())],
-  ['DELETE', 'projects/:id', async ({ params }) => {
-    await deleteProject(params.id);
-    return { id: params.id };
-  }],
+  ['DELETE', 'projects/:id', ({ params, query }) => deleteProject(params.id, query.get('permanent') === 'true')],
+  ['POST', 'projects/:id/restore', ({ params }) => restoreProject(params.id)],
+  ['POST', 'projects/:id/duplicate', async ({ params }) => created(duplicateProject(params.id))],
+  ['GET', 'projects/:id/versions', ({ params }) => listVersions(params.id)],
+  ['POST', 'projects/:id/versions', async ({ params, body }) => created(createVersion(params.id, await body()))],
+  ['POST', 'projects/:id/versions/:versionId/restore', ({ params }) => restoreVersion(params.id, params.versionId)],
+  ['DELETE', 'projects/:id/versions/:versionId', ({ params }) => deleteVersion(params.id, params.versionId)],
   ['PUT', 'projects/:id/thumbnail', ({ params, req }) => saveThumbnail(params.id, req)],
   ['GET', 'projects/:id/estimate', ({ params }) => estimateProject(params.id)],
   ['POST', 'projects/:id/generate', async ({ params, body }) => created(startGeneration(params.id, await body()))],
   ['POST', 'projects/:id/generate/keywords', async ({ params, body }) => generateKeywords(params.id, await body())],
+
+  // ===== 초안 (입력 → 무료 기획 초안 → 생성) =====
+  ['GET', 'drafts', () => listDrafts()],
+  ['POST', 'drafts', async ({ body }) => created(createDraft(await body()))],
+  ['GET', 'drafts/reuse-sources', ({ query }) => listReuseSources(query)],
+  ['GET', 'drafts/:id', ({ params }) => getDraftDto(params.id)],
+  ['PATCH', 'drafts/:id', async ({ params, body }) => patchDraft(params.id, await body())],
+  ['DELETE', 'drafts/:id', ({ params }) => deleteDraft(params.id)],
+  ['POST', 'drafts/:id/autofill', async ({ params }) => toDraftDto(await autofillDraft(params.id))],
+  ['GET', 'drafts/:id/plan-guide', ({ params }) => planGuidePrompt(params.id)],
+  ['POST', 'drafts/:id/plan', async ({ params }) => toDraftDto(await startPlan(params.id))],
+  ['POST', 'drafts/:id/sections', async ({ params, body }) => toDraftDto(await addSection(params.id, await body()))],
+  ['POST', 'drafts/:id/palette/shuffle', async ({ params }) => ({ presets: await shufflePalettes(params.id) })],
+  ['POST', 'drafts/:id/generate', async ({ params }) => toDraftDto(await startGenerate(params.id))],
+  ['GET', 'palettes', async ({ query }) => paletteCatalog(query)],
 
   // ===== 프레임 =====
   ['POST', 'projects/:id/frames', async ({ params, body }) => addFrame(params.id, await body())],
@@ -87,6 +125,7 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['POST', 'projects/:id/ai/images2', async ({ params, body }) => created(startStyledImage(params.id, await body()))],
   ['GET', 'projects/:id/ai/images2/jobs/:jobId', ({ params }) => getImageJobStatus(params.id, params.jobId)],
   ['POST', 'projects/:id/ai/texts', async ({ params, body }) => generateElementText(params.id, await body())],
+  ['POST', 'projects/:id/ai/chat', async ({ params, body }) => chatEdit(params.id, await body())],
 
   // ===== 에셋 (내 이미지) =====
   ['GET', 'assets', ({ query }) => listAssets(query)],

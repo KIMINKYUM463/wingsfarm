@@ -59,10 +59,11 @@ export const useUpdateProject = () => {
       }
     },
     onSuccess: (response) => {
-      // 서버 응답으로 캐시 최종 동기화
+      // 서버 응답으로 캐시 최종 동기화 (응답은 요약 정보라 frames·palette 등 상세 필드는 유지)
       queryClient.setQueryData(queryKeys.EDITOR.projectDetail(projectId), (oldData: unknown) => {
         if (!oldData || typeof oldData !== 'object') return oldData;
-        return { ...(oldData as object), data: response.data };
+        const typed = oldData as { data: Record<string, unknown> };
+        return { ...typed, data: { ...typed.data, ...response.data } };
       });
 
       // 프로젝트 목록 캐시 무효화

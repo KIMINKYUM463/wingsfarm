@@ -62,6 +62,7 @@ export const getProjectsWithPagination = async (
       sortBy: params?.sortBy,
       sortOrder: params?.sortOrder,
       search: params?.search,
+      filter: params?.filter === 'all' ? undefined : params?.filter,
     },
   });
 
@@ -82,15 +83,25 @@ export const getProjectById = async (id: string): Promise<Project | null> => {
 };
 
 /**
- * 프로젝트 삭제
+ * 프로젝트 삭제 — 기본은 휴지통으로, permanent면 휴지통에서 영구 삭제
  *
  * @param id - 프로젝트 ID
  */
-export const deleteProject = async (id: string): Promise<void> => {
+export const deleteProject = async ({ id, permanent = false }: { id: string; permanent?: boolean }): Promise<void> => {
   await httpClient.delete(ENDPOINTS.PROJECTS.DETAIL(id), {
     withAuth: true,
+    queryParams: permanent ? { permanent: 'true' } : undefined,
   });
 };
+
+/** 휴지통에서 복원 */
+export const restoreProject = async (id: string): Promise<void> => {
+  await httpClient.post(ENDPOINTS.PROJECTS.RESTORE(id), {}, { withAuth: true });
+};
+
+/** 사본 만들기 */
+export const duplicateProject = async (id: string): Promise<Project> =>
+  (await httpClient.post<{ data: Project }>(ENDPOINTS.PROJECTS.DUPLICATE(id), {}, { withAuth: true })).data;
 
 /**
  * 프로젝트 썸네일 업로드 응답

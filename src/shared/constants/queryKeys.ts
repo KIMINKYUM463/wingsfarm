@@ -27,7 +27,7 @@ export const queryKeys = {
     all: ['projects'] as const,
     lists: () => [...queryKeys.PROJECTS.all, 'list'] as const,
     /** 페이지네이션된 목록 쿼리키 (limit, sortBy, sortOrder, search별로 캐시 분리) */
-    list: (params?: { limit?: number; sortBy?: string; sortOrder?: string; search?: string }) =>
+    list: (params?: { limit?: number; sortBy?: string; sortOrder?: string; search?: string; filter?: string }) =>
       [...queryKeys.PROJECTS.lists(), params] as const,
     details: () => [...queryKeys.PROJECTS.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.PROJECTS.details(), id] as const,
