@@ -395,13 +395,13 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
 
       <div className="fixed right-0 bottom-0 left-0 z-40 border-t border-gray-100 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-          <div className="flex flex-1 flex-col">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-snug">
             <SaveStatus saving={saving} savedAt={savedAt} />
             {missing.length > 0 && <span className="text-xs text-gray-500">남은 필수 항목: {missing.join(', ')}</span>}
           </div>
           <button
             type="button"
-            className="btn-primary px-6"
+            className="btn-primary shrink-0 px-4 sm:px-6"
             disabled={missing.length > 0 || plan.isPending || (input.startMode === 'reuse' && !input.reuseSourceProjectId)}
             onClick={() => {
               if (!showMore) setShowMore(true);
