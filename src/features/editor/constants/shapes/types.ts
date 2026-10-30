@@ -10,6 +10,8 @@ export interface ShapeDefinitionInput {
   name: string;
   /** 카테고리 (도형 또는 선) */
   category: 'shape' | 'line';
+  /** 검색어 (공백으로 구분, 이름은 자동 포함) */
+  keywords?: string;
   /** Konva 요소 생성 시 기본 속성 */
   defaultProps: Partial<KonvaElement> & { type: string };
 }

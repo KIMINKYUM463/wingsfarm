@@ -4,9 +4,10 @@ import ToolControlGroup, {
   ComponentCategory,
   ComponentItem,
 } from '@/features/editor/components/panel/common/ToolControlGroup';
-import { useMemo, useCallback, useRef } from 'react';
+import { useMemo, useCallback, useRef, useState } from 'react';
 import IconInputField from '@/shared/ui/Input/IconInputField';
 import { ToolSectionLayout } from '@/features/editor/components/panel/common';
+import ShapeItemGrid from '@/features/editor/components/shared/ShapeItemGrid';
 import {
   usePushMoreView,
   useReplaceMoreView,
@@ -15,18 +16,22 @@ import {
 } from '@/features/editor/store/useToolPanelStore';
 import { TOGGLE_STATES } from '@/shared/constants/ui/toggles';
 import { ToggleState } from '@/shared/types/ui/toggles';
-import { SHAPE_CATEGORIES, getShapeById } from '@/features/editor/constants/shapes';
+import { SHAPE_CATEGORIES, groupInOrder, type ShapeDefinition } from '@/features/editor/constants/shapes';
 import { useElementStore } from '@/features/editor/store/useElementStore';
 import { useActiveFrames } from '@/features/editor/store/useCanvasDataStore';
 import { useSelectionStore } from '@/features/editor/store/useSelectionStore';
 import { useCenteredFrame } from '@/features/editor/hooks/useCenteredFrame';
 import { useScrollToElement } from '@/features/editor/hooks/useScrollToElement';
+import { useIconCategories } from '@/features/editor/hooks/useIconCategories';
 import { useGraphicElements } from '@/features/editor/context/GraphicElementsContext';
 import { loadImageSize } from '@/features/editor/lib/image-utils';
+import { searchElements } from '@/features/editor/lib/elementSearch';
 import type { GraphicElement } from '@/shared/types/elements';
 
 /** 그래픽 요소 최대 크기 (px) */
 const GRAPHIC_MAX_SIZE = 200;
+/** 패널 첫 화면에서 묶음마다 보여 주는 개수 (나머지는 더보기) */
+const PREVIEW_COUNT = 3;
 
 /** 원본 비율 유지하며 최대 크기 내로 조정 */
 const constrainToMaxSize = (
@@ -45,7 +50,7 @@ const constrainToMaxSize = (
 };
 
 const renderGraphicPreview = (item: GraphicElement) => (
-  <img src={item.thumbnailUrl} alt={item.name} className="size-full object-contain" />
+  <img src={item.thumbnailUrl} alt={item.name} loading="lazy" className="size-full object-contain" />
 );
 
 /** 요소 카테고리별 편집 패널 설정 */
@@ -58,6 +63,21 @@ const EDIT_PANEL_CONFIG: Record<
   graphic: { toggle: TOGGLE_STATES.GRAPHIC_EDIT, title: '그래픽' },
 };
 
+type CatalogItem = ComponentItem & { keywords?: string };
+
+interface CatalogCategory {
+  id: string;
+  title: string;
+  items: CatalogItem[];
+}
+
+const toCatalogItem = ({ id, name, keywords, preview }: ShapeDefinition): CatalogItem => ({
+  id,
+  name,
+  keywords,
+  preview,
+});
+
 const ShapeTool = () => {
   const pushMoreView = usePushMoreView();
   const replaceMoreView = useReplaceMoreView();
@@ -68,36 +88,46 @@ const ShapeTool = () => {
   const { getCenteredFrame } = useCenteredFrame();
   const { scrollToPosition } = useScrollToElement();
   const graphicElements = useGraphicElements();
+  const iconCategories = useIconCategories();
+  const [query, setQuery] = useState('');
 
-  const categories: ComponentCategory[] = useMemo(() => {
-    const shapeCategories = SHAPE_CATEGORIES.map((cat) => ({
+  /** 도형·선 → 아이콘 → 라벨·꾸밈·스티커 순서의 전체 목록 */
+  const catalog: CatalogCategory[] = useMemo(() => {
+    const shapeCategories = [...SHAPE_CATEGORIES, ...iconCategories].map((cat) => ({
       id: cat.id,
       title: cat.title,
-      type: 'shape' as const,
-      showMore: cat.items.length > 3,
-      items: cat.items.slice(0, 3).map((item) => ({
-        id: item.id,
-        name: item.name,
-        preview: item.preview,
-      })),
+      items: cat.items.map(toCatalogItem),
     }));
+    const graphicCategories = groupInOrder(graphicElements, (g) => g.group).map(({ key, items }, index) => ({
+      id: `graphics-${index}`,
+      title: key,
+      items: items.map((g) => ({ id: g.id, name: g.name, keywords: g.keywords, preview: renderGraphicPreview(g) })),
+    }));
+    return [...shapeCategories, ...graphicCategories];
+  }, [iconCategories, graphicElements]);
 
-    if (graphicElements.length === 0) return shapeCategories;
+  const shapeById = useMemo(
+    () => new Map([...SHAPE_CATEGORIES, ...iconCategories].flatMap((cat) => cat.items.map((s) => [s.id, s] as const))),
+    [iconCategories],
+  );
+  const graphicById = useMemo(() => new Map(graphicElements.map((g) => [g.id, g])), [graphicElements]);
 
-    shapeCategories.push({
-      id: 'graphics',
-      title: '그래픽',
-      type: 'shape' as const,
-      showMore: graphicElements.length > 3,
-      items: graphicElements.slice(0, 3).map((item) => ({
-        id: item.id,
-        name: item.name,
-        preview: renderGraphicPreview(item),
+  const categories: ComponentCategory[] = useMemo(
+    () =>
+      catalog.map((cat) => ({
+        id: cat.id,
+        title: cat.title,
+        type: 'shape' as const,
+        showMore: cat.items.length > PREVIEW_COUNT,
+        items: cat.items.slice(0, PREVIEW_COUNT),
       })),
-    });
+    [catalog],
+  );
 
-    return shapeCategories;
-  }, [graphicElements]);
+  const searchResults = useMemo(
+    () => searchElements(catalog.flatMap((cat) => cat.items), query),
+    [catalog, query],
+  );
 
   /** 요소 추가 후 선택 및 편집 패널 전환 */
   const selectAndShowEditPanel = useCallback(
@@ -146,7 +176,7 @@ const ShapeTool = () => {
       const frameHeight = centeredFrame.height ?? 1080;
 
       // 그래픽 요소 처리
-      const graphicElement = graphicElements.find((g) => g.id === item.id);
+      const graphicElement = graphicById.get(item.id);
       if (graphicElement) {
         // 클라이언트에서 이미지 원본 크기 측정 후 최대 크기 내로 조정
         const originalSize = await loadImageSize(graphicElement.imageUrl);
@@ -159,8 +189,8 @@ const ShapeTool = () => {
         return;
       }
 
-      // 도형/선 요소 처리
-      const shapeDefinition = getShapeById(item.id);
+      // 도형/선/아이콘 요소 처리
+      const shapeDefinition = shapeById.get(item.id);
       if (!shapeDefinition) return;
 
       const newId = addShapeToFrame(frameId, shapeDefinition.defaultProps);
@@ -177,7 +207,8 @@ const ShapeTool = () => {
     [
       activeFrames,
       getCenteredFrame,
-      graphicElements,
+      graphicById,
+      shapeById,
       addGraphicToFrame,
       addShapeToFrame,
       selectAndShowEditPanel,
@@ -191,31 +222,13 @@ const ShapeTool = () => {
 
   const handleMoreClick = useCallback(
     (categoryId: string) => {
-      if (categoryId === 'graphics') {
-        const moreItems: ProductImageItem[] = graphicElements.map((item) => ({
-          id: item.id,
-          name: item.name,
-          category: 'graphic',
-          preview: renderGraphicPreview(item),
-        }));
-
-        pushMoreView(
-          TOGGLE_STATES.SHAPE_MORE,
-          '그래픽',
-          moreItems,
-          (selectedItem) => handleItemClickRef.current({ id: selectedItem.id, name: selectedItem.name }),
-          TOGGLE_STATES.SHAPE,
-        );
-        return;
-      }
-
-      const category = SHAPE_CATEGORIES.find((cat) => cat.id === categoryId);
+      const category = catalog.find((cat) => cat.id === categoryId);
       if (!category) return;
 
       const moreItems: ProductImageItem[] = category.items.map((item) => ({
         id: item.id,
         name: item.name,
-        category: item.category,
+        category: categoryId,
         preview: item.preview,
       }));
 
@@ -223,36 +236,47 @@ const ShapeTool = () => {
         TOGGLE_STATES.SHAPE_MORE,
         category.title,
         moreItems,
-        (selectedItem) => {
-          const shapeDefinition = getShapeById(selectedItem.id);
-          if (!shapeDefinition) return;
-          handleItemClickRef.current({
-            id: shapeDefinition.id,
-            name: shapeDefinition.name,
-            preview: shapeDefinition.preview,
-          });
-        },
+        (selectedItem) => handleItemClickRef.current({ id: selectedItem.id, name: selectedItem.name }),
         TOGGLE_STATES.SHAPE,
       );
     },
-    [graphicElements, pushMoreView],
+    [catalog, pushMoreView],
   );
+
+  const isSearching = query.trim().length > 0;
 
   return (
     <ToolSectionLayout
       title="요소"
       body={
-        <IconInputField wrapClassName="tool-search-input mb-8" placeholder="요소를 검색하세요." />
+        <IconInputField
+          wrapClassName="tool-search-input mb-8"
+          placeholder="요소를 검색하세요. (예: 배송, 딸기, 할인)"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="요소 검색"
+        />
       }
     >
-      {categories.map((category) => (
-        <ToolControlGroup
-          key={category.id}
-          category={category}
-          onItemClick={handleItemClick}
-          onMoreClick={handleMoreClick}
-        />
-      ))}
+      {isSearching ? (
+        <div className="w-full">
+          <p className="description mb-4 text-gray-500">
+            {searchResults.length > 0
+              ? `검색 결과 ${searchResults.length}개`
+              : '검색 결과가 없어요. 다른 낱말로 찾아보세요.'}
+          </p>
+          <ShapeItemGrid items={searchResults} onItemClick={handleItemClick} />
+        </div>
+      ) : (
+        categories.map((category) => (
+          <ToolControlGroup
+            key={category.id}
+            category={category}
+            onItemClick={handleItemClick}
+            onMoreClick={handleMoreClick}
+          />
+        ))
+      )}
     </ToolSectionLayout>
   );
 };

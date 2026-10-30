@@ -28,6 +28,8 @@ const ShapeItemGrid: React.FC<ShapeItemGridProps> = ({ items, onItemClick, class
         <button
           key={item.id}
           type="button"
+          title={item.name ?? undefined}
+          aria-label={item.name ?? undefined}
           onClick={() => onItemClick(item)}
           className={clsx(
             'relative w-25 h-25.5 rounded-lg bg-gray-50 overflow-hidden',

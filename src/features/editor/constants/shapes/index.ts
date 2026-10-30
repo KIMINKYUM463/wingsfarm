@@ -4,6 +4,7 @@ export * from './types';
 export * from './utils';
 export { BASIC_SHAPES } from './basic-shapes';
 export { LINE_SHAPES } from './lines';
+export { loadIconCategories } from './icons';
 
 import { BASIC_SHAPES } from './basic-shapes';
 import { LINE_SHAPES } from './lines';
@@ -24,10 +25,3 @@ export const SHAPE_CATEGORIES: ShapeCategory[] = [
     items: LINE_SHAPES,
   },
 ];
-
-/**
- * ID로 ShapeDefinition 조회
- */
-export const getShapeById = (id: string) => {
-  return [...BASIC_SHAPES, ...LINE_SHAPES].find((shape) => shape.id === id);
-};

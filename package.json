@@ -41,6 +41,8 @@
   },
   "devDependencies": {
     "@figma/rest-api-spec": "0.46.0",
+    "@iconify-json/fluent-emoji-flat": "^1.2.6",
+    "@iconify-json/ph": "^1.2.2",
     "@supabase/supabase-js": "2.87.1",
     "@svgr/webpack": "8.1.0",
     "@tailwindcss/postcss": "^4",
@@ -50,6 +52,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.7",
+    "svgpath": "^2.6.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

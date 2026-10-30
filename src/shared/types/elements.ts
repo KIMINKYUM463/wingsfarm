@@ -8,6 +8,10 @@ export interface GraphicElement {
   name: string;
   thumbnailUrl: string;
   imageUrl: string;
+  /** 요소 패널의 묶음 이름 (예: '라벨·뱃지', '스티커 · 과일') */
+  group: string;
+  /** 검색어 (공백으로 구분) */
+  keywords?: string;
 }
 
 /**
