@@ -15,6 +15,7 @@ import { useAutoSaveStore } from '@/features/editor/store/useAutoSaveStore';
 import { useUpdateProject } from '@/features/projects/hooks';
 import { useHistory } from '@/features/editor/hooks/useHistory';
 import { VersionHistoryButton } from '@/features/editor/components/overlay/VersionHistory';
+import { PagePreviewButton } from '@/features/editor/components/overlay/PagePreview';
 
 interface EditorHeaderProps {
   productName?: string;
@@ -165,6 +166,7 @@ export function EditorHeader({ productName = '' }: EditorHeaderProps) {
         {/* TODO: 크레딧 잔액 버튼 임시 숨김 */}
         {/* <CreditButton /> */}
 
+        <PagePreviewButton />
         <Popover
           contentType="download"
           trigger={
