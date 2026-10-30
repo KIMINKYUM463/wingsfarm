@@ -25,8 +25,8 @@ export interface DesignTokens {
   card: 'fill' | 'outline';
   /** 첫 화면: 문구 → 사진 / 사진 → 문구 / 사진 위에 문구 */
   hero: 'stack' | 'imageTop' | 'overlay';
-  /** 포인트 나열: 위아래로 쌓기 / 사진·문구 좌우 번갈아 */
-  points: 'stack' | 'zigzag';
+  /** 포인트 나열: 위아래로 쌓기 / 사진·문구 좌우 번갈아 / 화면 끝까지 꽉 찬 사진 아래 문구 */
+  points: 'stack' | 'zigzag' | 'bleed';
   surfaces: Record<SectionLayout, Surface>;
 }
 
@@ -106,6 +106,20 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     hero: 'stack',
     points: 'stack',
     surfaces: { ...BASE_SURFACES, hero: 'bgDark', grid: 'bgDark', badges: 'bgDark', steps: 'bgDark', faq: 'bgDark' },
+  },
+  /** 산지 다큐: 사진이 주인공. 꽉 찬 사진 위·아래로 짧은 세리프 제목, 흰 바탕, 각진 모서리 */
+  docu: {
+    font: fonts('docu'),
+    headingWeight: 800,
+    scale: 1.08,
+    align: 'left',
+    label: 'text',
+    titleRule: false,
+    radius: { card: 0, image: 0, chip: 0 },
+    card: 'fill',
+    hero: 'overlay',
+    points: 'bleed',
+    surfaces: { ...BASE_SURFACES, visual: 'white', points: 'white', grid: 'white', size: 'white', steps: 'white', badges: 'white', faq: 'white', compare: 'bgLight' },
   },
 };
 

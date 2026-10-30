@@ -8,12 +8,19 @@ import { derivePalette, TONE_PRESETS } from '@/shared/lib/palette';
 import type { DraftPalette } from '@/shared/types/draft';
 
 /** 스타일 카드의 축소 견본 — 첫 화면(히어로) 느낌만 보여 준다 */
-const MOCK: Record<DesignStyleId, { bg: keyof DraftPalette | 'white'; align: 'left' | 'center'; label: 'text' | 'pill' | 'rule'; weight: number; radius: number }> = {
+const MOCK: Record<DesignStyleId, { bg: keyof DraftPalette | 'white' | 'photo'; align: 'left' | 'center'; label: 'text' | 'pill' | 'rule'; weight: number; radius: number }> = {
   modern: { bg: 'white', align: 'left', label: 'text', weight: 800, radius: 8 },
   natural: { bg: 'bgLight', align: 'center', label: 'rule', weight: 800, radius: 14 },
   premium: { bg: 'main', align: 'center', label: 'rule', weight: 700, radius: 0 },
   pop: { bg: 'bgDark', align: 'center', label: 'pill', weight: 900, radius: 12 },
+  docu: { bg: 'photo', align: 'left', label: 'text', weight: 800, radius: 0 },
 };
+
+/** 사진 위 글자(히어로 overlay)를 흉내 낸 배경: 들판 색 그라데이션 + 어두운 막 */
+const PHOTO_BG = 'linear-gradient(rgba(0,0,0,0.42), rgba(0,0,0,0.42)), linear-gradient(160deg, #8BA870 0%, #C9A46A 55%, #6E5233 100%)';
+
+const mockBackground = (bg: (typeof MOCK)[DesignStyleId]['bg'], palette: DraftPalette) =>
+  bg === 'white' ? '#fff' : bg === 'photo' ? PHOTO_BG : palette[bg];
 
 export function DesignStylePanel({
   value,
@@ -52,7 +59,7 @@ export function DesignStylePanel({
 
 function StyleCard({ style, palette, selected, onClick }: { style: DesignStyleOption; palette: DraftPalette; selected: boolean; onClick: () => void }) {
   const mock = MOCK[style.id];
-  const dark = mock.bg === 'main';
+  const dark = mock.bg === 'main' || mock.bg === 'photo';
   const accent = dark ? palette.point : palette.main;
   return (
     <button
@@ -61,7 +68,7 @@ function StyleCard({ style, palette, selected, onClick }: { style: DesignStyleOp
       aria-pressed={selected}
       className={clsx('flex flex-col overflow-hidden rounded-xl border text-left transition', selected ? 'border-(--color-point) ring-2 ring-(--color-point)/30' : 'border-gray-200 hover:border-gray-300')}
     >
-      <div className="flex h-28 flex-col justify-center gap-1.5 px-4" style={{ background: mock.bg === 'white' ? '#fff' : palette[mock.bg], textAlign: mock.align }}>
+      <div className="flex h-28 flex-col justify-center gap-1.5 px-4" style={{ background: mockBackground(mock.bg, palette), textAlign: mock.align }}>
         {mock.label === 'pill' ? (
           <span className={clsx('w-fit rounded-full px-2 py-0.5 text-[10px] font-bold text-white', mock.align === 'center' && 'mx-auto')} style={{ background: palette.main }}>
             BEST

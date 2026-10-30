@@ -289,6 +289,14 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
         c.y = Math.max(c.y, top + imgH) + 90;
         return;
       }
+      if (c.t.points === 'bleed' && cut) {
+        c.image(cut, 0, W, 640, 44);
+        c.label(pointNo(i), 14);
+        c.heading(itemTitle(s, i), 42, { name: 'list_title', gap: 18 });
+        c.text(itemText(s, i), SIZE.body, { color: c.muted, lineHeight: 1.6, name: 'list_item', gap: 0 });
+        c.space(110);
+        return;
+      }
       c.label(pointNo(i), 14);
       c.heading(itemTitle(s, i), 42, { name: 'list_title', gap: 18 });
       c.text(itemText(s, i), SIZE.body, { color: c.muted, lineHeight: 1.6, name: 'list_item', gap: 40 });
