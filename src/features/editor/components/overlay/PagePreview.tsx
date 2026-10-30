@@ -7,8 +7,8 @@ import IconButton from '@/shared/ui/Button/IconButton';
 import Spinner from '@/shared/ui/Spinner/Spinner';
 import ActionTooltip from '@/shared/ui/Tooltip/ActionTooltip';
 import type { KonvaFrameElement } from '@/shared/types/konva';
-import { frameRect, getMainLayer, withExportState } from '@/features/editor/hooks/useImageDownload';
 import { CANVAS_WIDTH } from '@/features/editor/lib/download-options';
+import { renderFrameJpeg } from '@/features/editor/lib/frameImage';
 import { useActiveFrames } from '@/features/editor/store/useCanvasDataStore';
 import { useStageRefStore } from '@/features/editor/store/useStageRefStore';
 
@@ -24,19 +24,9 @@ interface PreviewPage {
   url: string;
 }
 
-/** 다운로드와 같은 상태(편집 UI 숨김)로 페이지 한 장을 그려 JPG 주소로 만든다 */
+/** 다운로드와 같은 상태(편집 UI 숨김)로 페이지 한 장을 그려 임시 이미지 주소로 만든다 */
 async function renderPage(stage: Konva.Stage, frame: KonvaFrameElement): Promise<string | null> {
-  const mainLayer = getMainLayer(stage);
-  if (!mainLayer) return null;
-  const source = withExportState(stage, mainLayer, () => mainLayer.toCanvas({ pixelRatio: PREVIEW_PIXEL_RATIO, ...frameRect(frame) }));
-  const canvas = document.createElement('canvas');
-  canvas.width = source.width;
-  canvas.height = source.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(source, 0, 0);
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+  const blob = await renderFrameJpeg(frame, PREVIEW_PIXEL_RATIO, 0.9, stage);
   return blob ? URL.createObjectURL(blob) : null;
 }
 

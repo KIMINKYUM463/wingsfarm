@@ -92,7 +92,7 @@ const DownloadPopover = () => {
   const placeholderCount = countIn(findPlaceholderTexts);
   const warnings = [
     blankCount && `빈 사진 자리 ${blankCount}곳 — 연회색 박스로 나와요`,
-    placeholderCount && `채울 문구 ${placeholderCount}곳 — "[입력 필요]"가 그대로 나와요`,
+    placeholderCount && `채울 문구 ${placeholderCount}곳 — "[입력 필요]" 같은 자리표시가 그대로 나와요`,
   ].filter((warning): warning is string => Boolean(warning));
 
   const startDownload = () => {

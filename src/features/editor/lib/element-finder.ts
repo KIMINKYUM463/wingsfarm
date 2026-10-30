@@ -5,6 +5,7 @@ import {
   isKonvaGroupElement,
   isKonvaFrameElement,
 } from '@/shared/types/konva';
+import { hasPlaceholder } from '@/shared/lib/placeholder';
 
 /**
  * 재귀적으로 요소를 찾는 헬퍼 함수
@@ -92,7 +93,7 @@ export const isImageElement = (element: { name?: string; type?: string }): boole
 };
 
 /** 보이는 말단 요소 중 조건에 맞는 것 (숨긴 요소·그 안쪽 제외) */
-const findVisibleLeaves = (elements: KonvaElement[], match: (element: KonvaElement) => boolean): KonvaElement[] =>
+export const findVisibleLeaves = (elements: KonvaElement[], match: (element: KonvaElement) => boolean): KonvaElement[] =>
   elements.flatMap((element) => {
     if (element.visible === false) return [];
     if (isKonvaGroupElement(element) || isKonvaFrameElement(element)) return findVisibleLeaves(element.children, match);
@@ -103,12 +104,9 @@ const findVisibleLeaves = (elements: KonvaElement[], match: (element: KonvaEleme
 export const findBlankImageSlots = (elements: KonvaElement[]): KonvaElement[] =>
   findVisibleLeaves(elements, (element) => isImageElement(element) && !('assetId' in element && element.assetId));
 
-/** 초안이 판매자에게 남긴 "[입력 필요]" 표시 */
-const PLACEHOLDER_PATTERN = /[[(]입력 ?필요[\])]/;
-
-/** 판매자가 채워야 할 문구가 남은 텍스트 — 다운로드 전 안내·이동에 사용 */
+/** 판매자가 채워야 할 문구([입력 필요]·[키워드 1]·~적어 주세요)가 남은 텍스트 — 다운로드 전 안내·이동에 사용 */
 export const findPlaceholderTexts = (elements: KonvaElement[]): KonvaElement[] =>
-  findVisibleLeaves(elements, (element) => element.type === 'text' && 'text' in element && PLACEHOLDER_PATTERN.test(element.text));
+  findVisibleLeaves(elements, (element) => element.type === 'text' && 'text' in element && hasPlaceholder(element.text));
 
 /** 요소의 프레임 기준 세로 위치 (부모 그룹 y 합산, 회전·확대는 무시) — 찾지 못하면 undefined */
 export const elementTopInFrame = (elements: KonvaElement[], elementId: string, parentY = 0): number | undefined => {

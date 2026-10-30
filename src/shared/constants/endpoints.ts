@@ -15,6 +15,7 @@ export const ENDPOINTS = {
       `/functions/v1/projects/${projectId}/ai/images/${assetId}/ready`,
     GENERATE_AI_TEXT: (projectId: string) => `/functions/v1/projects/${projectId}/ai/texts`,
     AI_CHAT: (projectId: string) => `/functions/v1/projects/${projectId}/ai/chat`,
+    AI_SECTION_REVIEW: (projectId: string) => `/functions/v1/projects/${projectId}/ai/section-review`,
     GET_START_FORM: '/functions/v1/categories',
     MATCH_CATEGORY: '/functions/v1/categories/match',
     GET: '/detail-page/create',

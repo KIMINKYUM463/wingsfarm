@@ -10,23 +10,10 @@ import { useProjectDetail } from '@/features/editor/hooks/useProjectDetail';
 import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useAiChatStore, type ChatTurn } from '@/features/editor/store/useAiChatStore';
 import { applyChatChanges, collectCanvasTexts, frameNameOf, revertChatChanges } from '@/features/editor/lib/chat-canvas';
-import { getCenteredFrameId } from '@/features/editor/lib/centered-frame';
+import { useCenteredFrameId } from '@/features/editor/hooks/useCenteredFrameId';
 
 /** 추천 칩 — 문구·구성 수정과 궁금한 것 */
 const SUGGESTIONS = ['문구 더 짧게', '질문형 제목으로', '영어로 번역', '제목 가운데 정렬하고 크게', '수정 비용이 드나요?'];
-
-/** 지금 보고 있는 페이지 (스크롤을 따라간다) */
-function useCenteredFrameId() {
-  const frames = useCanvasDataStore((state) => state.frames);
-  const [frameId, setFrameId] = useState<string | null>(null);
-  useEffect(() => {
-    const update = () => setFrameId(getCenteredFrameId());
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    return () => window.removeEventListener('scroll', update);
-  }, [frames]);
-  return frameId;
-}
 
 /** 대기열 처리 — 한 번에 하나씩, 보낸 순서대로 */
 function useChatRunner(projectId: string) {

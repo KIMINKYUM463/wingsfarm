@@ -11,6 +11,7 @@ const ids = (elements: KonvaElement[]) => elements.map((element) => element.id);
 const tree = [
   el({ id: 'filled', type: 'text', text: '총 중량 2kg' }),
   el({ id: 'todo', type: 'text', text: '총 중량 [입력 필요], 과수 (입력필요)' }),
+  el({ id: 'keyword', type: 'text', text: '[키워드 1]' }),
   el({ id: 'slot', type: 'rect', name: 'hero_image' }),
   el({ id: 'photo', type: 'rect', name: 'hero_image', assetId: 'a1' }),
   el({
@@ -22,8 +23,8 @@ const tree = [
 ];
 
 describe('element-finder', () => {
-  it('[입력 필요]·(입력필요)가 남은 보이는 텍스트만 찾는다', () => {
-    assert.deepEqual(ids(findPlaceholderTexts(tree)), ['todo', 'nested']);
+  it('[입력 필요]·(입력필요)·템플릿 자리표시가 남은 보이는 텍스트만 찾는다', () => {
+    assert.deepEqual(ids(findPlaceholderTexts(tree)), ['todo', 'keyword', 'nested']);
   });
 
   it('사진이 없는 보이는 이미지 자리만 찾는다', () => {

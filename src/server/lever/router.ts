@@ -56,6 +56,7 @@ import {
   saveThumbnail,
 } from './projects';
 import { chatEdit } from './chat';
+import { reviewSection } from './sectionReview';
 import { createVersion, deleteVersion, listVersions, restoreVersion } from './versions';
 import { getApiKeyInfo, updateSettings } from './settings';
 import { loadFile, mimeFromPath, saveFile, toStoragePath, verifyUploadToken } from './storage';
@@ -134,6 +135,7 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['GET', 'projects/:id/ai/images2/jobs/:jobId', ({ params }) => getImageJobStatus(params.id, params.jobId)],
   ['POST', 'projects/:id/ai/texts', async ({ params, body }) => generateElementText(params.id, await body())],
   ['POST', 'projects/:id/ai/chat', async ({ params, body }) => chatEdit(params.id, await body())],
+  ['POST', 'projects/:id/ai/section-review', async ({ params, body }) => reviewSection(params.id, await body())],
 
   // ===== 에셋 (내 이미지) =====
   ['GET', 'assets', ({ query }) => listAssets(query)],

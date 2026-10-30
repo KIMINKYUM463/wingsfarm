@@ -4,6 +4,7 @@ import { CustomError } from '@/shared/lib/CustomError';
 import type { CreatePageFromFigmaOutput } from '@/shared/types/actions';
 import type { KonvaFrameElement } from '@/shared/types/konva';
 import type { ChatEditRequest, ChatEditResult } from '@/shared/types/chatEdit';
+import type { SectionReviewRequest, SectionReviewResult } from '@/shared/types/sectionReview';
 import type { HeroMotionInfo, HeroMotionKind, StockSource, StockVideo } from '@/shared/types/heroMotion';
 import type {
   ExternalApiResponse,
@@ -308,6 +309,9 @@ export const regenerateProjectFrames = async (
 
 export const chatEditProject = async (projectId: string, request: ChatEditRequest) =>
   (await httpClient.post<ExternalApiResponse<ChatEditResult>>(ENDPOINTS.DETAIL_PAGE.AI_CHAT(projectId), request, { withAuth: true })).data;
+
+export const reviewSection = async (projectId: string, request: SectionReviewRequest) =>
+  (await httpClient.post<ExternalApiResponse<SectionReviewResult>>(ENDPOINTS.DETAIL_PAGE.AI_SECTION_REVIEW(projectId), request, { withAuth: true })).data;
 
 // ===== 버전 기록 =====
 

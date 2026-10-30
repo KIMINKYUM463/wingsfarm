@@ -19,6 +19,14 @@
   --animate-rise-in: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-check-pop: check-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   --animate-bar-stripe: bar-stripe 1s linear infinite;
+  /* AI 도우미 로봇이 둥둥 떠 있는 움직임 */
+  --animate-bob: bob 3s ease-in-out infinite;
+
+  @keyframes bob {
+    50% {
+      transform: translateY(-6px);
+    }
+  }
 
   @keyframes overlay-in {
     from {

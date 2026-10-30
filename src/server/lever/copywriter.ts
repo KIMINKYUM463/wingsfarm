@@ -1,5 +1,6 @@
 import 'server-only';
 import type { ProjectFrame } from '@/features/editor/types';
+import { hasPlaceholder } from '@/shared/lib/placeholder';
 import { findCategory } from './catalog/categories';
 import { NATURAL_COPY_RULES } from './copyStyle';
 import { asFrame, asNode, applyTexts, collectEditableTexts, collectPromptGuides } from './frames/tree';
@@ -50,9 +51,7 @@ export const pageCopyOf = (frames: ProjectFrame[], limit = 30) =>
     )
     .slice(0, limit);
 
-/** 템플릿 자리표시([키워드 1])·작성 안내(~적어 주세요) — 남으면 손님에게 그대로 보인다 */
-export const PLACEHOLDER = /\[[^\]\n]{1,40}\]|(?:적어|옮겨) 주세요/;
-export const hasPlaceholder = (text: string) => PLACEHOLDER.test(text);
+export { hasPlaceholder };
 
 /** 자리표시는 모두 채우되, 자료에 없는 사실은 지어내지 않는다 (거짓 후기·수치는 표시광고법 위반) */
 export const PLACEHOLDER_RULES = `- 대괄호 [ ] 자리표시와 "~적어 주세요" 같은 작성 안내는 하나도 남기지 않고 손님이 읽을 실제 문구로 바꾼다.

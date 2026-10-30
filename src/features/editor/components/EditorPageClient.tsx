@@ -5,6 +5,7 @@ import useIsMobile from '@/shared/hooks/useIsMobile';
 import { EditorHeader } from '@/shared/ui/Header/EditorHeader';
 import EditorFooter from '@/shared/ui/Footer/EditorFooter';
 import { FrameLoadingPlaceholder } from '@/features/editor/components/FrameLoadingPlaceholder';
+import { AssistantBot } from '@/features/editor/components/assistant/AssistantBot';
 
 /** 데스크톱 로딩 UI - KonvaEditor 내부와 동일한 레이아웃 */
 const DesktopLoadingFallback = () => (
@@ -95,6 +96,7 @@ export function EditorPageClient({
         isDraftCreation={isDraftCreation}
       />
       <EditorFooter />
+      <AssistantBot />
     </>
   );
 }
