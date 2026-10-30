@@ -138,6 +138,12 @@ export function sanitizeInput(raw: unknown, base: DraftInput = emptyDraftInput()
 
 const filled = (s: string) => s.trim().length > 0;
 
+const GIFT_PATTERN = /명절|선물|추석|설날|한가위|답례|기프트|gift/i;
+
+/** 판매자가 명절·선물용으로 팔 계획을 적었는지 */
+const mentionsGift = (input: DraftInput) =>
+  GIFT_PATTERN.test([input.productName, input.features, input.plan, input.promotion, ...input.options.map((o) => o.name)].join(' '));
+
 export function evidenceKeys(input: DraftInput, reviewQuotes: string[] = []) {
   const keys = new Set<EvidenceKey>();
   const add = (key: EvidenceKey, on: boolean) => on && keys.add(key);
@@ -153,6 +159,7 @@ export function evidenceKeys(input: DraftInput, reviewQuotes: string[] = []) {
   add('promotion', filled(input.promotion));
   add('facility', filled(input.facility));
   add('model', input.model.enabled && (filled(input.model.description) || input.model.imagePaths.length > 0));
+  add('gift', mentionsGift(input));
   return keys;
 }
 

@@ -37,7 +37,8 @@ export type EvidenceKey =
   | 'options'
   | 'promotion'
   | 'facility'
-  | 'model';
+  | 'model'
+  | 'gift';
 
 export type SectionGroup = '도입' | '신뢰' | '상품 설명' | '스토리' | '활용' | '구매 유도' | '옵션·세트' | '배송' | '마무리';
 
@@ -52,6 +53,8 @@ export interface SectionType {
   evidence?: EvidenceKey;
   /** 인물(모델) 연출이 어울리는 섹션 */
   modelCapable?: boolean;
+  /** 이 카테고리에서는 AI가 먼저 고르지 않는다 (판매자가 직접 추가는 가능) */
+  notSuggestedFor?: readonly CategoryId[];
   /** AI에게 주는 이 섹션의 역할 설명 */
   guide: string;
 }
@@ -69,6 +72,7 @@ export const EVIDENCE_LABELS: Record<EvidenceKey, string> = {
   promotion: '이벤트·혜택 정보',
   facility: '시설·제조 공정 정보',
   model: '등장 모델 설정',
+  gift: '명절·선물 판매 계획(기획안·혜택에 "명절"·"선물" 키워드)',
 };
 
 const T = (
@@ -78,7 +82,7 @@ const T = (
   layout: SectionLayout,
   description: string,
   guide: string,
-  extra: Partial<Pick<SectionType, 'items' | 'cuts' | 'evidence' | 'modelCapable'>> = {},
+  extra: Partial<Pick<SectionType, 'items' | 'cuts' | 'evidence' | 'modelCapable' | 'notSuggestedFor'>> = {},
 ): SectionType => ({
   id,
   name,
@@ -90,6 +94,7 @@ const T = (
   cuts: extra.cuts ?? DEFAULT_CUTS[layout],
   evidence: extra.evidence,
   modelCapable: extra.modelCapable,
+  notSuggestedFor: extra.notSuggestedFor,
 });
 
 const DEFAULT_ITEMS: Record<SectionLayout, [number, number]> = {
@@ -142,10 +147,10 @@ const COMMON = [
   T('point_sum', '핵심 특징 요약', '상품 설명', 'grid', '핵심 특징을 아이콘 카드로 요약', '특징 4개를 각 8자 이내 제목 + 15자 내외 설명으로'),
   T('detail', '상세 컷', '상품 설명', 'points', '디테일 사진과 설명', '눈여겨볼 디테일 3가지', { items: [2, 3] }),
   T('usage', '사용 장면', '활용', 'grid', '이렇게 쓰면 좋아요 — 활용 장면', '사용·활용 장면 3~4개', { items: [3, 4], modelCapable: true }),
-  T('how_to', '사용 방법', '활용', 'steps', '순서대로 따라 하는 사용법', '사용 순서를 단계별로. 확인된 방법만'),
+  T('how_to', '사용 방법', '활용', 'steps', '순서대로 따라 하는 사용법', '사용 순서를 단계별로. 확인된 방법만', { notSuggestedFor: ['agri', 'food'] }),
   T('spec', '상품 정보', '상품 설명', 'table', '규격·구성·보관 등 기본 정보 표', '입력된 정보만 표로. 모르는 칸은 "[입력 필요]"'),
   T('options', '옵션·가격', '옵션·세트', 'table', '판매 옵션 한눈에 보기', '입력된 옵션 이름·규격만 사용', { evidence: 'options' }),
-  T('package', '선물 포장', '옵션·세트', 'visual', '선물하기 좋은 포장 구성', '포장 사진이 있을 때 선물 상황을 제안'),
+  T('package', '선물 포장', '옵션·세트', 'visual', '선물하기 좋은 포장 구성', '포장 사진이 있을 때 선물 상황을 제안', { evidence: 'gift' }),
   T('conversion', '구매 유도(환기)', '구매 유도', 'cta', '마지막으로 구매를 결심하게 하는 한마디', '핵심 가치를 다시 한번 짧게'),
   T('promotion', '이벤트·혜택', '구매 유도', 'cta', '진행 중인 이벤트·쿠폰', '입력된 혜택만 사용', { evidence: 'promotion' }),
   T('shipping_method', '배송 안내', '배송', 'steps', '주문부터 받는 날까지 배송 과정', '입력된 배송 정보만. 없으면 일반적인 안내 + "[입력 필요]"'),
@@ -167,8 +172,8 @@ const AGRI = [
   T('storage_washing', '보관·세척', '활용', 'steps', '받은 뒤 보관·손질하는 법', '일반적인 보관·세척 방법'),
   T('set_line_up', '세트 구성', '옵션·세트', 'grid', '세트별 구성 한눈에', '입력된 옵션 구성만', { evidence: 'options', items: [2, 4] }),
   T('delivery', '배송 일정', '배송', 'table', '출고일·도착 예정', '입력된 배송 정보만. 없으면 "[입력 필요]"'),
-  T('season_delivery_schedule', '명절 배송 일정', '배송', 'table', '명절 주문 마감·도착 일정', '명절 일정은 "[입력 필요]"로 비워 두고 판매자가 채우게 함'),
-  T('season_banner', '명절 인사', '배송', 'visual', '명절 선물 인사 배너', '명절 선물 상황 제안 (과장 금지)'),
+  T('season_delivery_schedule', '명절 배송 일정', '배송', 'table', '명절 주문 마감·도착 일정', '명절 일정은 "[입력 필요]"로 비워 두고 판매자가 채우게 함', { evidence: 'gift' }),
+  T('season_banner', '명절 인사', '배송', 'visual', '명절 선물 인사 배너', '명절 선물 상황 제안 (과장 금지)', { evidence: 'gift' }),
   T('data_notice', '개인정보 제3자 제공', '마무리', 'notice', '산지 발송을 위한 개인정보 제공 안내', '산지에서 직접 발송할 때 필요한 고지 문구'),
 ] as const satisfies readonly SectionType[];
 
@@ -268,7 +273,24 @@ const GENERIC_FLOW = {
   long: ['hero', 'concept', 'review', 'certification', 'quality', 'point_sum', 'detail', 'comparison', 'size_comparison', 'usage', 'how_to', 'spec', 'options', 'package', 'conversion', 'promotion', 'shipping_method', 'faq', 'contact', 'notice_ai'],
 };
 
-export const LENGTH_TARGET = { short: [12, 15], long: [20, 25] } as const;
+/** 잘 팔리는 상세페이지는 보통 9~13개 섹션 · 16,000~22,000px (860px 기준) */
+export const LENGTH_TARGET = { short: [9, 12], long: [13, 16] } as const;
+
+/** AI가 먼저 고를 수 있는 섹션 (카테고리에 안 맞는 공통 섹션 제외) */
+export const suggestableTypes = (categoryId: string) =>
+  sectionTypesFor(categoryId).filter((t) => !t.notSuggestedFor?.includes(categoryId as CategoryId));
+
+const CLOSING_GROUPS: readonly SectionGroup[] = ['배송', '마무리'];
+
+/** 섹션이 너무 많으면 본문 뒤쪽부터 덜어낸다 — 배송·마무리 섹션은 남긴다 */
+export function fitLength(ids: string[], categoryId: string, max: number) {
+  if (ids.length <= max) return ids;
+  const types = sectionTypesFor(categoryId);
+  const isClosing = (id: string) => CLOSING_GROUPS.includes(types.find((t) => t.id === id)?.group as SectionGroup);
+  const tail = ids.filter(isClosing);
+  const body = ids.filter((id) => !isClosing(id)).slice(0, Math.max(max - tail.length, 1));
+  return [...body, ...tail];
+}
 
 const AI_NOTICE_ID = 'notice_ai';
 
@@ -282,7 +304,7 @@ export function withAiNotice(ids: string[], usesAiImages: boolean) {
 }
 
 export function defaultFlow(categoryId: string, length: 'short' | 'long', available: (type: SectionType) => boolean) {
-  const types = sectionTypesFor(categoryId);
+  const types = suggestableTypes(categoryId);
   const flow = FLOWS[categoryId as CategoryId] ?? GENERIC_FLOW;
   const base = flow[length].filter((id) => types.some((t) => t.id === id));
   const extras = types.map((t) => t.id).filter((id) => !base.includes(id));
@@ -291,10 +313,10 @@ export function defaultFlow(categoryId: string, length: 'short' | 'long', availa
     return Boolean(type && available(type));
   };
   const picked = base.filter(usable);
-  const [min] = LENGTH_TARGET[length];
+  const [min, max] = LENGTH_TARGET[length];
   for (const id of extras) {
     if (picked.length >= min) break;
     if (usable(id)) picked.splice(Math.max(picked.length - 3, 1), 0, id);
   }
-  return picked;
+  return fitLength(picked, categoryId, max);
 }

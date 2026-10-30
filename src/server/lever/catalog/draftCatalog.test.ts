@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { findUnsupportedClaims } from './factGuard.ts';
 import { countPaletteNodes, derivePalette, luminance, normalizePalette, recolorTree, TONE_PRESETS } from '../../../shared/lib/palette.ts';
-import { defaultFlow, LENGTH_TARGET, sectionTypesFor, withAiNotice } from './sections.ts';
+import { defaultFlow, fitLength, LENGTH_TARGET, sectionTypesFor, suggestableTypes, withAiNotice } from './sections.ts';
 import { estimateLines } from '../templates/nodes.ts';
 
 describe('사실 검사', () => {
@@ -69,6 +69,27 @@ describe('섹션 카탈로그', () => {
     assert.deepEqual(withAiNotice(['hero', 'notice_ai', 'faq'], true), ['hero', 'faq', 'notice_ai']);
     assert.deepEqual(withAiNotice(['hero', 'faq'], true), ['hero', 'faq', 'notice_ai']);
     assert.deepEqual(withAiNotice(['hero', 'notice_ai', 'faq'], false), ['hero', 'faq']);
+  });
+
+  it('기본 흐름은 길이 상한을 넘지 않는다', () => {
+    for (const categoryId of ['agri', 'electronics', 'beauty']) {
+      for (const length of ['short', 'long'] as const) {
+        assert.ok(defaultFlow(categoryId, length, () => true).length <= LENGTH_TARGET[length][1], `${categoryId} ${length}`);
+      }
+    }
+  });
+
+  it('너무 길면 본문 뒤쪽부터 덜고 배송·마무리 섹션은 남긴다', () => {
+    const ids = ['hero', 'concept', 'quality', 'detail', 'usage', 'shipping_method', 'faq', 'contact'];
+    assert.deepEqual(fitLength(ids, 'agri', 5), ['hero', 'concept', 'shipping_method', 'faq', 'contact']);
+    assert.equal(fitLength(ids, 'agri', 20), ids);
+  });
+
+  it('명절·선물 섹션은 근거가 있어야 하고, 농산물에는 사용 방법을 먼저 고르지 않는다', () => {
+    const agri = sectionTypesFor('agri');
+    for (const id of ['package', 'season_delivery_schedule', 'season_banner']) assert.equal(agri.find((t) => t.id === id)?.evidence, 'gift', id);
+    assert.ok(!suggestableTypes('agri').some((t) => t.id === 'how_to'));
+    assert.ok(suggestableTypes('beauty').some((t) => t.id === 'how_to'));
   });
 
   it('카테고리 전용 섹션이 공통 섹션을 덮어쓴다', () => {

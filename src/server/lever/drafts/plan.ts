@@ -5,7 +5,7 @@ import type { DraftAnalysis, DraftInput, DraftPlan, DraftProgress, DraftRecord, 
 import { CATEGORIES, findCategory } from '../catalog/categories';
 import { NATURAL_COPY_RULES } from '../copyStyle';
 import { derivePalette, normalizePalette, palettePresets, TONE_PRESETS } from '../catalog/palette';
-import { defaultFlow, findSectionType, LENGTH_TARGET, sectionTypesFor, withAiNotice, type SectionType } from '../catalog/sections';
+import { defaultFlow, findSectionType, fitLength, LENGTH_TARGET, suggestableTypes, withAiNotice, type SectionType } from '../catalog/sections';
 import { loadInlineImages, requireGemini, type GeminiClient } from '../gemini';
 import { ApiError, badRequest } from '../http';
 import { getProject } from '../projects';
@@ -135,7 +135,8 @@ JSON: {"sections":["hero","..."]}`,
     );
     const ids = [...new Set(strings(result.sections, 40))].filter((id) => available.some((t) => t.id === id));
     if (ids.length < min - 2) return fallback;
-    return ids[0] === 'hero' || !available.some((t) => t.id === 'hero') ? ids : ['hero', ...ids.filter((id) => id !== 'hero')];
+    const ordered = ids[0] === 'hero' || !available.some((t) => t.id === 'hero') ? ids : ['hero', ...ids.filter((id) => id !== 'hero')];
+    return fitLength(ordered, input.categoryId, max);
   } catch {
     return fallback;
   }
@@ -298,7 +299,7 @@ async function runPlan(draftId: string) {
 
     const reuse = await reuseOutline(input);
     const keys = evidenceKeys(input, reviewQuotes);
-    const available = sectionTypesFor(input.categoryId).filter((t) => !lockedReason(t, keys));
+    const available = suggestableTypes(input.categoryId).filter((t) => !lockedReason(t, keys));
     const fallback = defaultFlow(input.categoryId, input.length, (t) => !lockedReason(t, keys));
     await setProgress(draftId, { step: 'facts', message: '상품 정보를 정리했어요' });
 

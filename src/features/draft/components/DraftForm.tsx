@@ -282,8 +282,8 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
 
           <Field label="상세페이지 길이" required>
             <div className="flex gap-2">
-              <ChoiceCard selected={input.length === 'short'} onClick={() => update('length', 'short')} title="짧은 구성" description="12~15개 섹션 · 약 2~3만px" />
-              <ChoiceCard selected={input.length === 'long'} onClick={() => update('length', 'long')} title="긴 구성" description="20~25개 섹션 · 약 4~5만px" />
+              <ChoiceCard selected={input.length === 'short'} onClick={() => update('length', 'short')} title="짧은 구성" description="9~12개 섹션 · 약 1.5~2만px" />
+              <ChoiceCard selected={input.length === 'long'} onClick={() => update('length', 'long')} title="긴 구성" description="13~16개 섹션 · 약 2.2~2.8만px" />
             </div>
           </Field>
 
