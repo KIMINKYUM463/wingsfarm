@@ -16,6 +16,7 @@ import {
 } from '@/shared/types/draft';
 import { normalizeDesignStyle } from '@/shared/lib/designStyles';
 import { effectiveHeroMotion, estimateCostUsd, isHeroMotion, normalizeCutSource } from '@/shared/lib/draftMedia';
+import { sensoryLabel } from '@/shared/lib/draftFacts';
 import { findCategory } from '../catalog/categories';
 import { describeWarnings, findUnsupportedClaims } from '../catalog/factGuard';
 import { normalizePalette, palettePresets } from '../catalog/palette';
@@ -105,6 +106,8 @@ export function sanitizeInput(raw: unknown, base: DraftInput = emptyDraftInput()
     heroMotion: isHeroMotion(r.heroMotion) ? r.heroMotion : base.heroMotion,
     categoryId: findCategory(r.categoryId) ? String(r.categoryId) : '',
     features: str(r.features, DRAFT_LIMITS.features),
+    sizeInfo: str(r.sizeInfo, DRAFT_LIMITS.sizeInfo),
+    sensory: str(r.sensory, DRAFT_LIMITS.sensory),
     options: pairs(r.options, ['name', 'spec'], DRAFT_LIMITS.options, 100),
     model: {
       enabled: bool(model.enabled),
@@ -156,6 +159,7 @@ export function evidenceKeys(input: DraftInput, reviewQuotes: string[] = []) {
   add('selection', filled(input.agri.selection));
   add('directShipping', input.agri.directShipping);
   add('options', input.options.some((o) => filled(o.name)));
+  add('size', filled(input.sizeInfo) || input.options.some((o) => filled(o.spec)));
   add('promotion', filled(input.promotion));
   add('facility', filled(input.facility));
   add('model', input.model.enabled && (filled(input.model.description) || input.model.imagePaths.length > 0));
@@ -195,6 +199,8 @@ export function evidenceEntries(input: DraftInput, reviewQuotes: string[] = []) 
     .map((line) => line.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, '').trim())
     .filter(Boolean)
     .forEach((line, i) => add(`feature:${i + 1}`, '특징', line));
+  add('size', '크기·중량', input.sizeInfo);
+  add('sensory', sensoryLabel(input.categoryId), input.sensory);
   input.options.forEach((o, i) => add(`option:${i + 1}`, '옵션', [o.name, o.spec].filter(filled).join(' ')));
   add('agri:origin', '산지', input.agri.origin);
   add('agri:harvest', '수확·제철', input.agri.harvest);

@@ -25,10 +25,17 @@ export interface TextOptions {
   fontFamily?: string;
 }
 
-/** 글자 하나의 대략적인 폭 (Pretendard 기준, 한글은 넉넉하게) */
-const charWidth = (ch: string, fontSize: number) => {
+/**
+ * 한글 한 글자 폭 (글자 크기 대비) — 브라우저에서 실제 글꼴로 잰 값 + 2% 여유
+ * 넉넉하게 잡으면 한 줄 문구를 두 줄로 계산해 제목 아래가 크게 빈다
+ */
+const HANGUL_WIDTH: Record<string, number> = { Pretendard: 0.88, 'Nanum Myeongjo': 0.94, 'Noto Serif KR': 0.98 };
+const DEFAULT_HANGUL_WIDTH = 0.98;
+
+/** 글자 하나의 대략적인 폭 */
+const charWidth = (ch: string, fontSize: number, fontFamily = 'Pretendard') => {
   if (ch === ' ') return fontSize * 0.28;
-  if (/[\u3131-\uD79D]/.test(ch)) return fontSize * 0.98;
+  if (/[\u3131-\uD79D]/.test(ch)) return fontSize * (HANGUL_WIDTH[fontFamily] ?? DEFAULT_HANGUL_WIDTH);
   if (/[A-Z0-9%#@&]/.test(ch)) return fontSize * 0.66;
   return fontSize * 0.55;
 };
@@ -38,14 +45,14 @@ export const textWidth = (value: string, fontSize: number, letterSpacing = 0) =>
   [...value].reduce((sum, ch) => sum + charWidth(ch, fontSize) + letterSpacing, 0);
 
 /** 어절 단위 줄바꿈을 흉내 내 줄 수를 추정 (레이아웃 높이 계산용) */
-export function estimateLines(value: string, width: number, fontSize: number) {
+export function estimateLines(value: string, width: number, fontSize: number, fontFamily?: string) {
   let lines = 0;
   for (const paragraph of value.split('\n')) {
     let current = 0;
     let count = 1;
     for (const word of paragraph.split(' ')) {
-      const w = [...word].reduce((sum, ch) => sum + charWidth(ch, fontSize), 0);
-      const space = current > 0 ? charWidth(' ', fontSize) : 0;
+      const w = [...word].reduce((sum, ch) => sum + charWidth(ch, fontSize, fontFamily), 0);
+      const space = current > 0 ? charWidth(' ', fontSize, fontFamily) : 0;
       if (current > 0 && current + space + w > width) {
         count += 1 + Math.floor(w / width);
         current = w % width;
@@ -64,7 +71,7 @@ export function estimateLines(value: string, width: number, fontSize: number) {
 
 export function textNode(id: string, value: string, x: number, y: number, width: number, fontSize: number, o: TextOptions = {}): FrameNode {
   const lineHeight = o.lineHeight ?? 1.35;
-  const lines = o.lines ?? estimateLines(value, width, fontSize);
+  const lines = o.lines ?? estimateLines(value, width, fontSize, o.fontFamily);
   return {
     type: 'text',
     id,

@@ -6,6 +6,17 @@ import { CATEGORIES, findCategory } from '../catalog/categories';
 import { NATURAL_COPY_RULES } from '../copyStyle';
 import { derivePalette, normalizePalette, palettePresets, TONE_PRESETS } from '../catalog/palette';
 import { defaultFlow, findSectionType, fitLength, LENGTH_TARGET, suggestableTypes, withAiNotice, type SectionType } from '../catalog/sections';
+import {
+  allocatableFacts,
+  defaultOwners,
+  FACT_FREE_SECTIONS,
+  factKeywords,
+  findRepeats,
+  normalizeOwners,
+  pruneOutline,
+  type FactEntry,
+  type FactOwners,
+} from './factPlan';
 import { loadInlineImages, requireGemini, type GeminiClient } from '../gemini';
 import { ApiError, badRequest } from '../http';
 import { getProject } from '../projects';
@@ -118,27 +129,57 @@ async function transcribeReviews(gemini: GeminiClient, paths: string[]) {
 
 // ===== 2. 섹션 구성 =====
 
-async function planOutline(gemini: GeminiClient, input: DraftInput, available: SectionType[], fallback: string[]) {
-  const [min, max] = LENGTH_TARGET[input.length];
+/** 섹션 순서 + 섹션마다 맡은 상품 사실 */
+interface Outline {
+  ids: string[];
+  owners: FactOwners;
+}
+
+/** 이보다 적게 남으면 AI 구성을 버리고 기본 흐름을 쓴다 */
+const MIN_OUTLINE = 5;
+
+/** AI가 빠뜨린 사실은 기본 배분으로 채우고, 맡을 사실이 없는 섹션은 뺀다 */
+function settleOutline(ids: string[], owners: FactOwners, facts: FactEntry[], categoryId: string, max: number): Outline {
+  const taken = new Set(Object.values(owners).flat());
+  const extra = defaultOwners(ids, facts.filter((f) => !taken.has(f.id)));
+  const merged = Object.fromEntries(ids.map((id) => [id, [...(owners[id] ?? []), ...(extra[id] ?? [])]]));
+  const kept = fitLength(pruneOutline(ids, merged), categoryId, max);
+  return { ids: kept, owners: Object.fromEntries(kept.map((id) => [id, merged[id]])) };
+}
+
+async function planOutline(gemini: GeminiClient, input: DraftInput, available: SectionType[], fallback: string[], facts: FactEntry[]): Promise<Outline> {
+  const [, max] = LENGTH_TARGET[input.length];
+  const fallbackOutline = () => settleOutline(fallback, {}, facts, input.categoryId, max);
+  const factFree = available.filter((t) => FACT_FREE_SECTIONS.has(t.id)).map((t) => t.id);
   try {
-    const result = await gemini.generateJson<{ sections?: string[] }>(
-      `너는 한국 이커머스 상세페이지 기획자다. 상품에 맞는 섹션 순서를 정하라.
+    const result = await gemini.generateJson<{ sections?: unknown[] }>(
+      `너는 한국 이커머스 상세페이지 기획자다. 상품에 맞는 섹션 순서를 정하고, 섹션마다 중심으로 다룰 상품 사실을 나눠 맡겨라.
 
 [상품] ${input.productName} (${findCategory(input.categoryId)?.name})
 [판매자 기획안] ${input.plan.trim() || '없음'}
+[상품 사실] (id: 내용)
+${facts.map((f) => `${f.id}: ${f.text}`.slice(0, 300)).join('\n') || '없음'}
 [쓸 수 있는 섹션] (id: 이름 — 역할)
 ${available.map((t) => `${t.id}: ${t.name} — ${t.description}`).join('\n')}
 [참고 기본 흐름] ${fallback.join(' → ')}
 
-규칙: ${min}~${max}개, 첫 섹션은 hero. 같은 id는 한 번만. 판매자 기획안이 있으면 그 흐름을 우선한다.
-JSON: {"sections":["hero","..."]}`,
+규칙:
+- 첫 섹션은 hero. 같은 id는 한 번만. 최대 ${max}개. 판매자 기획안이 있으면 그 흐름을 우선한다.
+- 사실 하나는 한 섹션에만 맡긴다. 섹션마다 facts에 맡은 사실 id를 단다.
+- 맡을 사실이 없는 섹션은 넣지 않는다. 단 다음 섹션은 사실 없이도 된다: ${factFree.join(', ')}.
+- 사실이 적으면 섹션 수를 줄인다. 같은 사실을 여러 섹션으로 나눠 늘리지 않는다(예: 산지 하나로 산지 섹션 두 개 X).
+JSON: {"sections":[{"id":"hero","facts":[]},{"id":"quality","facts":["feature:1","feature:3"]}]}`,
     );
-    const ids = [...new Set(strings(result.sections, 40))].filter((id) => available.some((t) => t.id === id));
-    if (ids.length < min - 2) return fallback;
+    const rows = (Array.isArray(result.sections) ? result.sections : []).map((row) =>
+      typeof row === 'string' ? { id: row, facts: [] } : { id: String((row as { id?: unknown })?.id ?? ''), facts: (row as { facts?: unknown })?.facts },
+    );
+    const ids = [...new Set(rows.map((r) => r.id))].filter((id) => available.some((t) => t.id === id));
     const ordered = ids[0] === 'hero' || !available.some((t) => t.id === 'hero') ? ids : ['hero', ...ids.filter((id) => id !== 'hero')];
-    return fitLength(ordered, input.categoryId, max);
+    const owners = normalizeOwners(ordered, Object.fromEntries(rows.map((r) => [r.id, r.facts])), facts);
+    const outline = settleOutline(ordered, owners, facts, input.categoryId, max);
+    return outline.ids.length >= MIN_OUTLINE ? outline : fallbackOutline();
   } catch {
-    return fallback;
+    return fallbackOutline();
   }
 }
 
@@ -179,8 +220,45 @@ const sceneHint = (ctx: SectionContext, position: number) => {
   return `이번 섹션 컷 장면 후보(다른 섹션과 겹치지 않게 이 방향 우선): ${ideas[position % ideas.length]}, ${ideas[(position + 3) % ideas.length]}`;
 };
 
-async function writeSection(gemini: GeminiClient, ctx: SectionContext, type: SectionType, neighbors: string, position: number): Promise<DraftSection> {
+const sectionName = (categoryId: string, id: string) => findSectionType(categoryId, id)?.name ?? id;
+
+/** 이 섹션이 맡은 사실·다른 섹션이 맡은 사실·항목 수 규칙 */
+function focusRules(ctx: SectionContext, type: SectionType, outline: Outline, avoid: string[]) {
+  const owned = outline.owners[type.id] ?? [];
+  const others = outline.ids
+    .filter((id) => id !== type.id)
+    .flatMap((id) => (outline.owners[id] ?? []).map((fact) => `${fact} → ${sectionName(ctx.input.categoryId, id)}`));
   const [minItems, maxItems] = type.items;
+  const flexible = !FACT_FREE_SECTIONS.has(type.id);
+  return [
+    type.id === 'hero'
+      ? '[첫 화면] 페이지에서 가장 강한 사실 2~3개를 짧은 키워드로만 쓴다. 자세한 설명은 뒤 섹션이 한다.'
+      : owned.length
+        ? `[이 섹션이 맡은 사실] ${owned.join(', ')} — 이 사실을 중심으로, 손님이 장면을 떠올릴 만큼 구체적으로 쓴다.`
+        : '[이 섹션이 맡은 사실] 없음 — 사진에서 보이는 것과 일반 정보(먹는 법·보관·고객이 실제로 궁금한 점)로 쓰고, 상품 사실은 꼭 필요할 때 한 번 짧게만.',
+    others.length && type.id !== 'hero' ? `[다른 섹션이 맡은 사실] ${others.join(', ')} — 이 섹션에서 다시 설명하지 않는다.` : '',
+    flexible
+      ? `항목 수: 1~${maxItems}개 — 맡은 사실로 채울 수 있는 만큼만. 사실 하나를 말만 바꿔 여러 항목으로 나누지 않는다.`
+      : `항목 수: ${minItems}~${maxItems}개`,
+    '항목은 제목·설명 문구를 되풀이하지 않고 새 정보를 하나씩 더한다. "사진으로 확인하세요", "~을 기준으로 삼아요"처럼 정보 없는 문장은 쓰지 않는다.',
+    type.layout === 'faq'
+      ? 'FAQ는 본문에서 이미 설명한 사실을 다시 묻고 답하지 않는다. 구매 전에 실제로 묻는 것(받는 날·보관 기간·크기·교환)을 쓰고, 자료로 답할 수 없는 질문은 넣지 않는다.'
+      : '',
+    avoid.length ? `[고쳐 쓸 점] 이전 초안에 이런 반복이 있었다: ${avoid.join(' / ')}. 이 말은 빼고 이 섹션만의 정보로 다시 쓴다.` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+async function writeSection(
+  gemini: GeminiClient,
+  ctx: SectionContext,
+  type: SectionType,
+  neighbors: string,
+  position: number,
+  outline: Outline,
+  avoid: string[] = [],
+): Promise<DraftSection> {
   const cutRule =
     type.cuts === 'none'
       ? '이 섹션은 사진 컷이 없다. cuts는 빈 배열.'
@@ -203,7 +281,7 @@ ${ctx.analysis ? `[사진 분석] 크기감 ${ctx.analysis.identity.scale} / 용
 
 [이번 섹션] ${type.name} (${type.id}) — ${type.description}
 작성 가이드: ${type.guide}
-항목 수: ${minItems}~${maxItems}개
+${focusRules(ctx, type, outline, avoid)}
 ${cutRule}
 ${type.cuts === 'none' ? '' : sceneHint(ctx, position)}
 ${modelRule}
@@ -254,14 +332,14 @@ function placeholderSection(type: SectionType, ctx: SectionContext, position: nu
 
 const sectionLimit = pLimit(4);
 
-async function writeSections(draftId: string, gemini: GeminiClient, ctx: SectionContext, types: SectionType[]) {
+const neighborsOf = (types: SectionType[], index: number) => types.map((t, j) => (j === index ? `[${t.name}]` : t.name)).join(' → ');
+
+async function writeSections(draftId: string, gemini: GeminiClient, ctx: SectionContext, types: SectionType[], outline: Outline) {
   let done = 0;
-  const names = types.map((t) => t.name);
   return Promise.all(
     types.map((type, i) =>
       sectionLimit(async () => {
-        const neighbors = names.map((n, j) => (j === i ? `[${n}]` : n)).join(' → ');
-        const section = await writeSection(gemini, ctx, type, neighbors, i).catch((err) => {
+        const section = await writeSection(gemini, ctx, type, neighborsOf(types, i), i, outline).catch((err) => {
           console.error('[lever] draft section failed', type.id, err);
           return placeholderSection(type, ctx, i, 'AI가 이 섹션 문구를 쓰지 못했어요. 직접 입력해 주세요.');
         });
@@ -271,6 +349,27 @@ async function writeSections(draftId: string, gemini: GeminiClient, ctx: Section
       }),
     ),
   );
+}
+
+/** 다시 쓰는 섹션 수 상한 (문구 모델 호출 비용) */
+const MAX_REWRITES = 5;
+
+/** 섹션끼리 같은 사실·문장을 되풀이하면 그 섹션만 한 번 다시 쓰고, 그래도 남으면 경고로 알린다 */
+async function reviseRepeats(gemini: GeminiClient, ctx: SectionContext, types: SectionType[], outline: Outline, sections: DraftSection[], facts: FactEntry[]) {
+  const keywords = factKeywords(facts);
+  const problems = findRepeats(sections, keywords, outline.owners, facts);
+  const targets = [...problems.keys()].slice(0, MAX_REWRITES);
+  const next = [...sections];
+  await Promise.all(
+    targets.map((i) =>
+      sectionLimit(async () => {
+        const rewritten = await writeSection(gemini, ctx, types[i], neighborsOf(types, i), i, outline, problems.get(i)).catch(() => null);
+        if (rewritten) next[i] = rewritten;
+      }),
+    ),
+  );
+  const remaining = findRepeats(next, keywords, outline.owners, facts);
+  return next.map((s, i) => (remaining.has(i) ? { ...s, warnings: [...new Set([...s.warnings, `반복: ${remaining.get(i)!.join(' / ')}`])] } : s));
 }
 
 // ===== 기획 Job =====
@@ -303,11 +402,11 @@ async function runPlan(draftId: string) {
     const fallback = defaultFlow(input.categoryId, input.length, (t) => !lockedReason(t, keys));
     await setProgress(draftId, { step: 'facts', message: '상품 정보를 정리했어요' });
 
-    const outlineIds = withAiNotice(
-      reuse ? reuse.sectionTypeIds.filter((id) => available.some((t) => t.id === id)) : await planOutline(gemini, input, available, fallback),
-      input.imageMode === 'ai',
-    );
-    const types = outlineIds.map((id) => findSectionType(input.categoryId, id)).filter((t): t is SectionType => Boolean(t));
+    const facts = allocatableFacts(evidenceEntries(input, reviewQuotes));
+    const reuseIds = reuse?.sectionTypeIds.filter((id) => available.some((t) => t.id === id));
+    const planned = reuseIds ? { ids: reuseIds, owners: defaultOwners(reuseIds, facts) } : await planOutline(gemini, input, available, fallback, facts);
+    const outline = { ...planned, ids: withAiNotice(planned.ids, input.imageMode === 'ai') };
+    const types = outline.ids.map((id) => findSectionType(input.categoryId, id)).filter((t): t is SectionType => Boolean(t));
     await setProgress(draftId, {
       step: 'matching',
       message: '사진과 상품 정보를 맞춰 보고 있어요',
@@ -317,7 +416,9 @@ async function runPlan(draftId: string) {
     });
 
     const ctx = sectionContext(input, analyzed.analysis);
-    const sections = await writeSections(draftId, gemini, ctx, types);
+    const written = await writeSections(draftId, gemini, ctx, types, outline);
+    await setProgress(draftId, { step: 'copy', message: '섹션끼리 겹치는 말을 다듬고 있어요' });
+    const sections = await reviseRepeats(gemini, ctx, types, outline, written, facts);
     const plan: DraftPlan = {
       sections,
       palette: reuse?.palette ?? analyzed.palette,
@@ -381,11 +482,14 @@ export async function addSection(draftId: string, body: { typeId?: string; index
   if (reason) throw badRequest(reason);
 
   const ctx = sectionContext(draft.input, draft.plan.analysis);
-  const names = draft.plan.sections.map((s) => findSectionType(draft.input.categoryId, s.typeId)?.name ?? s.typeId);
+  const existingIds = draft.plan.sections.map((s) => s.typeId);
+  const names = existingIds.map((id) => sectionName(draft.input.categoryId, id));
   const clampIndex = (length: number) => (Number.isInteger(body.index) ? Math.min(Math.max(Number(body.index), 0), length) : length);
   const position = clampIndex(names.length);
+  const ids = [...existingIds.filter((id) => id !== type.id), type.id];
+  const outline = { ids, owners: defaultOwners(ids, allocatableFacts(evidenceEntries(draft.input, reviewQuotes))) };
   const section = await requireGemini()
-    .then((gemini) => writeSection(gemini, ctx, type, names.join(' → '), position))
+    .then((gemini) => writeSection(gemini, ctx, type, names.join(' → '), position, outline))
     .catch(() => placeholderSection(type, ctx, position, 'AI 문구 작성에 실패해 빈 섹션을 넣었어요. 직접 입력해 주세요.'));
 
   return updateDraft(draftId, (d) => {

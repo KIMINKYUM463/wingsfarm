@@ -7,6 +7,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { PRODUCT_CATEGORIES } from '@/shared/constants/productCategories';
 import { ROUTES } from '@/shared/constants/routes';
+import { countFacts, sensoryLabel, sensoryPlaceholder, sizePlaceholder, THIN_FACT_COUNT } from '@/shared/lib/draftFacts';
 import { formatCost, HERO_VIDEO_USD, MEDIA_COST } from '@/shared/lib/draftMedia';
 import { DRAFT_LIMITS, type DraftInput, type HeroMotion } from '@/shared/types/draft';
 import { draftApi, type DraftDto } from '../api';
@@ -84,6 +85,7 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
     !input.categoryId && '카테고리',
     !input.features.trim() && '제품 주요 특징',
   ].filter(Boolean);
+  const factCount = countFacts(input);
 
   const reuseSources = useQuery({
     queryKey: ['draft-reuse-sources', input.categoryId],
@@ -231,6 +233,15 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
             />
           </Field>
 
+          <Group title="문구를 살리는 정보 (선택)" description="직접 겪은 크기·맛 같은 이야기가 있으면 섹션마다 같은 말을 되풀이하지 않고 손님이 장면을 떠올리게 써요.">
+            <Field label="크기·중량" count={input.sizeInfo.length} max={DRAFT_LIMITS.sizeInfo} hint="크기 비교 섹션은 이 칸(또는 옵션 용량)이 있을 때만 만들어요.">
+              <input className={inputClass} maxLength={DRAFT_LIMITS.sizeInfo} placeholder={sizePlaceholder(input.categoryId)} value={input.sizeInfo} onChange={(e) => update('sizeInfo', e.target.value)} />
+            </Field>
+            <Field label={sensoryLabel(input.categoryId)} count={input.sensory.length} max={DRAFT_LIMITS.sensory}>
+              <textarea className={clsx(inputClass, 'min-h-20')} maxLength={DRAFT_LIMITS.sensory} placeholder={sensoryPlaceholder(input.categoryId)} value={input.sensory} onChange={(e) => update('sensory', e.target.value)} />
+            </Field>
+          </Group>
+
           <Field
             label="옵션(종류)"
             count={input.options.length}
@@ -282,8 +293,8 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
 
           <Field label="상세페이지 길이" required>
             <div className="flex gap-2">
-              <ChoiceCard selected={input.length === 'short'} onClick={() => update('length', 'short')} title="짧은 구성" description="9~12개 섹션 · 약 1.5~2만px" />
-              <ChoiceCard selected={input.length === 'long'} onClick={() => update('length', 'long')} title="긴 구성" description="13~16개 섹션 · 약 2.2~2.8만px" />
+              <ChoiceCard selected={input.length === 'short'} onClick={() => update('length', 'short')} title="짧은 구성" description="최대 12개 섹션 · 정보가 적으면 줄여요" />
+              <ChoiceCard selected={input.length === 'long'} onClick={() => update('length', 'long')} title="긴 구성" description="최대 16개 섹션 · 정보가 적으면 줄여요" />
             </div>
           </Field>
 
@@ -401,6 +412,11 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
           <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-snug">
             <SaveStatus saving={saving} savedAt={savedAt} />
             {missing.length > 0 && <span className="text-xs text-gray-500">남은 필수 항목: {missing.join(', ')}</span>}
+            {missing.length === 0 && factCount < THIN_FACT_COUNT && (
+              <span className="text-xs text-amber-600">
+                적은 정보가 {factCount}개예요. 특징·크기·{sensoryLabel(input.categoryId)}를 더 적으면 같은 말 반복 없이 짜임새 있게 써요.
+              </span>
+            )}
           </div>
           <button
             type="button"

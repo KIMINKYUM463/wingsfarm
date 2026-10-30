@@ -38,7 +38,8 @@ export type EvidenceKey =
   | 'promotion'
   | 'facility'
   | 'model'
-  | 'gift';
+  | 'gift'
+  | 'size';
 
 export type SectionGroup = '도입' | '신뢰' | '상품 설명' | '스토리' | '활용' | '구매 유도' | '옵션·세트' | '배송' | '마무리';
 
@@ -73,6 +74,7 @@ export const EVIDENCE_LABELS: Record<EvidenceKey, string> = {
   facility: '시설·제조 공정 정보',
   model: '등장 모델 설정',
   gift: '명절·선물 판매 계획(기획안·혜택에 "명절"·"선물" 키워드)',
+  size: '크기·중량(또는 옵션 규격)',
 };
 
 const T = (
@@ -143,7 +145,7 @@ const COMMON = [
   T('facility', '시설', '신뢰', 'story', '생산·제조 시설과 위생 관리', '입력된 시설·공정 정보만 사용', { evidence: 'facility' }),
   T('quality', '품질', '상품 설명', 'points', '품질을 보여주는 핵심 포인트 3가지', '특징 입력을 근거로 품질 포인트 3개', {}),
   T('comparison', '고르는 기준', '상품 설명', 'compare', '좋은 상품을 고르는 기준과 이 상품의 답', '다른 상품을 깎아내리지 말고 "확인할 점 → 이 상품" 형식. 확인된 사실만'),
-  T('size_comparison', '크기 비교', '상품 설명', 'size', '크기·용량을 익숙한 물건과 비교', '입력된 규격·중량만 사용. 없으면 "사진으로 크기를 확인하세요" 수준으로'),
+  T('size_comparison', '크기 비교', '상품 설명', 'size', '크기·용량을 익숙한 물건과 비교', '입력된 크기·중량을 손·주먹·스마트폰처럼 익숙한 물건에 빗대어 감이 오게', { evidence: 'size' }),
   T('point_sum', '핵심 특징 요약', '상품 설명', 'grid', '핵심 특징을 아이콘 카드로 요약', '특징 4개를 각 8자 이내 제목 + 15자 내외 설명으로'),
   T('detail', '상세 컷', '상품 설명', 'points', '디테일 사진과 설명', '눈여겨볼 디테일 3가지', { items: [2, 3] }),
   T('usage', '사용 장면', '활용', 'grid', '이렇게 쓰면 좋아요 — 활용 장면', '사용·활용 장면 3~4개', { items: [3, 4], modelCapable: true }),

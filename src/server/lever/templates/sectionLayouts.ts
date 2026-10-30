@@ -24,7 +24,8 @@ interface Ctx {
 
 const itemTitle = (s: DraftSection, i: number) => s.items[i]?.title?.text ?? '';
 const itemText = (s: DraftSection, i: number) => s.items[i]?.text.text ?? '';
-const pointNo = (i: number) => `POINT ${String(i + 1).padStart(2, '0')}`;
+/** 항목이 하나뿐이면 번호가 어색하므로 붙이지 않는다 (빈 문자열은 노드를 만들지 않음) */
+const pointNo = (s: DraftSection, i: number) => (s.items.length > 1 ? `POINT ${String(i + 1).padStart(2, '0')}` : '');
 
 /** 라벨 + 메인 문구 + 서브 문구 */
 function header({ c, s }: Ctx, o: { titleSize?: number } = {}) {
@@ -107,7 +108,7 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
         const top = c.y;
         c.nodes.push(imageNode(c.id(), left ? X : W - X - imgW, top, imgW, imgH, c.t.radius.image, cut.id));
         c.y = top + 24;
-        c.text(pointNo(i), SIZE.caption, { ...col, weight: 700, ...c.accent(), letterSpacing: 2, name: 'label', gap: 14 });
+        c.text(pointNo(s, i), SIZE.caption, { ...col, weight: 700, ...c.accent(), letterSpacing: 2, name: 'label', gap: 14 });
         c.heading(itemTitle(s, i), 38, { ...col, name: 'list_title', gap: 16 });
         c.text(itemText(s, i), SIZE.small, { ...col, color: c.muted, lineHeight: 1.6, name: 'list_item', gap: 0 });
         c.y = Math.max(c.y, top + imgH) + 90;
@@ -115,13 +116,13 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
       }
       if (c.t.points === 'bleed' && cut) {
         c.image(cut, 0, W, 640, 44);
-        c.label(pointNo(i), 14);
+        c.label(pointNo(s, i), 14);
         c.heading(itemTitle(s, i), 42, { name: 'list_title', gap: 18 });
         c.text(itemText(s, i), SIZE.body, { color: c.muted, lineHeight: 1.6, name: 'list_item', gap: 0 });
         c.space(110);
         return;
       }
-      c.label(pointNo(i), 14);
+      c.label(pointNo(s, i), 14);
       c.heading(itemTitle(s, i), 42, { name: 'list_title', gap: 18 });
       c.text(itemText(s, i), SIZE.body, { color: c.muted, lineHeight: 1.6, name: 'list_item', gap: 40 });
       c.image(cut, 50, 760, 520, 40);

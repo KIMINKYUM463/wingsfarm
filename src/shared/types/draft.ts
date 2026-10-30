@@ -37,6 +37,10 @@ export interface DraftInput {
   heroMotion: HeroMotion;
   categoryId: string;
   features: string;
+  /** 크기·중량·개수 (예: 한 알 300g 내외, 5kg 15과) — 크기 비교 섹션의 근거 */
+  sizeInfo: string;
+  /** 맛·식감 또는 사용감 — 판매자가 직접 느낀 표현 */
+  sensory: string;
   options: DraftOption[];
   model: { enabled: boolean; description: string; imagePaths: string[] };
   length: DraftLength;
@@ -208,6 +212,8 @@ export const emptyDraftInput = (): DraftInput => ({
   heroMotion: 'pan',
   categoryId: '',
   features: '',
+  sizeInfo: '',
+  sensory: '',
   options: [],
   model: { enabled: false, description: '', imagePaths: [] },
   length: 'short',
@@ -230,6 +236,8 @@ export const DRAFT_LIMITS = {
   productName: 200,
   productImages: 10,
   features: 4000,
+  sizeInfo: 300,
+  sensory: 500,
   options: 10,
   modelDescription: 80,
   plan: 3000,
