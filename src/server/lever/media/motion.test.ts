@@ -2,7 +2,20 @@ import '../../testing/resolveHook.ts';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { GIF_STEPS, heroGifArgs, panClipArgs, parseVideoResponse, videoAspect, videoClipArgs, videoRequestBody } = await import('./motion.ts');
+const {
+  GIF_STEPS,
+  heroGifArgs,
+  panClipArgs,
+  parseVideoResponse,
+  pickVideoFile,
+  stockClipArgs,
+  stockClipStart,
+  stockOrientation,
+  toStockVideo,
+  videoAspect,
+  videoClipArgs,
+  videoRequestBody,
+} = await import('./motion.ts');
 
 describe('AI 영상 요청·응답', () => {
   it('세로 사진 자리는 9:16, 가로는 16:9', () => {
@@ -57,5 +70,37 @@ describe('ffmpeg 인자', () => {
     const last = heroGifArgs(layers, GIF_STEPS.at(-1)!).join(' ');
     assert.match(last, /scale=560:-2/);
     assert.match(last, /max_colors=128/);
+  });
+});
+
+describe('무료 영상 (Pexels)', () => {
+  const file = (width: number, height: number, file_type = 'video/mp4') => ({ link: `https://videos.pexels.com/${width}.mp4`, file_type, width, height });
+
+  it('가운데 5초를 쓰고, 짧은 영상은 처음부터', () => {
+    assert.equal(stockClipStart(20), 7.5);
+    assert.equal(stockClipStart(3), 0);
+    const args = stockClipArgs('in.mp4', 'out.mp4', 860, 980, 20);
+    assert.equal(args[args.indexOf('-ss') + 1], '7.5');
+    assert.equal(args[args.indexOf('-t') + 1], '5');
+    assert.match(args[args.indexOf('-vf') + 1], /crop=860:980/);
+    assert.ok(args.includes('-an'));
+  });
+
+  it('사진 자리를 흐리지 않게 덮는 가장 작은 MP4를 고르고, 4K·다른 형식은 뺀다', () => {
+    const files = [file(3840, 2160), file(1920, 1080), file(1280, 720), file(640, 360), file(1920, 1080, 'video/webm')];
+    assert.equal(pickVideoFile(files, 860, 480)?.width, 1280);
+    assert.equal(pickVideoFile(files, 860, 980)?.width, 1920);
+    assert.equal(pickVideoFile([file(3840, 2160)], 860, 980), null);
+  });
+
+  it('사진 자리 모양으로 검색 방향을 정한다', () => {
+    assert.equal(stockOrientation(860, 480), 'landscape');
+    assert.equal(stockOrientation(860, 1100), 'portrait');
+    assert.equal(stockOrientation(860, 860), 'square');
+  });
+
+  it('검색 결과를 화면용으로 줄인다', () => {
+    const video = { id: 7, width: 1920, height: 1080, duration: 12, url: 'https://www.pexels.com/video/7/', image: 'https://images.pexels.com/7.jpg', user: { name: '김작가', url: 'u' }, video_files: [] };
+    assert.deepEqual(toStockVideo(video), { id: 7, thumbnail: 'https://images.pexels.com/7.jpg', duration: 12, width: 1920, height: 1080, author: '김작가', pageUrl: 'https://www.pexels.com/video/7/' });
   });
 });

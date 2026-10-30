@@ -6,6 +6,7 @@ export type HealthResponse = {
   naverAd: boolean;
   kamis: boolean;
   farmMap: boolean;
+  pexels: boolean;
   passwordLock: boolean;
   textModel: string;
   imageModel: string;
@@ -20,6 +21,7 @@ export function GET() {
     naverAd: has("NAVER_AD_API_KEY", "NAVER_AD_SECRET_KEY", "NAVER_AD_CUSTOMER_ID"),
     kamis: has("KAMIS_CERT_KEY", "KAMIS_CERT_ID"),
     farmMap: has("DATA_GO_KR_KEY"),
+    pexels: has("PEXELS_API_KEY"),
     passwordLock: has("APP_PASSWORD"),
     textModel: OPENAI_MODEL,
     imageModel: OPENAI_IMAGE_MODEL,

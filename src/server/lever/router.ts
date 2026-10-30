@@ -41,7 +41,7 @@ import {
   updateFrame,
 } from './frames';
 import { isValidGeminiKey } from './gemini';
-import { buildHeroGif, getHeroMotion, startHeroMotion } from './media/heroMotion';
+import { buildHeroGif, getHeroMotion, searchHeroStock, startHeroMotion } from './media/heroMotion';
 import { confirmGeneration, getGenerationJob, getGenerationJobStatus, startGeneration } from './generation';
 import { ApiError, badRequest, createContext, fail, noContent, notFound, ok, toResponse, type RouteHandler } from './http';
 import { MY_SUBSCRIPTION, PAYMENT_LISTS, creditBalance, paymentNotSupported } from './payments';
@@ -94,8 +94,11 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['POST', 'projects/:id/generate', async ({ params, body }) => created(startGeneration(params.id, await body()))],
   ['POST', 'projects/:id/generate/keywords', async ({ params, body }) => generateKeywords(params.id, await body())],
   ['GET', 'projects/:id/hero-motion', ({ params }) => getHeroMotion(params.id)],
-  ['POST', 'projects/:id/hero-motion', async ({ params, body }) =>
-    startHeroMotion(params.id, (await body<{ kind?: string }>()).kind === 'video' ? 'video' : 'pan')],
+  ['POST', 'projects/:id/hero-motion', async ({ params, body }) => {
+    const { kind, videoId } = await body<{ kind?: string; videoId?: number }>();
+    return startHeroMotion(params.id, kind === 'video' || kind === 'stock' ? kind : 'pan', { videoId });
+  }],
+  ['GET', 'projects/:id/hero-motion/stock', ({ params, query }) => searchHeroStock(params.id, query.get('q'))],
   ['POST', 'projects/:id/hero-motion/gif', async ({ params, body }) => buildHeroGif(params.id, await body())],
 
   // ===== 초안 (입력 → 무료 기획 초안 → 생성) =====

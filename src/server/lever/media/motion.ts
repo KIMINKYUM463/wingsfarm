@@ -4,7 +4,9 @@
  * 흐름: 맨 위 사진 → 클립(사진 자리 크기, 무음 MP4) → 다운로드할 때 섹션 문구와 합성해 GIF
  * - pan: 사진을 천천히 확대하며 옆으로 이동 (ffmpeg, 무료)
  * - video: Gemini Omni 이미지→영상 (유료) 후 사진 자리 크기로 자르기
+ * - stock: Pexels 무료 영상의 가운데 구간을 사진 자리 크기로 자르기
  */
+import type { StockVideo } from '@/shared/types/heroMotion';
 
 export const VIDEO_MODEL = 'gemini-omni-1.1-flash';
 export const CLIP_FPS = 24;
@@ -82,13 +84,77 @@ export function panClipArgs(input: string, output: string, width: number, height
   return ['-y', '-i', input, '-vf', filter, '-frames:v', String(frames), ...encodeArgs, output];
 }
 
-/** AI 영상 → 사진 자리 크기로 가운데 자르고 소리 제거 */
-export function videoClipArgs(input: string, output: string, width: number, height: number) {
+/** 영상을 사진 자리 크기로 채우고 가운데를 잘라낸다 */
+const fitFilter = (width: number, height: number) => {
   const w = even(width);
   const h = even(height);
-  const filter = `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${CLIP_FPS}`;
-  return ['-y', '-i', input, '-t', String(CLIP_SECONDS + 3), '-vf', filter, ...encodeArgs, output];
+  return `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${CLIP_FPS}`;
+};
+
+/** AI 영상 → 사진 자리 크기로 가운데 자르고 소리 제거 */
+export function videoClipArgs(input: string, output: string, width: number, height: number) {
+  return ['-y', '-i', input, '-t', String(CLIP_SECONDS + 3), '-vf', fitFilter(width, height), ...encodeArgs, output];
 }
+
+// ===== 무료 영상 (Pexels) =====
+
+/** 앞뒤는 장면 전환·흔들림이 많아 가운데 구간을 쓴다 (0.1초 단위) */
+export const stockClipStart = (duration: number) => Math.max(0, Math.floor(((duration - CLIP_SECONDS) / 2) * 10) / 10);
+
+/** 무료 영상 → 가운데 CLIP_SECONDS초를 사진 자리 크기로 자르고 소리 제거 */
+export function stockClipArgs(input: string, output: string, width: number, height: number, duration: number) {
+  return ['-y', '-ss', String(stockClipStart(duration)), '-i', input, '-t', String(CLIP_SECONDS), '-vf', fitFilter(width, height), ...encodeArgs, output];
+}
+
+export type StockOrientation = 'landscape' | 'portrait' | 'square';
+
+export const stockOrientation = (width: number, height: number): StockOrientation => {
+  const ratio = width / height;
+  return ratio > 1.2 ? 'landscape' : ratio < 0.83 ? 'portrait' : 'square';
+};
+
+export interface PexelsVideoFile {
+  link: string;
+  file_type: string;
+  width: number | null;
+  height: number | null;
+}
+
+export interface PexelsVideo {
+  id: number;
+  width: number;
+  height: number;
+  duration: number;
+  url: string;
+  image: string;
+  user: { name: string; url: string };
+  video_files: PexelsVideoFile[];
+}
+
+/** GIF는 최대 1080px까지 키우므로 사진 자리보다 1.25배 넉넉한 파일이 필요하다 */
+const STOCK_UPSCALE = 1.25;
+/** 4K 원본은 받을 필요가 없다 */
+const STOCK_MAX_SIDE = 2560;
+
+/** 사진 자리를 흐리지 않게 덮는 가장 작은 MP4 (없으면 받을 수 있는 가장 큰 것) */
+export function pickVideoFile(files: PexelsVideoFile[], width: number, height: number) {
+  const mp4 = files
+    .filter((f): f is PexelsVideoFile & { width: number; height: number } => f.file_type === 'video/mp4' && Boolean(f.width && f.height))
+    .filter((f) => Math.max(f.width, f.height) <= STOCK_MAX_SIDE)
+    .sort((a, b) => a.width * a.height - b.width * b.height);
+  const covers = (f: { width: number; height: number }) => Math.max((width * STOCK_UPSCALE) / f.width, (height * STOCK_UPSCALE) / f.height) <= 1;
+  return mp4.find(covers) ?? mp4.at(-1) ?? null;
+}
+
+export const toStockVideo = (v: PexelsVideo): StockVideo => ({
+  id: v.id,
+  thumbnail: v.image,
+  duration: v.duration,
+  width: v.width,
+  height: v.height,
+  author: v.user?.name ?? 'Pexels',
+  pageUrl: v.url,
+});
 
 export interface GifLayers {
   /** 사진 자리 아래 레이어(배경 포함, 불투명 PNG) */

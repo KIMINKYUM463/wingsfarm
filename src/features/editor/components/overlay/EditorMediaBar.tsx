@@ -10,18 +10,19 @@ import { useSelectionStore } from '@/features/editor/store/useSelectionStore';
 import { PLATFORMS } from '@/features/editor/lib/download-options';
 import { formatCost, HERO_VIDEO_USD, MEDIA_COST } from '@/shared/lib/draftMedia';
 import { Modal } from '@/shared/ui/SimpleModal';
+import { StockVideoPicker } from './StockVideoPicker';
 import type { HeroMotionInfo } from '@/shared/types/heroMotion';
 import type { KonvaElement, KonvaFrameElement } from '@/shared/types/konva';
 
 const chip = 'flex items-center gap-1.5 rounded-full border bg-white/95 px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur hover:border-gray-300';
 
-/** 페이지 맨 위 사진 자리에 사진이 들어 있는지 (움직이는 컷을 새로 만들 수 있는지) */
-function hasHeroPhoto(frames: KonvaFrameElement[]) {
+/** 페이지 맨 위 사진 자리 상태 — 사진이 있어야 사진으로 컷을 만들고, 자리만 있어도 무료 영상은 쓸 수 있다 */
+function heroSlotState(frames: KonvaFrameElement[]): 'none' | 'empty' | 'photo' {
   for (const frame of frames) {
     const slot = firstImageSlot(frame.children);
-    if (slot) return Boolean('assetId' in slot && slot.assetId);
+    if (slot) return 'assetId' in slot && slot.assetId ? 'photo' : 'empty';
   }
-  return false;
+  return 'none';
 }
 
 function firstImageSlot(elements: KonvaElement[]): KonvaElement | null {
@@ -37,27 +38,28 @@ function firstImageSlot(elements: KonvaElement[]): KonvaElement | null {
 /**
  * 에디터 위쪽 안내 칩
  * - 빈 사진 자리 / 채울 문구([입력 필요]) N곳 → 누를 때마다 다음 자리로 이동·선택
- * - 맨 위 움직이는 컷: 만드는 중 / 보기·GIF 받기 / 다시 만들기
+ * - 맨 위 움직이는 컷: 만드는 중 / 보기·GIF 받기 / 다시 만들기 / 무료 영상(Pexels)으로 바꾸기
  */
 export function EditorMediaBar({ projectId }: { projectId: string }) {
   const frames = useActiveFrames();
   const hero = useHeroMotion(projectId);
   const [motionOpen, setMotionOpen] = useState(false);
 
-  const canCreate = hasHeroPhoto(frames);
+  const heroSlot = heroSlotState(frames);
+  const showMotion = Boolean(hero.motion) || heroSlot !== 'none';
   const hasTodo = frames.some((frame) => findBlankImageSlots(frame.children).length || findPlaceholderTexts(frame.children).length);
-  if (!hasTodo && !hero.motion && !canCreate) return null;
+  if (!hasTodo && !showMotion) return null;
 
   return (
     <div className="pointer-events-none fixed top-[calc(var(--header-h)+0.75rem)] left-1/2 z-30 flex -translate-x-1/2 gap-2">
       <TodoChip frames={frames} find={findBlankImageSlots} label="빈 사진 자리" />
       <TodoChip frames={frames} find={findPlaceholderTexts} label="채울 문구" />
-      {(hero.motion || canCreate) && (
+      {showMotion && (
         <button type="button" className={clsx(chip, 'pointer-events-auto border-gray-100 text-gray-800')} onClick={() => setMotionOpen(true)}>
           <MotionChipLabel motion={hero.motion} stale={hero.stale} />
         </button>
       )}
-      <HeroMotionModal open={motionOpen} onClose={() => setMotionOpen(false)} hero={hero} canCreate={canCreate} />
+      <HeroMotionModal open={motionOpen} onClose={() => setMotionOpen(false)} projectId={projectId} hero={hero} canCreate={heroSlot === 'photo'} />
     </div>
   );
 }
@@ -92,7 +94,7 @@ function MotionChipLabel({ motion, stale }: { motion: HeroMotionInfo | null; sta
     return (
       <>
         <span className="h-3 w-3 animate-spin rounded-full border-2 border-(--color-point) border-t-transparent" />
-        움직이는 컷 만드는 중{motion.kind === 'video' ? ' (AI 영상 1~3분)' : ''}
+        {motion.kind === 'stock' ? '무료 영상 가져오는 중' : `움직이는 컷 만드는 중${motion.kind === 'video' ? ' (AI 영상 1~3분)' : ''}`}
       </>
     );
   if (motion.status === 'failed') return <span className="text-red-500">움직이는 컷 실패 · 다시 만들기</span>;
@@ -100,7 +102,19 @@ function MotionChipLabel({ motion, stale }: { motion: HeroMotionInfo | null; sta
   return <>▶ 움직이는 컷 보기 · GIF 받기</>;
 }
 
-function HeroMotionModal({ open, onClose, hero, canCreate }: { open: boolean; onClose: () => void; hero: ReturnType<typeof useHeroMotion>; canCreate: boolean }) {
+function HeroMotionModal({
+  open,
+  onClose,
+  projectId,
+  hero,
+  canCreate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  projectId: string;
+  hero: ReturnType<typeof useHeroMotion>;
+  canCreate: boolean;
+}) {
   const { motion, stale, start, downloadGif, downloadingGif } = hero;
   const ready = motion?.status === 'ready' && motion.clipUrl && !stale;
   const busy = motion?.status === 'pending' || start.isPending;
@@ -115,6 +129,15 @@ function HeroMotionModal({ open, onClose, hero, canCreate }: { open: boolean; on
           </div>
         )}
         {motion?.notice && <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">{motion.notice}</p>}
+        {ready && motion.kind === 'stock' && motion.credit && (
+          <p className="-mt-2 text-xs text-gray-400">
+            영상:{' '}
+            <a href={motion.credit.url} target="_blank" rel="noreferrer" className="underline">
+              {motion.credit.author}
+            </a>{' '}
+            · Pexels 무료 영상
+          </p>
+        )}
 
         {ready && (
           <div className="flex flex-col gap-2">
@@ -142,21 +165,29 @@ function HeroMotionModal({ open, onClose, hero, canCreate }: { open: boolean; on
           <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
             <div className="text-sm font-semibold text-gray-900">{motion ? '다시 만들기' : '만들기'}</div>
             <div className="flex gap-2">
-              <button type="button" className="btn-outline flex-1 text-sm" disabled={busy || !canCreate} onClick={() => start.mutate('pan')}>
+              <button type="button" className="btn-outline flex-1 text-sm" disabled={busy || !canCreate} onClick={() => start.mutate({ kind: 'pan' })}>
                 천천히 줌·이동 · 무료
               </button>
               <button
                 type="button"
                 className="btn-primary flex-1 text-sm"
                 disabled={busy || !canCreate}
-                onClick={() => window.confirm(`AI 영상(${MEDIA_COST.heroVideoSeconds}초)은 ${formatCost(HERO_VIDEO_USD)} 정도가 Gemini 키로 청구돼요. 만들까요?`) && start.mutate('video')}
+                onClick={() =>
+                  window.confirm(`AI 영상(${MEDIA_COST.heroVideoSeconds}초)은 ${formatCost(HERO_VIDEO_USD)} 정도가 Gemini 키로 청구돼요. 만들까요?`) &&
+                  start.mutate({ kind: 'video' })
+                }
               >
                 ✦ AI 영상 · {formatCost(HERO_VIDEO_USD)}
               </button>
             </div>
-            {!canCreate && <p className="text-xs text-gray-500">맨 위 사진 자리에 사진을 먼저 넣어 주세요.</p>}
+            {!canCreate && <p className="text-xs text-gray-500">맨 위 사진 자리에 사진을 먼저 넣어 주세요. (무료 영상은 사진 없이도 돼요)</p>}
           </div>
         )}
+
+        <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
+          <div className="text-sm font-semibold text-gray-900">무료 영상으로 바꾸기</div>
+          <StockVideoPicker projectId={projectId} disabled={busy} onPick={(videoId) => start.mutate({ kind: 'stock', videoId })} />
+        </div>
       </div>
     </Modal>
   );

@@ -1,19 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { getHeroMotion, requestHeroGif, startHeroMotion } from '@/features/editor/api';
+import { getHeroMotion, requestHeroGif, startHeroMotion, type HeroMotionRequest } from '@/features/editor/api';
 import { downloadBlob, exportHeroLayers } from '@/features/editor/hooks/useImageDownload';
 import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useStageRefStore } from '@/features/editor/store/useStageRefStore';
 import { queryKeys } from '@/shared/constants/queryKeys';
 import { errorMessage } from '@/shared/lib/errorMessage';
-import type { HeroMotionKind } from '@/shared/types/heroMotion';
 import { showToast } from '@/utils/toast';
 
 const POLL_MS = 4000;
 
 /**
- * 맨 위 움직이는 컷 — 상태 확인(만드는 중이면 4초마다) · 다시 만들기 · GIF 받기
- * stale: 움직이는 컷을 만든 뒤 맨 위 사진을 바꿨거나 지웠으면 다시 만들어야 한다
+ * 맨 위 움직이는 컷 — 상태 확인(만드는 중이면 4초마다) · 다시 만들기 · 무료 영상 가져오기 · GIF 받기
+ * stale: 사진으로 만든 컷인데 맨 위 사진을 바꿨거나 지웠으면 다시 만들어야 한다 (무료 영상은 사진과 무관)
  */
 export function useHeroMotion(projectId: string) {
   const queryClient = useQueryClient();
@@ -30,10 +29,10 @@ export function useHeroMotion(projectId: string) {
     const element = state.flatElements.get(motion.elementId);
     return element && 'assetId' in element ? (element.assetId as string | undefined) : undefined;
   });
-  const stale = Boolean(motion && motion.status === 'ready' && currentAssetId !== motion.assetId);
+  const stale = Boolean(motion && motion.kind !== 'stock' && motion.status === 'ready' && currentAssetId !== motion.assetId);
 
   const start = useMutation({
-    mutationFn: (kind: HeroMotionKind) => startHeroMotion(projectId, kind),
+    mutationFn: (request: HeroMotionRequest) => startHeroMotion(projectId, request),
     onSuccess: (next) => queryClient.setQueryData(key, next),
     onError: (err) => showToast.error(errorMessage(err)),
   });
