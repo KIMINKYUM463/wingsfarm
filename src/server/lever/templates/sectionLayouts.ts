@@ -190,9 +190,10 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
     header(ctx);
     c.image(sectionCut, 50, 760, 620, 50);
     s.items.forEach((_, i) => {
+      const title = itemTitle(s, i);
       c.accentBox(X + 40, c.y + 14, 14, 14, { cornerRadius: 7, name: 'bullet' });
-      const value = [itemTitle(s, i), itemText(s, i)].filter(Boolean).join('  ');
-      c.text(value, SIZE.body, { x: X + 74, width: CW - 74, align: 'left', lineHeight: 1.5, name: 'list_item', gap: 22 });
+      if (title) c.text(title, SIZE.body, { x: X + 74, width: CW - 74, weight: 700, align: 'left', name: 'list_title', gap: 8 });
+      c.text(itemText(s, i), title ? SIZE.small : SIZE.body, { x: X + 74, width: CW - 74, color: title ? c.muted : undefined, align: 'left', lineHeight: 1.5, name: 'list_item', gap: 26 });
     });
     return {};
   },

@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import clsx from 'clsx';
 import Button from '@/shared/ui/Button/Button';
 import { useImageDownload } from '@/features/editor/hooks/useImageDownload';
-import { findBlankImageSlots } from '@/features/editor/lib/element-finder';
+import { findBlankImageSlots, findPlaceholderTexts } from '@/features/editor/lib/element-finder';
 import {
   CANVAS_WIDTH,
   estimateBytes,
@@ -87,11 +87,17 @@ const DownloadPopover = () => {
   const scale = widthValid ? width / CANVAS_WIDTH : 0;
   const totalHeight = Math.round(heights.reduce((sum, h) => sum + h, 0) * scale);
   const canDownload = widthValid && Boolean(pageIndexes?.length) && !isDownloading;
-  const blankCount = (pageIndexes ?? []).reduce((sum, i) => sum + (frames[i] ? findBlankImageSlots(frames[i].children).length : 0), 0);
+  const countIn = (find: typeof findBlankImageSlots) => (pageIndexes ?? []).reduce((sum, i) => sum + (frames[i] ? find(frames[i].children).length : 0), 0);
+  const blankCount = countIn(findBlankImageSlots);
+  const placeholderCount = countIn(findPlaceholderTexts);
+  const warnings = [
+    blankCount && `빈 사진 자리 ${blankCount}곳 — 연회색 박스로 나와요`,
+    placeholderCount && `채울 문구 ${placeholderCount}곳 — "[입력 필요]"가 그대로 나와요`,
+  ].filter((warning): warning is string => Boolean(warning));
 
   const startDownload = () => {
     if (!pageIndexes) return;
-    if (blankCount && !window.confirm(`빈 사진 자리 ${blankCount}곳이 있어요. 연회색 박스로 그대로 받을까요?\n(취소하고 에디터 위쪽 "빈 사진 자리" 버튼으로 이동할 수 있어요)`)) return;
+    if (warnings.length && !window.confirm(`${warnings.join('\n')}\n\n그대로 받을까요?\n(취소하고 에디터 위쪽 안내 버튼으로 해당 자리로 이동할 수 있어요)`)) return;
     download({ format: effectiveFormat, width, quality, pageIndexes, bundle: effectiveFormat === 'html' ? 'zip' : bundle });
   };
 
@@ -215,7 +221,11 @@ const DownloadPopover = () => {
             </dd>
           </div>
         </dl>
-        {blankCount > 0 && <p className="mb-2 text-xs text-amber-700">빈 사진 자리 {blankCount}곳 — 그대로 받으면 연회색 박스로 나와요</p>}
+        {warnings.map((warning) => (
+          <p key={warning} className="mb-2 text-xs text-amber-700">
+            {warning}
+          </p>
+        ))}
         <Button className="btn-primary w-full" onClick={startDownload} isLoading={isDownloading} disabled={!canDownload}>
           <span className="p-bold">다운로드</span>
         </Button>

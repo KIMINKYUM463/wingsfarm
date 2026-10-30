@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { useState } from 'react';
 import { useHeroMotion } from '@/features/editor/hooks/useHeroMotion';
 import { useScrollToElement } from '@/features/editor/hooks/useScrollToElement';
-import { findBlankImageSlots, isImageElement } from '@/features/editor/lib/element-finder';
+import { elementTopInFrame, findBlankImageSlots, findPlaceholderTexts, isImageElement } from '@/features/editor/lib/element-finder';
 import { useActiveFrames } from '@/features/editor/store/useCanvasDataStore';
 import { useSelectionStore } from '@/features/editor/store/useSelectionStore';
 import { PLATFORMS } from '@/features/editor/lib/download-options';
@@ -36,36 +36,22 @@ function firstImageSlot(elements: KonvaElement[]): KonvaElement | null {
 
 /**
  * 에디터 위쪽 안내 칩
- * - 빈 사진 자리 N곳 → 누를 때마다 다음 빈 자리로 이동·선택
+ * - 빈 사진 자리 / 채울 문구([입력 필요]) N곳 → 누를 때마다 다음 자리로 이동·선택
  * - 맨 위 움직이는 컷: 만드는 중 / 보기·GIF 받기 / 다시 만들기
  */
 export function EditorMediaBar({ projectId }: { projectId: string }) {
   const frames = useActiveFrames();
-  const blanks = frames.flatMap((frame) => findBlankImageSlots(frame.children).map((element) => ({ frame, element })));
-  const [cursor, setCursor] = useState(0);
-  const { scrollToFrameById } = useScrollToElement();
-  const setSelectedItems = useSelectionStore((state) => state.setSelectedItems);
   const hero = useHeroMotion(projectId);
   const [motionOpen, setMotionOpen] = useState(false);
 
-  const goToNextBlank = () => {
-    const target = blanks[cursor % blanks.length];
-    if (!target) return;
-    scrollToFrameById(target.frame.id, { block: 'start' });
-    setSelectedItems([{ id: target.element.id, type: target.element.type, rootId: target.frame.id }]);
-    setCursor((c) => c + 1);
-  };
-
   const canCreate = hasHeroPhoto(frames);
-  if (!blanks.length && !hero.motion && !canCreate) return null;
+  const hasTodo = frames.some((frame) => findBlankImageSlots(frame.children).length || findPlaceholderTexts(frame.children).length);
+  if (!hasTodo && !hero.motion && !canCreate) return null;
 
   return (
     <div className="pointer-events-none fixed top-[calc(var(--header-h)+0.75rem)] left-1/2 z-30 flex -translate-x-1/2 gap-2">
-      {blanks.length > 0 && (
-        <button type="button" className={clsx(chip, 'pointer-events-auto border-amber-200 text-amber-700')} onClick={goToNextBlank} title="누를 때마다 다음 빈 자리로 이동해요">
-          <span className="h-2 w-2 rounded-full bg-amber-400" />빈 사진 자리 {blanks.length}곳
-        </button>
-      )}
+      <TodoChip frames={frames} find={findBlankImageSlots} label="빈 사진 자리" />
+      <TodoChip frames={frames} find={findPlaceholderTexts} label="채울 문구" />
       {(hero.motion || canCreate) && (
         <button type="button" className={clsx(chip, 'pointer-events-auto border-gray-100 text-gray-800')} onClick={() => setMotionOpen(true)}>
           <MotionChipLabel motion={hero.motion} stale={hero.stale} />
@@ -73,6 +59,30 @@ export function EditorMediaBar({ projectId }: { projectId: string }) {
       )}
       <HeroMotionModal open={motionOpen} onClose={() => setMotionOpen(false)} hero={hero} canCreate={canCreate} />
     </div>
+  );
+}
+
+/** 아직 손봐야 할 자리 N곳 — 누를 때마다 다음 자리로 이동·선택 */
+function TodoChip({ frames, find, label }: { frames: KonvaFrameElement[]; find: (elements: KonvaElement[]) => KonvaElement[]; label: string }) {
+  const targets = frames.flatMap((frame) => find(frame.children).map((element) => ({ frame, element })));
+  const [cursor, setCursor] = useState(0);
+  const { scrollToPosition } = useScrollToElement();
+  const setSelectedItems = useSelectionStore((state) => state.setSelectedItems);
+  if (!targets.length) return null;
+
+  const goToNext = () => {
+    const target = targets[cursor % targets.length];
+    const top = elementTopInFrame(target.frame.children, target.element.id) ?? 0;
+    scrollToPosition(target.frame.id, 0, top + (target.element.height ?? 0) / 2);
+    setSelectedItems([{ id: target.element.id, type: target.element.type, rootId: target.frame.id }]);
+    setCursor((c) => c + 1);
+  };
+
+  return (
+    <button type="button" className={clsx(chip, 'pointer-events-auto border-amber-200 text-amber-700')} onClick={goToNext} title="누를 때마다 다음 자리로 이동해요">
+      <span className="h-2 w-2 rounded-full bg-amber-400" />
+      {label} {targets.length}곳
+    </button>
   );
 }
 

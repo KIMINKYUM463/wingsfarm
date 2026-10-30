@@ -161,7 +161,7 @@ export const useScrollToElement = () => {
   }, []);
 
   /**
-   * 프레임 내 특정 좌표로 스크롤
+   * 프레임 내 특정 좌표(프레임 기준 원본 px)를 화면 가운데로 스크롤 — 확대율·프레임 위쪽 여백 반영
    */
   const scrollToPosition = useCallback(
     (frameId: string, _x: number, y: number, options: ScrollOptions = {}) => {
@@ -171,8 +171,10 @@ export const useScrollToElement = () => {
         const frame = document.querySelector(`[data-frame-id="${frameId}"]`) as HTMLElement | null;
         if (!frame) return;
 
+        const scale = Number(frame.dataset.scale) || 1;
+        const layerOffsetY = Number(frame.dataset.layerOffsetY) || 0;
         const frameRect = frame.getBoundingClientRect();
-        const targetTop = window.scrollY + frameRect.top + y - window.innerHeight / 2;
+        const targetTop = window.scrollY + frameRect.top + layerOffsetY + y * scale - window.innerHeight / 2;
 
         window.scrollTo({ top: targetTop, behavior: opts.behavior });
       }, opts.delay);
