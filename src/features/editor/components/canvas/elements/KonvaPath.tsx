@@ -13,6 +13,7 @@ import { useImagePattern } from '@/features/editor/hooks/useImagePattern';
 import { ImageControlOverlay } from '@/features/editor/components/canvas/layout/ImageHoverLayout';
 import { isImageElement } from '@/features/editor/lib/element-finder';
 import { isAiAssetUrl } from '@/shared/lib/aiImageLabel';
+import { ELEMENT_WRAP_NAME } from '@/features/editor/lib/animationPlayer';
 import AiImageBadge from './AiImageBadge';
 import SlotPlaceholder from './SlotPlaceholder';
 
@@ -59,7 +60,7 @@ const KonvaPath = forwardRef<Konva.Path, KonvaPathProps>(
 
     return (
       <ImageControlOverlay element={element} elementRef={pathRef} onDragStart={onDragStart} onDragMove={onDragMove}>
-          <Group>
+          <Group name={ELEMENT_WRAP_NAME}>
             <Path
               ref={pathRef}
               draggable={!!onDragEnd}

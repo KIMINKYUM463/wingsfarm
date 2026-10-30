@@ -201,21 +201,19 @@ export const useCanvasDataStore = create<CanvasDataState>()(
           return;
         }
 
-        const updatedElement = { ...elementToUpdate, ...updates } as KonvaElement;
-        const newFlatElements = new Map(flatElements).set(elementId, updatedElement);
-
-        // 최상위 Frame 수정
-        const isTopLevelFrame =
-          isKonvaFrameElement(elementToUpdate) && frames.some((f) => f.id === elementId);
-        if (isTopLevelFrame) {
+        // 최상위 Frame 수정 — flatElements의 프레임 항목은 자식 수정 후 갱신되지 않으므로 frames의 최신 값을 기준으로
+        const topLevelFrame = frames.find((f) => f.id === elementId);
+        if (topLevelFrame) {
+          const updatedFrame = { ...topLevelFrame, ...updates } as KonvaFrameElement;
           set({
-            frames: frames.map((frame) =>
-              frame.id === elementId ? (updatedElement as KonvaFrameElement) : frame,
-            ),
-            flatElements: newFlatElements,
+            frames: frames.map((frame) => (frame.id === elementId ? updatedFrame : frame)),
+            flatElements: new Map(flatElements).set(elementId, updatedFrame),
           });
           return;
         }
+
+        const updatedElement = { ...elementToUpdate, ...updates } as KonvaElement;
+        const newFlatElements = new Map(flatElements).set(elementId, updatedElement);
 
         // 중첩 Frame 수정 (rootId 있음 - 최적화)
         if (isKonvaFrameElement(elementToUpdate) && elementToUpdate.rootId) {

@@ -137,6 +137,9 @@ export const useKonvaSelection = (options: UseKonvaSelectionOptions = {}) => {
         return;
       }
 
+      // 움직임 탭에서는 요소를 골라도 탭을 유지 (고른 요소에 움직임을 넣는 곳)
+      if (useToolPanelStore.getState().selectedTool === TOGGLE_STATES.ANIMATION) return;
+
       // 요소들을 한 번에 조회 (중복 getElement 호출 방지)
       const elements = items
         .map((item) => getElement(item.id))

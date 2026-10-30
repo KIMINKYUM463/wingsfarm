@@ -13,6 +13,7 @@ import { useImagePattern } from '@/features/editor/hooks/useImagePattern';
 import { ImageControlOverlay } from '@/features/editor/components/canvas/layout/ImageHoverLayout';
 import { isImageElement, hasAssetImage } from '@/features/editor/lib/element-finder';
 import { isAiAssetUrl } from '@/shared/lib/aiImageLabel';
+import { ELEMENT_WRAP_NAME } from '@/features/editor/lib/animationPlayer';
 import AiImageBadge from './AiImageBadge';
 import SlotPlaceholder from './SlotPlaceholder';
 
@@ -60,7 +61,7 @@ const KonvaRect = forwardRef<Konva.Rect, KonvaRectProps>(
 
     return (
       <ImageControlOverlay element={element} elementRef={rectRef} onDragStart={onDragStart} onDragMove={onDragMove}>
-          <Group>
+          <Group name={ELEMENT_WRAP_NAME}>
             <Rect
               ref={rectRef}
               draggable={!!onDragEnd}

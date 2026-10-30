@@ -71,7 +71,7 @@ const applyWhiteBackground = async (dataUrl: string, quality: number) => {
   return canvas.toDataURL(MIME_TYPES.jpg, quality);
 };
 
-const getMainLayer = (stage: Konva.Stage): Konva.Layer | null => {
+export const getMainLayer = (stage: Konva.Stage): Konva.Layer | null => {
   for (const layer of stage.getLayers()) {
     if (layer.findOne('.clip-group') || layer.findOne('[name="clip-group"]')) return layer;
   }
@@ -79,7 +79,7 @@ const getMainLayer = (stage: Konva.Stage): Konva.Layer | null => {
   return layers.length > 1 ? layers[1] : layers[0] || null;
 };
 
-const frameRect = (frame: KonvaFrameElement) => ({ x: 0, y: 0, width: frame.width || CANVAS_WIDTH, height: frame.height || 1080 });
+export const frameRect = (frame: KonvaFrameElement) => ({ x: 0, y: 0, width: frame.width || CANVAS_WIDTH, height: frame.height || 1080 });
 
 /** 편집 UI(선택·호버·빈 자리 안내)·프레임 테두리·다른 레이어를 숨기고 배율을 1로 맞춘 상태에서 render를 실행한 뒤 되돌린다 */
 export function withExportState<T>(stage: Konva.Stage, mainLayer: Konva.Layer, render: () => T): T {

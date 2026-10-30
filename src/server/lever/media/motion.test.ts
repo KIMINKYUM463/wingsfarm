@@ -1,6 +1,8 @@
+import '../../testing/resolveHook.ts';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { GIF_STEPS, heroGifArgs, panClipArgs, parseVideoResponse, videoAspect, videoClipArgs, videoRequestBody } from './motion.ts';
+
+const { GIF_STEPS, heroGifArgs, panClipArgs, parseVideoResponse, videoAspect, videoClipArgs, videoRequestBody } = await import('./motion.ts');
 
 describe('AI 영상 요청·응답', () => {
   it('세로 사진 자리는 9:16, 가로는 16:9', () => {

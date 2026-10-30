@@ -9,6 +9,7 @@ import LineEditTool from '@/features/editor/components/panel/shape/LineEditTool'
 import GraphicEditTool from '@/features/editor/components/panel/shape/GraphicEditTool';
 import BlockTool from '@/features/editor/components/panel/block/BlockTool';
 import FileTool from '@/features/editor/components/panel/file/FileTool';
+import AnimationTool from '@/features/editor/components/panel/animation/AnimationTool';
 import ColorTool from '@/features/editor/components/panel/color/ColorTool';
 import { TOGGLE_STATES } from '@/shared/constants/ui/toggles';
 import ProjectTool from '@/features/editor/components/panel/project/ProjectTool';
@@ -53,6 +54,7 @@ const ToolPanel = ({
           {selectedTool === TOGGLE_STATES.SHAPE && <ShapeTool />}
           {selectedTool === TOGGLE_STATES.TEMPLATE && <BlockTool />}
           {selectedTool === TOGGLE_STATES.COLOR && <ColorTool />}
+          {selectedTool === TOGGLE_STATES.ANIMATION && <AnimationTool />}
           {selectedTool === TOGGLE_STATES.FILE && <FileTool />}
           {selectedTool === TOGGLE_STATES.PROJECT && <ProjectTool />}
         </>

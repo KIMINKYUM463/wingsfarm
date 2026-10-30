@@ -1,3 +1,5 @@
+import type { ElementAnimation } from '../animation';
+
 /**
  * 통합 Fill 변환 결과
  *
@@ -135,6 +137,8 @@ export interface KonvaElementBase {
   shadowOffsetY?: number;
   shadowOpacity?: number;
   shadowEnabled?: boolean;
+  /** 움직임 (없으면 정지) */
+  animation?: ElementAnimation;
   /** 부모 프레임의 DB UUID - 프론트엔드 초기화 시 주입 */
   rootId: string;
 }
@@ -304,6 +308,8 @@ export interface KonvaFrameElement extends Omit<KonvaElementBase, 'rootId'> {
   frameOrder?: string;
   /** 프레임 구성 단계 (예: "문제 제기", "해결책 제시" 등) - 최상위 Frame만 사용 */
   part2?: string;
+  /** 움직임 재생 길이(초) - 최상위 Frame만 사용, 없으면 기본값 */
+  animationLength?: number;
   cornerRadius?: number | number[];
   layoutMode?: string;
   padding?: {

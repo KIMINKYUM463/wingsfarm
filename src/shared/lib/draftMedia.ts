@@ -16,6 +16,9 @@ export const MEDIA_COST = {
 
 export const HERO_VIDEO_USD = MEDIA_COST.videoUsdPerSecond * MEDIA_COST.heroVideoSeconds;
 
+/** 움직이는 GIF·WebP 목표 용량 (넘으면 줄이거나 안내) */
+export const GIF_MAX_BYTES = 10 * 1024 * 1024;
+
 export const isHeroMotion = (value: unknown): value is HeroMotion => value === 'off' || value === 'pan' || value === 'video';
 
 /** 기획할 때 컷마다 처음 정하는 사진 방식 — 실물 증거 컷만 올린 사진, 나머지는 AI 연출 */

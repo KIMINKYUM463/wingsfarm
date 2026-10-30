@@ -110,7 +110,7 @@ export const GIF_STEPS = [
   { fps: 8, scale: 0.65, colors: 128 },
 ] as const;
 
-export const GIF_MAX_BYTES = 10 * 1024 * 1024;
+export { GIF_MAX_BYTES } from '@/shared/lib/draftMedia';
 
 export function heroGifArgs(layers: GifLayers, step: (typeof GIF_STEPS)[number]) {
   const { x, y, width, height } = layers.rect;

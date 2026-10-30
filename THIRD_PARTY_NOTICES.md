@@ -7,6 +7,7 @@
 | --- | --- | --- |
 | Phosphor Icons 2.1 | 아이콘 (path, 색 변경 가능) | https://github.com/phosphor-icons/core |
 | Fluent Emoji Flat | 스티커 (컬러 SVG) | https://github.com/microsoft/fluentui-emoji |
+| gifenc 1.0.3 | 에디터 "움직임" 패널의 GIF 만들기 (npm 패키지) | https://github.com/mattdesl/gifenc |
 
 ---
 
@@ -21,6 +22,12 @@ Copyright (c) 2023 Phosphor Icons
 MIT License
 
 Copyright (c) Microsoft Corporation.
+
+## gifenc
+
+MIT License
+
+Copyright (c) 2017 Matt DesLauriers
 
 ---
 
