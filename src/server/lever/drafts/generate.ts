@@ -5,9 +5,9 @@ import type { ProjectFrame } from '@/features/editor/types';
 import { effectiveHeroMotion } from '@/shared/lib/draftMedia';
 import type { DraftCut, DraftRecord, DraftSection } from '@/shared/types/draft';
 import { createAssetFromBuffer } from '../assets';
-import { IMAGE_RULES } from '../ai';
 import { asFrame, cloneWithNewIds, isImageSlot, walk, type FrameNode } from '../frames/tree';
 import { closestAspectRatio, loadInlineImages, requireGemini, type GeminiClient } from '../gemini';
+import { distinctFrom, productPhotoPrompt } from '../photoPrompt';
 import { ApiError, badRequest } from '../http';
 import { saveNewProject } from '../projects';
 import { loadFile, mimeFromPath } from '../storage';
@@ -32,6 +32,8 @@ interface GenerateContext {
   projectId: string;
   gemini: GeminiClient | null;
   ownAssets: Map<string, Promise<string | null>>;
+  /** 레퍼런스 경로 → 사진 구도 설명 */
+  referenceNotes: Map<string, Promise<string | null>>;
   failedCuts: number;
 }
 
@@ -58,22 +60,49 @@ function ownPhotoAsset(ctx: GenerateContext, path: string | undefined) {
   return ctx.ownAssets.get(path)!;
 }
 
-function imagePrompt(ctx: GenerateContext, cut: DraftCut, hasStyleRef: boolean) {
+/**
+ * 레퍼런스(상세페이지 캡처)는 이미지 모델에 넘기지 않는다 — 글씨·레이아웃까지 따라 그리기 때문.
+ * 사진 부분의 구도만 글로 옮겨 쓴다 (같은 레퍼런스는 한 번만 읽는다).
+ */
+async function describeComposition(gemini: GeminiClient, path: string) {
+  const images = await loadInlineImages([path], 1);
+  if (!images.length) return null;
+  const result = await gemini.generateJson<{ composition?: string }>(
+    `Look only at the product photograph inside this reference image. Ignore every text, headline, badge, price, layout block and graphic.
+Describe the photo composition in one English sentence: background, surface, camera angle, distance, lighting and props.
+JSON: {"composition":"..."}`,
+    images,
+  );
+  return String(result.composition ?? '').trim() || null;
+}
+
+function referenceComposition(ctx: GenerateContext, path: string) {
+  if (!ctx.referenceNotes.has(path)) {
+    ctx.referenceNotes.set(
+      path,
+      describeComposition(ctx.gemini!, path).catch((err) => {
+        console.error('[lever] reference composition failed', path, err);
+        return null;
+      }),
+    );
+  }
+  return ctx.referenceNotes.get(path)!;
+}
+
+function imagePrompt(ctx: GenerateContext, cut: DraftCut, composition: string | null) {
   const { input, plan } = ctx.draft;
   const identity = plan?.analysis?.identity;
-  return [
-    IMAGE_RULES,
-    `Product: ${input.productName}.`,
-    identity && `Product details: ${[identity.colorFinish, identity.material, identity.scale].filter(Boolean).join(', ')}.`,
-    `Scene: ${cut.scene}. Direction (Korean): ${cut.plan || cut.scene}.`,
-    'Keep the product exactly as in the reference photos (color, shape, size, count, packaging); only the setting, props, lighting and camera distance change.',
+  const otherScenes = (plan?.sections ?? []).flatMap((s) => s.cuts).filter((c) => c.id !== cut.id && c.source === 'ai').map((c) => c.scene);
+  return productPhotoPrompt(
+    `Product name (Korean): ${input.productName}`,
+    identity && `Product details: ${[identity.colorFinish, identity.material, identity.scale].filter(Boolean).join(', ')}`,
+    `Scene (Korean): ${cut.scene}. Direction (Korean): ${cut.plan || cut.scene}`,
+    composition && `Composition idea from a reference photo (reuse only the composition): ${composition}`,
+    distinctFrom(otherScenes),
     cut.modelAllowed && input.model.enabled
       ? `A person may appear naturally${input.model.description ? `: ${input.model.description}` : ''}.`
       : 'No people and no hands in the image.',
-    hasStyleRef && 'The last reference image is a layout/style reference: follow its composition and mood, but show only this product.',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  );
 }
 
 async function aiCutAsset(ctx: GenerateContext, section: DraftSection, cut: DraftCut, slot: FrameNode, sectionIndex: number) {
@@ -85,13 +114,15 @@ async function aiCutAsset(ctx: GenerateContext, section: DraftSection, cut: Draf
     (input.referenceMode === 'my_product' && input.referenceImagePaths.length
       ? input.referenceImagePaths[sectionIndex % input.referenceImagePaths.length]
       : null);
-  const refs = [
-    ...(await loadInlineImages(photoPaths.length ? photoPaths : input.productImagePaths.slice(0, 2), 3)),
-    ...(await loadInlineImages(modelPaths, 1)),
-    ...(stylePath ? await loadInlineImages([stylePath], 1) : []),
-  ];
+  const [refs, composition] = await Promise.all([
+    Promise.all([
+      loadInlineImages(photoPaths.length ? photoPaths : input.productImagePaths.slice(0, 2), 3),
+      loadInlineImages(modelPaths, 1),
+    ]).then((groups) => groups.flat()),
+    stylePath ? referenceComposition(ctx, stylePath) : null,
+  ]);
   const image = await ctx.gemini!.generateImage(
-    imagePrompt(ctx, cut, Boolean(stylePath)),
+    imagePrompt(ctx, cut, composition),
     refs,
     closestAspectRatio(Number(slot.width), Number(slot.height)),
   );
@@ -139,6 +170,7 @@ async function runGenerate(draftId: string) {
       projectId: newId(),
       gemini: needsAi ? await requireGemini() : null,
       ownAssets: new Map(),
+      referenceNotes: new Map(),
       failedCuts: 0,
     };
 

@@ -3,6 +3,8 @@
 // ===== 통합 훅 =====
 export { useDialog } from './useDialog';
 
+export { confirmAiImages } from './confirmAiImages';
+
 // ===== 통합 Provider =====
 export { default as DialogProvider } from './DialogProvider';
 

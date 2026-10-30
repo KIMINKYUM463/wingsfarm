@@ -133,7 +133,7 @@ export const useGenerateAIImages = () => {
 
       // 각 이미지 요소별로 요청 데이터 생성 (rootId로 Store에서 프레임 찾기)
       const requests: GenerateAIImageRequest[] = imageElements
-        .map((imageEl) => {
+        .map((imageEl, variantIndex) => {
           // Store에서 getFrameById로 프레임 찾기 (이미지 요소는 항상 rootId 존재)
           // NOTE: mutation 실행 시점의 최신 store 상태를 읽기 위해 getState() 직접 호출
           const rootId = (imageEl as { rootId: string }).rootId;
@@ -147,6 +147,7 @@ export const useGenerateAIImages = () => {
             imageId: imageEl.id,
             frameData: frame,
             autoReady: true,
+            variantIndex,
           };
         })
         .filter((item): item is NonNullable<typeof item> => item !== null);

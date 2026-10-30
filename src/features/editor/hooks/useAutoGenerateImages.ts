@@ -4,6 +4,7 @@ import { useGenerateAIImages } from '@/features/editor/hooks/useGenerateAIImages
 import { isImageElement } from '@/features/editor/lib/element-finder';
 import type { KonvaPathElement, KonvaRectElement } from '@/shared/types/konva';
 import { type ProjectDetailData } from '@/features/editor/types';
+import { confirmAiImages } from '@/shared/ui/Dialog';
 
 /**
  * AI 이미지 자동 생성 훅
@@ -66,10 +67,15 @@ export const useAutoGenerateImages = (
     // 생성할 이미지가 없으면 정상 종료
     if (imageElements.length === 0) return;
 
-    // 생성 시작 플래그 설정 (중복 방지)
+    // 생성 시작 플래그 설정 (중복 방지 — 팝업에서 취소해도 다시 묻지 않는다)
     hasStartedRef.current = true;
 
-    // AI 이미지 생성 실행 (토스트는 훅 내부에서 처리)
-    generateAIImages(imageElements);
+    // 만들지 물어본 뒤 AI 이미지 생성 실행 (토스트는 훅 내부에서 처리)
+    void confirmAiImages({
+      count: imageElements.length,
+      hint: '만들지 않으면 사진 자리는 비워 두고, 나중에 이미지 탭에서 직접 만들 수 있어요.',
+    }).then((ok) => {
+      if (ok) generateAIImages(imageElements);
+    });
   }, [project, flatElements, generateAIImages, shouldTriggerAiGeneration]);
 };

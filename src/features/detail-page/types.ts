@@ -49,6 +49,8 @@ export interface GenerateAIImageRequest {
   imageId: string;
   frameData: KonvaFrameElement;
   autoReady: boolean;
+  /** 한 번에 만드는 사진 중 몇 번째인지 (사진마다 다른 장면을 고르는 데 쓴다) */
+  variantIndex?: number;
 }
 
 /**

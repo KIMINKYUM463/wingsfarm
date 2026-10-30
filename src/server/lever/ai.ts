@@ -4,18 +4,15 @@ import type { GetImageGenerationJobData, ImageGenerationJobStatus } from '@/shar
 import { createAssetFromBuffer, findAssetRecord, markReady, resolveAssetUrls } from './assets';
 import { CATEGORIES, categoryImageUrl, findCategory } from './catalog/categories';
 import { findImageStyle } from './catalog/styles';
+import { sceneIdeas } from '@/shared/lib/draftMedia';
 import { asNode, collectEditableTexts, collectPromptGuides, findNode, isImageSlot, walk } from './frames/tree';
 import { contextBrief } from './copywriter';
+import { distinctFrom, productPhotoPrompt, sceneForIndex } from './photoPrompt';
 import { closestAspectRatio, loadInlineImage, loadInlineImages, requireGemini, type InlineImage } from './gemini';
 import { badRequest, notFound } from './http';
 import { getProject, updateProject } from './projects';
 import { extFromMime } from './storage';
 import { newId, nowIso, readJson, updateJson, writeJson } from './store';
-
-export const IMAGE_RULES =
-  'Keep the exact same product as the reference photos (shape, color, label, logo, packaging). ' +
-  'Photorealistic commercial product photography for a Korean e-commerce detail page. ' +
-  'Do not add any text, letters, watermark, logo overlay, frame or border.';
 
 const saveGeneratedImage = async (
   projectId: string,
@@ -46,22 +43,19 @@ export async function generateSlotImage(projectId: string, body: GenerateAIImage
 
   const width = Number(slot.width) || 860;
   const height = Number(slot.height) || 860;
-  const guides = collectPromptGuides(frame);
-  const copy = collectEditableTexts(frame).slice(0, 6).map((t) => t.text.replace(/\n/g, ' '));
   const slots = [...walk(frame)].filter(isImageSlot).map((n) => n.id);
   const slotIndex = slots.findIndex((id) => id === body.imageId);
+  const variant = Number.isInteger(body.variantIndex) ? Number(body.variantIndex) : slotIndex;
+  const scene = sceneForIndex(project.categoryId, variant);
 
-  const prompt = [
-    IMAGE_RULES,
-    contextBrief(project, project.context),
-    `Section of the detail page: ${String(frame.part2 ?? frame.name ?? '')}`,
-    guides.length && `Designer guide for this section (Korean): ${guides.join(' / ')}`,
-    copy.length && `Copy shown near the image (Korean, for mood only): ${copy.join(' / ')}`,
-    slots.length > 1 && `This is image ${slotIndex + 1} of ${slots.length} in the section; vary the angle and scene from the others.`,
+  // 섹션 문구·작성 가이드는 넣지 않는다 (글씨를 그려 넣는 원인)
+  const prompt = productPhotoPrompt(
+    `Product name (Korean): ${project.productName}`,
+    project.context?.summary && `About the product (Korean): ${project.context.summary}`,
+    `Scene (Korean): ${scene}`,
+    distinctFrom(sceneIdeas(project.categoryId).filter((s) => s !== scene)),
     `Compose for a ${width}x${height} area.`,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  );
 
   const gemini = await requireGemini();
   const references = await loadInlineImages(project.productImagePaths, 3);
@@ -110,14 +104,11 @@ async function runImageJob(job: ImageJob, body: GenerateAIImageV2Request, scene:
       references = await loadInlineImages(project.productImagePaths, 3);
     }
 
-    const prompt = [
-      IMAGE_RULES,
-      `Product: ${project.productName} (${findCategory(project.categoryId)?.name ?? ''})`,
+    const prompt = productPhotoPrompt(
+      `Product name (Korean): ${project.productName} (${findCategory(project.categoryId)?.name ?? ''})`,
       `Scene style "${styleName}": ${scene}`,
       body.prompt?.trim() && `Additional request from the seller (may be Korean): ${body.prompt.trim()}`,
-    ]
-      .filter(Boolean)
-      .join('\n');
+    );
 
     const gemini = await requireGemini();
     const image = await gemini.generateImage(prompt, references, '1:1');

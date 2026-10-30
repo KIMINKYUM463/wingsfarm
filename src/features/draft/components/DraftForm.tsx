@@ -389,7 +389,7 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
           >
             <div className="flex gap-2">
               <ChoiceCard selected={input.referenceMode === 'reference'} onClick={() => update('referenceMode', 'reference')} title="참고 이미지" description="색감·분위기만 참고해요" />
-              <ChoiceCard selected={input.referenceMode === 'my_product'} onClick={() => update('referenceMode', 'my_product')} title="내 제품 버전" description="레퍼런스 구도를 내 상품으로 다시 연출해요" />
+              <ChoiceCard selected={input.referenceMode === 'my_product'} onClick={() => update('referenceMode', 'my_product')} title="내 제품 버전" description="레퍼런스 사진의 구도만 참고해 내 상품으로 다시 찍어요 (글씨·디자인은 따라 하지 않아요)" />
             </div>
             <ImageUploader type="reference" paths={input.referenceImagePaths} onChange={(v) => update('referenceImagePaths', v)} max={DRAFT_LIMITS.referenceImages} />
           </Field>

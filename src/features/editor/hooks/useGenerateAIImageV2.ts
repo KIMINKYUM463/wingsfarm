@@ -16,6 +16,7 @@ export type { CompletedImageInfo } from './useImageGenerationJobV2';
 import { TOGGLE_STATES } from '@/shared/constants/ui/toggles';
 import { CustomError } from '@/shared/lib/CustomError';
 import { showToast } from '@/utils/toast';
+import { confirmAiImages } from '@/shared/ui/Dialog';
 import { mutationKeys } from '@/shared/constants/mutationKeys';
 import { aiImageFormSchema, type AIImageFormData } from '@/validation/aiImageForm.schema';
 // TODO: 크레딧 체크 기능 활성화 시 주석 해제
@@ -305,6 +306,7 @@ export const useGenerateAIImageV2 = (imageId: string) => {
     // const hasEnough = await checkCredits(AI_IMAGE_CREDIT_COST);
     // if (!hasEnough) return;
 
+    if (!(await confirmAiImages({ count: 1 }))) return;
     mutate(data);
   });
 

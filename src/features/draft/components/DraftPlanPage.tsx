@@ -10,7 +10,8 @@ import { toast } from 'sonner';
 import ProjectsHeader from '@/shared/ui/Header/ProjectsHeader';
 import { Tour, useTour, type TourStep } from '@/shared/ui/Tour';
 import { ROUTES } from '@/shared/constants/routes';
-import { formatCost } from '@/shared/lib/draftMedia';
+import { formatCost, HERO_VIDEO_USD } from '@/shared/lib/draftMedia';
+import { confirmAiImages } from '@/shared/ui/Dialog';
 import type { CutSource, DraftPlan, DraftProgress, HeroMotion, PalettePreset } from '@/shared/types/draft';
 import { draftApi, type DraftDto } from '../api';
 import { draftKey, errorMessage, useAutosave, useDraft, useDraftMutation } from '../hooks';
@@ -308,10 +309,18 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
             data-tour="make"
             className="btn-primary px-6"
             disabled={!plan.sections.length || generate.isPending}
-            onClick={() => {
+            onClick={async () => {
               if (warningCount && !window.confirm(`근거를 확인해야 하는 문구가 ${warningCount}건 있어요. 그대로 만들까요?`)) return;
-              if (estimate.heroMotion === 'video' && !window.confirm(`AI 영상이 포함돼 ${formatCost(estimate.costUsd)} 정도가 Gemini 키로 청구돼요. 만들까요?`)) return;
-              generate.mutate(undefined);
+              const withVideo = estimate.heroMotion === 'video';
+              const aiCuts = plan.sections.flatMap((s) => s.cuts).filter((c) => c.source === 'ai').length;
+              const ok = aiCuts
+                ? await confirmAiImages({
+                    count: aiCuts,
+                    extraUsd: withVideo ? HERO_VIDEO_USD : 0,
+                    hint: withVideo ? '맨 위 AI 영상 비용이 포함돼 있어요.' : '만들지 않으면 아래 버튼으로 사진 컷을 "비워두기"로 바꿀 수 있어요.',
+                  })
+                : !withVideo || window.confirm(`AI 영상이 포함돼 ${formatCost(HERO_VIDEO_USD)} 정도가 Gemini 키로 청구돼요. 만들까요?`);
+              if (ok) generate.mutate(undefined);
             }}
           >
             {generate.isPending ? '시작하는 중…' : '✦ 이대로 만들기'}
