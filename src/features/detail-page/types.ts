@@ -2,6 +2,7 @@
  * Detail Page 관련 타입 정의
  */
 
+import type { TemplateStartLength } from '@/shared/constants/templateStart';
 import type { KonvaFrameElement } from '@/shared/types/konva';
 
 /**
@@ -230,6 +231,8 @@ export interface MatchCategoryResponse {
 export interface CreateProjectRequest {
   productName: string;
   categoryId: string;
+  /** 없으면 짧은 구성 */
+  length?: TemplateStartLength;
 }
 
 /**

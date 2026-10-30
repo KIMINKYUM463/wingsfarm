@@ -61,6 +61,30 @@ export const PLACEHOLDER_RULES = `- 대괄호 [ ] 자리표시와 "~적어 주�
 - 자료에 없는 사실은 지어내지 않는다. 가격·전화번호·인증번호·판매량·재구매율·당도 같은 수치 자리는 숫자 없이 그 자리 역할에 맞는 말로 바꾼다. 예) [가격] → "옵션에서 확인해 주세요", [전화번호] → "스토어 문의하기로 연락 주세요"
 - 실제 후기·생산자 인터뷰가 자료에 없으면 남이 한 말처럼 쓰지 않는다(따옴표·손님 이름·"구매자" 금지). 그 자리는 판매자 말투로 이 상품을 추천하는 이유를 쓰고, 섹션 제목은 "이런 분께 추천해요"처럼, 별점(★) 자리는 "추천 이유" 같은 짧은 라벨로, 작성자 자리는 판매자·브랜드 이름으로 바꾼다.`;
 
+/**
+ * 같은 구성(part2) 섹션이 여러 개면(긴 구성) 핵심 장점을 나눠 맡겨 섹션끼리 같은 말을 되풀이하지 않게 한다
+ * @param frames 페이지 순서대로 정렬된 프레임
+ * @returns 프레임 id → 프롬프트에 붙일 안내
+ */
+export function sameKindFocus(frames: ProjectFrame[], points: string[]) {
+  const groups = new Map<string, ProjectFrame[]>();
+  for (const frame of frames.filter((f) => f.status === 'active')) groups.set(frame.part2, [...(groups.get(frame.part2) ?? []), frame]);
+  const focus = new Map<string, string>();
+  for (const [part2, list] of groups) {
+    if (list.length < 2) continue;
+    list.forEach((frame, i) => {
+      const mine = points.filter((_, j) => j % list.length === i);
+      focus.set(
+        frame.id,
+        `[같은 구성 나눠 쓰기] '${part2}' 섹션이 ${list.length}개 있고 이 섹션은 ${i + 1}번째다. ${
+          mine.length ? `다음 장점만 중심으로 쓰고 다른 장점은 되풀이하지 않는다: ${mine.join(' / ')}` : '앞뒤 같은 구성 섹션과 겹치지 않는 다른 내용을 쓴다.'
+        }`,
+      );
+    });
+  }
+  return focus;
+}
+
 const maxCharsOf = (text: string) => Math.max(Math.ceil(text.replace(/\s/g, '').length * 1.2) + 2, hasPlaceholder(text) ? 14 : 0);
 
 type RewriteResult = { texts?: { id: string; text: string }[] };
@@ -70,6 +94,7 @@ export async function rewriteFrame(
   brief: string,
   frame: ProjectFrame,
   pageCopy: string[] = [],
+  focus = '',
 ): Promise<ProjectFrame> {
   const node = asNode(frame.frameData);
   const texts = collectEditableTexts(node);
@@ -84,7 +109,7 @@ export async function rewriteFrame(
 ${brief}
 
 [섹션] ${frame.part2 || frame.frameName || '상세 섹션'}
-${guides.length ? `[디자이너 작성 가이드]\n${guides.join('\n')}\n` : ''}${
+${focus ? `${focus}\n` : ''}${guides.length ? `[디자이너 작성 가이드]\n${guides.join('\n')}\n` : ''}${
         pageCopy.length ? `[이 페이지의 다른 섹션 문구] (상품 사실·톤 참고용, 같은 문장을 그대로 반복하지 않는다)\n${pageCopy.join(' / ')}\n` : ''
       }${retryNote}
 [현재 문구] (id, 원래 문구, 최대 글자 수, 줄 수)

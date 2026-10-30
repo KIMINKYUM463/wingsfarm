@@ -3,12 +3,12 @@ import pLimit from 'p-limit';
 import type { ProjectFrame } from '@/features/editor/types';
 import { createDetailPageSchema, type CreateDetailPageRequest, type ProjectGenerationStatus } from '@/shared/types/detail-page';
 import { findCategory } from './catalog/categories';
-import { rewriteFrame } from './copywriter';
+import { rewriteFrame, sameKindFocus } from './copywriter';
 import { copyBrief } from './productFacts';
 import { asFrame, asNode, cloneWithNewIds } from './frames/tree';
 import { loadInlineImages, requireGemini, type GeminiClient } from './gemini';
 import { ApiError, badRequest, notFound } from './http';
-import { getProject, saveNewProject, updateProject, type ProductContext, type ProjectRecord } from './projects';
+import { getProject, saveNewProject, sortFrames, updateProject, type ProductContext, type ProjectRecord } from './projects';
 import { toStoragePath } from './storage';
 import { newId, nowIso, readJson, updateJson, writeJson } from './store';
 
@@ -127,12 +127,13 @@ async function runGeneration(jobId: string) {
     const brief = await copyBrief(project, context);
     let failures = 0;
     let lastError: unknown;
+    const focus = sameKindFocus(sortFrames(project.frames), context.sellingPoints);
     const frames = await Promise.all(
       project.frames.map((frame) =>
         frame.status !== 'active'
           ? frame
           : frameLimit(() =>
-              rewriteFrame(gemini, brief, frame).catch((err) => {
+              rewriteFrame(gemini, brief, frame, [], focus.get(frame.id)).catch((err) => {
                 failures += 1;
                 lastError = err;
                 return frame;

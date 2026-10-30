@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { clsx } from 'clsx';
+import { ChoiceCard } from '@/features/draft/components/ui';
+import { TEMPLATE_START_LENGTHS, type TemplateStartLength } from '@/shared/constants/templateStart';
 import Button from '@/shared/ui/Button/Button';
 import ModalContent from '../ModalContent';
 import type { ModalComponentProps } from '../types';
@@ -17,6 +20,7 @@ import type { Route } from 'next';
 const ProjectSetupModal = ({ data, onClose }: ModalComponentProps) => {
   const router = useRouter();
   const openInNewTab = data?.openInNewTab === true;
+  const [length, setLength] = useState<TemplateStartLength>('short');
 
   const {
     mutate: createProject,
@@ -40,7 +44,7 @@ const ProjectSetupModal = ({ data, onClose }: ModalComponentProps) => {
   } = useProjectSetupForm({
     onCategorySelected: ({ productName, categoryId }) => {
       createProject(
-        { productName, categoryId },
+        { productName, categoryId, length },
         {
           onSuccess: (response) => {
             const url = `${ROUTES.PROJECT(response.id)}?draft=true` as Route;
@@ -67,7 +71,7 @@ const ProjectSetupModal = ({ data, onClose }: ModalComponentProps) => {
         onSubmit={handleSubmit}
         className={clsx(
           'flex flex-col items-end',
-          hasCategories || isMatchingCategory ? 'h-157.25' : 'h-60',
+          hasCategories || isMatchingCategory ? 'h-180' : 'h-60',
         )}
       >
         <div className="flex flex-col gap-9 w-full flex-1">
@@ -119,15 +123,28 @@ const ProjectSetupModal = ({ data, onClose }: ModalComponentProps) => {
           {/* 버튼 영역 */}
           <div
             className={clsx(
-              'flex-1 flex flex-col items-end justify-end gap-12',
+              'flex-1 flex flex-col items-end justify-end gap-6',
               isMatchingCategory && 'hidden',
             )}
           >
-            {/* 안내 문구 */}
+            {/* 페이지 길이 + 안내 문구 */}
             {hasCategories && (
-              <p className="description text-gray-300 text-right">
-                * 선택된 카테고리가 아니라면 변경하실 수 있습니다.
-              </p>
+              <div className="flex w-full flex-col gap-3">
+                <div className="flex w-full gap-2" role="radiogroup" aria-label="페이지 길이">
+                  {TEMPLATE_START_LENGTHS.map((option) => (
+                    <ChoiceCard
+                      key={option.id}
+                      selected={length === option.id}
+                      onClick={() => setLength(option.id)}
+                      title={option.title}
+                      description={option.description}
+                    />
+                  ))}
+                </div>
+                <p className="description text-gray-300 text-right">
+                  * 선택된 카테고리가 아니라면 변경하실 수 있습니다.
+                </p>
+              </div>
             )}
             <div className="flex gap-3">
               {hasCategories && (

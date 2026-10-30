@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import type { ProjectFrame } from '@/features/editor/types';
 import type { FrameNode } from './frames/tree.ts';
 
-const { contextBrief, hasPlaceholder, pageCopyOf, rewriteFrame } = await import('./copywriter.ts');
+const { contextBrief, hasPlaceholder, pageCopyOf, rewriteFrame, sameKindFocus } = await import('./copywriter.ts');
 
 const text = (id: string, value: string, fontSize = 30, extra: Partial<FrameNode> = {}): FrameNode => ({
   type: 'text',
@@ -102,6 +102,15 @@ describe('템플릿 문구 → 상품 문구', () => {
     assert.equal(writer.prompts.length, 1);
     assert.match(writer.prompts[0], /하나도 남기지 않고/);
     assert.match(writer.prompts[0], /남이 한 말처럼 쓰지 않는다/, '후기는 지어내지 않는다');
+  });
+
+  it('같은 구성 섹션이 여러 개면 장점을 나눠 맡긴다', () => {
+    const frames = [frameOf('a', 'a1', []), frameOf('b', 'a2', []), { ...frameOf('c', 'a3', []), part2: '고객 후기' }];
+    const focus = sameKindFocus(frames, ['당도', '식감', '산지']);
+    assert.match(focus.get('a')!, /1번째.*당도 \/ 산지/);
+    assert.match(focus.get('b')!, /2번째.*식감/);
+    assert.ok(!focus.get('b')!.includes('당도'));
+    assert.equal(focus.has('c'), false, '하나뿐인 구성은 안내하지 않는다');
   });
 
   it('자리표시·작성 안내를 알아본다', () => {

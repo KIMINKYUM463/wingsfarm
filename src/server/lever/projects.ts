@@ -3,6 +3,7 @@ import { generateNKeysBetween } from 'fractional-indexing';
 import type { ProjectFrame } from '@/features/editor/types';
 import type { Project } from '@/features/projects/types';
 import type { KeywordGroup } from '@/features/detail-page/types';
+import { isTemplateStartLength } from '@/shared/constants/templateStart';
 import type { DraftPalette } from '@/shared/types/draft';
 import type { HeroMotionInfo } from '@/shared/types/heroMotion';
 import type { DesignStyleId } from '@/shared/lib/designStyles';
@@ -145,14 +146,14 @@ export async function buildTemplateFrame(
 export const frameAssetUrls = (frames: ProjectFrame[]) =>
   resolveAssetUrls(collectAssetIds(frames.filter((f) => f.status === 'active').map((f) => asNode(f.frameData))));
 
-/** POST /projects — 상품명·카테고리로 초안 프로젝트 생성 (구성별 템플릿 1개씩) */
-export async function createProject(body: { productName?: string; categoryId?: string }) {
+/** POST /projects — 상품명·카테고리로 초안 프로젝트 생성 (짧은 구성: 구성별 템플릿 1개씩, 긴 구성: 본문 구성을 여러 개) */
+export async function createProject(body: { productName?: string; categoryId?: string; length?: unknown }) {
   const productName = body.productName?.trim();
   if (!productName) throw badRequest('상품명을 입력해주세요.');
   if (!findCategory(body.categoryId)) throw badRequest('카테고리를 선택해주세요.');
 
   const id = newId();
-  const templates = await pickDraftTemplates(body.categoryId!);
+  const templates = await pickDraftTemplates(body.categoryId!, isTemplateStartLength(body.length) ? body.length : 'short');
   const orders = generateNKeysBetween(null, null, templates.length);
   const frames = await Promise.all(templates.map((t, i) => buildTemplateFrame(id, t, orders[i])));
   const now = nowIso();

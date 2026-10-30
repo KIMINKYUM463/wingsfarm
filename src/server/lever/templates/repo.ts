@@ -1,5 +1,6 @@
 import 'server-only';
 import type { TemplateListData } from '@/features/editor/types';
+import { LONG_TEMPLATE_COUNTS, type TemplateStartLength } from '@/shared/constants/templateStart';
 import { CATEGORIES } from '../catalog/categories';
 import { renderFrameSvg } from '../frames/svgRender';
 import {
@@ -148,15 +149,29 @@ export async function pickTemplate(part2: string, categoryId: string | null, exc
 /** 디자인 스타일 템플릿(builtin-ds-{스타일}-…)은 스타일별로, 나머지는 기본 묶음으로 */
 const styleGroupOf = (t: TemplateRecord) => /^builtin-ds-([a-z]+)-/.exec(t.id)?.[1] ?? 'classic';
 
-/** 구성(part2)마다 하나씩 고르되, 한 페이지 안에서는 같은 디자인 스타일을 우선한다 */
-export async function pickDraftTemplates(categoryId: string | null) {
+const shuffled = <T,>(items: T[]) => {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
+
+/**
+ * 구성(part2)마다 고르되, 한 페이지 안에서는 같은 디자인 스타일을 우선한다
+ * 긴 구성은 LONG_TEMPLATE_COUNTS만큼 서로 다른 템플릿을 같은 구성 자리에 이어 붙인다
+ */
+export async function pickDraftTemplates(categoryId: string | null, length: TemplateStartLength = 'short') {
   const usable = (await loadTemplates()).filter((t) => isUsable(t, categoryId)).sort(byOrder);
   const part2List = [...new Set(usable.map((t) => t.part2))];
   const group = randomOf([...new Set(usable.map(styleGroupOf))]);
-  return part2List.map((part2) => {
+  return part2List.flatMap((part2) => {
     const candidates = usable.filter((t) => t.part2 === part2);
+    const count = length === 'long' ? (LONG_TEMPLATE_COUNTS[part2] ?? 1) : 1;
     const sameStyle = candidates.filter((t) => styleGroupOf(t) === group);
-    return randomOf(sameStyle.length ? sameStyle : candidates);
+    const others = candidates.filter((t) => styleGroupOf(t) !== group);
+    return [...shuffled(sameStyle), ...shuffled(others)].slice(0, count);
   });
 }
 
