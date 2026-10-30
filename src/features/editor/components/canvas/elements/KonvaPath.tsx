@@ -12,9 +12,7 @@ import { useKonvaElementHandlers } from '@/features/editor/hooks/useKonvaElement
 import { useImagePattern } from '@/features/editor/hooks/useImagePattern';
 import { ImageControlOverlay } from '@/features/editor/components/canvas/layout/ImageHoverLayout';
 import { isImageElement } from '@/features/editor/lib/element-finder';
-import { isAiAssetUrl } from '@/shared/lib/aiImageLabel';
 import { ELEMENT_WRAP_NAME } from '@/features/editor/lib/animationPlayer';
-import AiImageBadge from './AiImageBadge';
 import SlotPlaceholder from './SlotPlaceholder';
 
 interface KonvaPathProps {
@@ -130,19 +128,6 @@ const KonvaPath = forwardRef<Konva.Path, KonvaPathProps>(
             />
             {showPlaceholder && (
               <SlotPlaceholder x={element.x} y={element.y} width={element.width ?? 0} height={element.height ?? 0} blank={!storeAssetId} />
-            )}
-            {!showPlaceholder && element.visible !== false && isAiAssetUrl(imageUrl) && (
-              <AiImageBadge
-                x={element.x}
-                y={element.y}
-                width={element.width ?? 0}
-                height={element.height ?? 0}
-                rotation={element.rotation}
-                offsetX={element.offsetX}
-                offsetY={element.offsetY}
-                scaleX={element.scaleX}
-                scaleY={element.scaleY}
-              />
             )}
           </Group>
       </ImageControlOverlay>
