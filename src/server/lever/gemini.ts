@@ -1,13 +1,14 @@
 import 'server-only';
 import { canFallback, TEXT_MODELS, type TextTier } from './geminiModels';
 import { ApiError } from './http';
+import { writeCopyWithOpenAI } from './openaiCopy';
 import { getGeminiApiKey } from './settings';
 import { parseVideoResponse, videoRequestBody, type ParsedVideo, type VideoAspect } from './media/motion';
 import { loadFile, mimeFromPath, toStoragePath } from './storage';
 
 /**
  * Gemini REST 클라이언트 (레버페이지와 동일하게 사용자가 등록한 Gemini API 키 사용)
- * - 텍스트: JSON 응답 모드 (판매 문구는 copy 등급 모델, 나머지는 fast 등급)
+ * - 텍스트: JSON 응답 모드 (판매 문구는 copy 등급 — OpenAI 키가 있으면 GPT, 나머지는 fast 등급)
  * - 이미지: 상품 사진을 참조 이미지로 넣어 같은 상품이 유지되도록 생성
  */
 const API = 'https://generativelanguage.googleapis.com/v1beta';
@@ -59,6 +60,15 @@ const toApiError = (status: number, body: GeminiResponse) => {
   return new ApiError(400, `Gemini 요청 오류: ${message || status}`);
 };
 
+/** 모델 답(```json 감싸기 허용) → 객체, 해석 못 하면 null */
+function parseJson<T>(text: string): T | null {
+  try {
+    return JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, '')) as T;
+  } catch {
+    return null;
+  }
+}
+
 export class GeminiClient {
   constructor(private apiKey: string) {}
 
@@ -90,9 +100,15 @@ export class GeminiClient {
 
   /**
    * JSON으로 답하게 하고 파싱해서 반환
-   * @param tier 'copy'면 판매 문구용 최상위 모델을 쓰고, 실패하면 fast 모델로 한 번 더 시도한다
+   * @param tier 'copy'면 판매 문구용 — OpenAI 키가 있으면 GPT가 먼저 쓰고,
+   *   없거나 실패하면 Gemini 최상위 모델 → fast 모델 순으로 시도한다
    */
   async generateJson<T>(prompt: string, images: InlineImage[] = [], tier: TextTier = 'fast'): Promise<T> {
+    if (tier === 'copy') {
+      const written = await writeCopyWithOpenAI(prompt, images);
+      const parsed = written === null ? null : parseJson<T>(written);
+      if (parsed !== null) return parsed;
+    }
     const { model, generationConfig } = TEXT_MODELS[tier];
     const fast = TEXT_MODELS.fast;
     const parts = await this.generate(
@@ -101,15 +117,14 @@ export class GeminiClient {
       generationConfig,
       model === fast.model ? undefined : fast,
     );
-    const text = parts
-      .filter((p) => !p.thought)
-      .map((p) => p.text ?? '')
-      .join('').replace(/^```(?:json)?\s*|\s*```$/g, '');
-    try {
-      return JSON.parse(text) as T;
-    } catch {
-      throw new ApiError(503, 'AI 응답을 해석하지 못했습니다. 다시 시도해주세요.');
-    }
+    const parsed = parseJson<T>(
+      parts
+        .filter((p) => !p.thought)
+        .map((p) => p.text ?? '')
+        .join(''),
+    );
+    if (parsed === null) throw new ApiError(503, 'AI 응답을 해석하지 못했습니다. 다시 시도해주세요.');
+    return parsed;
   }
 
   async generateImage(prompt: string, references: InlineImage[], aspectRatio: string) {

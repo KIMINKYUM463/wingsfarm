@@ -5,7 +5,7 @@ import type { HealthResponse } from "@/app/api/health/route";
 import { Badge, Card } from "@/components/ui";
 
 const ITEMS: { key: keyof Pick<HealthResponse, "openai" | "naverDatalab" | "naverAd" | "kamis" | "farmMap" | "pexels" | "passwordLock">; label: string; uses: string; env: string }[] = [
-  { key: "openai", label: "OpenAI", uses: "CS·상품명·태그·썸네일·마케팅·리뷰 분석·문자 주문 정리", env: "OPENAI_API_KEY" },
+  { key: "openai", label: "OpenAI", uses: "상세페이지 판매 문구·CS·상품명·태그·썸네일·마케팅·리뷰 분석·문자 주문 정리", env: "OPENAI_API_KEY" },
   { key: "naverDatalab", label: "네이버 데이터랩", uses: "대시보드 트렌드·검색 추이·고객층", env: "NAVER_CLIENT_ID / SECRET" },
   { key: "naverAd", label: "네이버 검색광고", uses: "월간 검색수·연관 키워드·소싱 평가 검색 수요", env: "NAVER_AD_API_KEY 외 2개" },
   { key: "kamis", label: "KAMIS 농산물 시세", uses: "도매 시세·공급가 인상 경보 (무료 키)", env: "KAMIS_CERT_KEY / KAMIS_CERT_ID" },
