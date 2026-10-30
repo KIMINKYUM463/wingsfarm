@@ -1,10 +1,10 @@
 import type { DraftCut, DraftPalette, DraftSection } from '@/shared/types/draft';
 import type { DesignStyleId } from '@/shared/lib/designStyles';
 import type { FrameNode } from '../frames/tree';
-import type { PaletteRole } from '../catalog/palette';
 import type { SectionLayout, SectionType } from '../catalog/sections';
-import { designTokens, type DesignTokens, type Surface } from './designStyles';
-import { boxNode, frameNode, GRAY, imageNode, INK, PAGE_WIDTH, textNode, textWidth, WHITE, type BoxOptions, type TextOptions } from './nodes';
+import { Canvas, CW, SIZE, STAR, W, X, type Place } from './canvas';
+import { designTokens } from './designStyles';
+import { frameNode, imageNode, WHITE } from './nodes';
 
 /**
  * 초안 섹션 → Konva 프레임
@@ -15,177 +15,6 @@ import { boxNode, frameNode, GRAY, imageNode, INK, PAGE_WIDTH, textNode, textWid
  * - 높이는 문구 길이에 맞춰 늘어난다 (어절 줄바꿈 기준 추정)
  * - 글꼴·정렬·바탕·카드·사진 모양은 디자인 스타일(designStyles.ts)이 정한다
  */
-const W = PAGE_WIDTH;
-const X = 60;
-const CW = W - X * 2;
-const DIVIDER = 'rgba(229, 231, 235, 1)';
-const STAR = 'rgba(245, 180, 0, 1)';
-const SOFT_WHITE = 'rgba(255, 255, 255, 0.85)';
-const ON_DARK_CARD = 'rgba(255, 255, 255, 0.08)';
-const ON_DARK_LINE = 'rgba(255, 255, 255, 0.24)';
-const TRANSPARENT = 'rgba(255, 255, 255, 0)';
-
-/** 860px 기준 글자 크기 (휴대폰에서 절반 가까이 줄어드는 것을 감안) */
-const SIZE = { label: 26, title: 56, heroTitle: 72, sub: 30, itemTitle: 34, body: 30, small: 28, caption: 24, fine: 22 };
-
-type Place = TextOptions & { x?: number; width?: number; gap?: number; heading?: boolean };
-
-class Canvas {
-  readonly nodes: FrameNode[] = [];
-  y = 110;
-  /** 진한 바탕이나 사진 위: 글자·배지를 밝게 */
-  dark: boolean;
-  private seq = 0;
-
-  constructor(
-    private prefix: string,
-    readonly palette: DraftPalette,
-    readonly t: DesignTokens,
-    readonly surface: Surface,
-  ) {
-    this.dark = surface === 'main';
-  }
-
-  id() {
-    return `${this.prefix}-${++this.seq}`;
-  }
-
-  get ink() {
-    return this.dark ? WHITE : INK;
-  }
-
-  get muted() {
-    return this.dark ? SOFT_WHITE : GRAY;
-  }
-
-  get line() {
-    return this.dark ? ON_DARK_LINE : DIVIDER;
-  }
-
-  /** 강조색: 진한 바탕에서는 한 단계 밝은 포인트 색 */
-  get accentRole(): PaletteRole {
-    return this.dark ? 'point' : 'main';
-  }
-
-  accent() {
-    return { color: this.palette[this.accentRole], colorVar: this.accentRole };
-  }
-
-  /** 정렬에 맞춘 x (가운데 정렬이면 가운데, 왼쪽 정렬이면 왼쪽 여백) */
-  alignX(width: number) {
-    return this.t.align === 'left' ? X : (W - width) / 2;
-  }
-
-  /** 현재 y에 문구를 놓고 y를 내린다 */
-  text(value: string | undefined, fontSize: number, o: Place = {}) {
-    if (!value?.trim()) return null;
-    const node = this.textAt(value, o.x ?? X, this.y, o.width ?? CW, fontSize, { align: this.t.align, ...o });
-    this.y += Number(node.height) + (o.gap ?? 24);
-    return node;
-  }
-
-  /** 제목 글꼴·굵기·배율을 적용한 문구 */
-  heading(value: string | undefined, fontSize: number, o: Place = {}) {
-    return this.text(value, Math.round(fontSize * this.t.scale), { weight: this.t.headingWeight, lineHeight: 1.3, heading: true, ...o });
-  }
-
-  /** y를 움직이지 않고 원하는 위치에 문구 */
-  textAt(value: string, x: number, y: number, width: number, fontSize: number, o: Place = {}) {
-    const { heading, ...rest } = o;
-    const node = textNode(this.id(), value, x, y, width, fontSize, {
-      ...rest,
-      color: rest.color ?? this.ink,
-      fontFamily: rest.fontFamily ?? (heading ? this.t.font.heading : this.t.font.body),
-    });
-    this.nodes.push(node);
-    return node;
-  }
-
-  box(x: number, y: number, width: number, height: number, fill: string, o: BoxOptions = {}) {
-    const node = boxNode(this.id(), x, y, width, height, fill, o);
-    this.nodes.push(node);
-    return node;
-  }
-
-  /** 카드 배경처럼 내용보다 뒤에 깔려야 하는 사각형 */
-  boxBehind(index: number, x: number, y: number, width: number, height: number, fill: string, o: BoxOptions = {}) {
-    const node = boxNode(this.id(), x, y, width, height, fill, o);
-    this.nodes.splice(index, 0, node);
-    return node;
-  }
-
-  /** 팔레트 강조색 상자 (선·점·연결선) */
-  accentBox(x: number, y: number, width: number, height: number, o: BoxOptions = {}) {
-    return this.box(x, y, width, height, this.palette[this.accentRole], { ...o, colorVar: this.accentRole });
-  }
-
-  /** 배지: 강조색 상자 + 가운데 글자. 진한 바탕에서는 흰 상자에 대표색 글자. 글자가 길면 상자가 늘어난다 */
-  badge(value: string, x: number, y: number, width: number, height: number, o: { radius?: number; size?: number; name?: string } = {}) {
-    const size = o.size ?? SIZE.caption;
-    const bg = this.dark
-      ? this.box(x, y, width, height, WHITE, { cornerRadius: o.radius ?? height / 2, name: 'badge_bg' })
-      : this.box(x, y, width, height, this.palette.main, { cornerRadius: o.radius ?? height / 2, name: 'badge_bg', colorVar: 'main' });
-    const padY = Math.max(10, (height - size * 1.35) / 2);
-    const label = this.textAt(value, x + 14, y + padY, width - 28, size, {
-      weight: 800,
-      align: 'center',
-      name: o.name ?? 'badge',
-      ...(this.dark ? { color: this.palette.main, colorVar: 'main' as const } : { color: WHITE }),
-    });
-    bg.height = Math.max(height, Number(label.height) + padY * 2);
-    return bg;
-  }
-
-  /** 카드 바탕 (index 위치에 깔아 내용보다 뒤에 둔다) */
-  card(index: number, x: number, y: number, width: number, height: number, name = 'card') {
-    const o: BoxOptions = { cornerRadius: this.t.radius.card, name };
-    if (this.dark) return this.boxBehind(index, x, y, width, height, ON_DARK_CARD, { ...o, stroke: ON_DARK_LINE, strokeWidth: 1 });
-    if (this.t.card === 'outline') return this.boxBehind(index, x, y, width, height, TRANSPARENT, { ...o, stroke: DIVIDER, strokeWidth: 2 });
-    if (this.surface === 'white') return this.boxBehind(index, x, y, width, height, this.palette.bgLight, { ...o, colorVar: 'bgLight' });
-    return this.boxBehind(index, x, y, width, height, WHITE, o);
-  }
-
-  /** 섹션 라벨 — 스타일에 따라 글자만 / 알약 배지 / 위에 짧은 선 */
-  label(value: string | undefined, gap = 18) {
-    if (!value?.trim()) return;
-    if (this.t.label === 'pill') {
-      const width = Math.min(CW, textWidth(value, SIZE.caption, 1) + 64);
-      const bg = this.badge(value, this.alignX(width), this.y, width, 56, { radius: this.t.radius.chip, name: 'label' });
-      this.y += Number(bg.height) + gap;
-      return;
-    }
-    if (this.t.label === 'rule') {
-      this.accentBox(this.alignX(48), this.y, 48, 2, { name: 'label_rule' });
-      this.y += 24;
-    }
-    this.text(value, SIZE.label, { weight: 700, ...this.accent(), name: 'label', letterSpacing: this.t.label === 'rule' ? 4 : 2, gap });
-  }
-
-  /** 제목 아래 짧은 강조선 */
-  rule(gap: number) {
-    this.accentBox(this.alignX(64), this.y, 64, 3, { name: 'title_rule' });
-    this.y += 3 + gap;
-  }
-
-  /** 사진 자리 — 화면 끝까지 꽉 찬 사진은 모서리 없이, 나머지는 스타일 모서리 */
-  image(cut: DraftCut | undefined, x: number, width: number, height: number, gap = 60, radius?: number) {
-    if (!cut) return false;
-    const r = radius ?? (x === 0 && width === W ? 0 : this.t.radius.image);
-    this.nodes.push(imageNode(this.id(), x, this.y, width, height, r, cut.id));
-    this.y += height + gap;
-    return true;
-  }
-
-  /** start 이후에 만든 요소를 아래로 dy만큼 옮긴다 */
-  shift(start: number, dy: number) {
-    for (const node of this.nodes.slice(start)) node.y = Number(node.y) + dy;
-  }
-
-  space(px: number) {
-    this.y += px;
-  }
-}
-
 interface Ctx {
   c: Canvas;
   s: DraftSection;
@@ -199,12 +28,7 @@ const pointNo = (i: number) => `POINT ${String(i + 1).padStart(2, '0')}`;
 
 /** 라벨 + 메인 문구 + 서브 문구 */
 function header({ c, s }: Ctx, o: { titleSize?: number } = {}) {
-  c.label(s.label?.text);
-  const hasSub = Boolean(s.subtitle?.text?.trim());
-  const after = hasSub ? 22 : 64;
-  c.heading(s.title.text, o.titleSize ?? SIZE.title, { name: 'main_copy', gap: c.t.titleRule ? 28 : after });
-  if (c.t.titleRule) c.rule(after + 6);
-  c.text(s.subtitle?.text, SIZE.sub, { color: c.muted, lineHeight: 1.6, name: 'sub_copy', gap: 64 });
+  c.header(s.label?.text, s.title.text, s.subtitle?.text, o.titleSize);
 }
 
 /** 항목 제목 + 설명을 위아래로 */

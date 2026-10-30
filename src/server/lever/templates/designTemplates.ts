@@ -3,7 +3,7 @@ import { derivePalette, TONE_PRESETS } from '@/shared/lib/palette';
 import type { DraftCut, DraftLine, DraftSection } from '@/shared/types/draft';
 import type { SectionLayout } from '../catalog/sections';
 import { walk, type FrameNode } from '../frames/tree';
-import { textNode } from './nodes';
+import { withGuide } from './nodes';
 import { buildSectionFrame } from './sectionLayouts';
 
 /**
@@ -217,12 +217,7 @@ function finalize(frame: FrameNode, slug: string, guide: string): FrameNode {
     delete node.cutId;
     delete node.sectionTypeId;
   }
-  const prompt: FrameNode = {
-    ...textNode(`${slug}-prompt`, guide, 30, 30, 800, 28, { color: 'rgba(255, 0, 0, 1)', align: 'left', lines: guide.split('\n').length }),
-    name: 'prompt',
-    visible: false,
-  };
-  return { ...frame, children: [...(frame.children ?? []), prompt] };
+  return withGuide(frame, slug, guide);
 }
 
 export interface DesignTemplate {

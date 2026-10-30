@@ -125,6 +125,16 @@ export const imageNode = (id: string, x: number, y: number, width: number, heigh
   ...(cutId ? { cutId } : {}),
 });
 
+/** 숨김 prompt 노드(AI 문구 채우기 가이드)를 프레임 맨 뒤에 붙인다 */
+export function withGuide(frame: FrameNode, slug: string, guide: string): FrameNode {
+  const prompt: FrameNode = {
+    ...textNode(`${slug}-prompt`, guide, 30, 30, 800, 28, { color: 'rgba(255, 0, 0, 1)', align: 'left', lines: guide.split('\n').length }),
+    name: 'prompt',
+    visible: false,
+  };
+  return { ...frame, children: [...(frame.children ?? []), prompt] };
+}
+
 export const frameNode = (id: string, name: string, height: number, fill: string, children: FrameNode[], colorVar?: PaletteRole): FrameNode => ({
   type: 'frame',
   id,
