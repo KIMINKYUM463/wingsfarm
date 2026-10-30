@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import type { ProjectFrame } from '@/features/editor/types';
 import type { FrameNode } from './frames/tree.ts';
 
-const { contextBrief, pageCopyOf, rewriteFrame } = await import('./copywriter.ts');
+const { contextBrief, hasPlaceholder, pageCopyOf, rewriteFrame } = await import('./copywriter.ts');
 
 const text = (id: string, value: string, fontSize = 30, extra: Partial<FrameNode> = {}): FrameNode => ({
   type: 'text',
@@ -72,6 +72,42 @@ describe('템플릿 문구 → 상품 문구', () => {
     const frame = frameOf('f1', 'a1', [text('title', '제목')]);
     const result = await rewriteFrame(fakeWriter({ title: '  ' }), '상품명: 참외', frame);
     assert.equal(textsOf(result).title, '제목');
+  });
+
+  it('자리표시가 남으면 남은 문구만 한 번 더 쓰게 한다', async () => {
+    const answers = [
+      { chip1: '[키워드 1]', chip2: '아삭함', review: '[실제 구매 후기를 그대로 옮겨 적어 주세요]' },
+      { chip1: '꿀당도', review: '선물용으로 고르기 좋은 크기예요' },
+    ];
+    const prompts: string[] = [];
+    const writer = {
+      generateJson: async <T,>(prompt: string) => {
+        prompts.push(prompt);
+        return { texts: Object.entries(answers[prompts.length - 1]).map(([id, value]) => ({ id, text: value })) } as T;
+      },
+    };
+    const frame = frameOf('f1', 'a1', [text('chip1', '[키워드 1]'), text('chip2', '[키워드 2]'), text('review', '[실제 구매 후기를 그대로 옮겨 적어 주세요]')]);
+
+    const result = await rewriteFrame(writer, '상품명: 참외', frame);
+
+    assert.equal(prompts.length, 2);
+    assert.match(prompts[1], /\[다시 쓰기\]/);
+    assert.ok(!prompts[1].includes('"chip2"'), '이미 채운 문구는 다시 묻지 않는다');
+    assert.deepEqual(textsOf(result), { chip1: '꿀당도', chip2: '아삭함', review: '선물용으로 고르기 좋은 크기예요' });
+  });
+
+  it('자리표시가 없으면 한 번만 부른다', async () => {
+    const writer = fakeWriter({ chip: '아삭함' });
+    await rewriteFrame(writer, '상품명: 참외', frameOf('f1', 'a1', [text('chip', '[키워드 1]')]));
+    assert.equal(writer.prompts.length, 1);
+    assert.match(writer.prompts[0], /하나도 남기지 않고/);
+    assert.match(writer.prompts[0], /남이 한 말처럼 쓰지 않는다/, '후기는 지어내지 않는다');
+  });
+
+  it('자리표시·작성 안내를 알아본다', () => {
+    assert.ok(hasPlaceholder('[키워드 1]'));
+    assert.ok(hasPlaceholder('보관 방법을 적어 주세요'));
+    assert.ok(!hasPlaceholder('한입 베면 아삭해요'));
   });
 
   it('바꿀 문구가 없으면 AI를 부르지 않는다', async () => {

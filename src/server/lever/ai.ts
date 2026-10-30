@@ -7,7 +7,8 @@ import { findImageStyle } from './catalog/styles';
 import { sceneIdeas } from '@/shared/lib/draftMedia';
 import { asNode, collectEditableTexts, collectPromptGuides, findNode, isImageSlot, walk } from './frames/tree';
 import { NATURAL_COPY_RULES } from './copyStyle';
-import { contextBrief } from './copywriter';
+import { PLACEHOLDER_RULES } from './copywriter';
+import { copyBrief } from './productFacts';
 import { distinctFrom, productPhotoPrompt, sceneForIndex } from './photoPrompt';
 import { closestAspectRatio, loadInlineImage, loadInlineImages, requireGemini, type InlineImage } from './gemini';
 import { badRequest, notFound } from './http';
@@ -183,17 +184,19 @@ export async function generateElementText(
   const guides = collectPromptGuides(frame);
 
   const gemini = await requireGemini();
+  const brief = await copyBrief(project);
   const result = await gemini.generateJson<{ text?: string }>(
     `너는 한국 이커머스 상세페이지 카피라이터다. 아래 문구 1개를 상품에 맞게 다시 써라.
 
 [상품]
-${contextBrief(project, project.context)}
+${brief}
 ${guides.length ? `[섹션 작성 가이드]\n${guides.join('\n')}\n` : ''}
 [같은 섹션의 다른 문구] ${others.join(' / ') || '없음'}
 [현재 문구] ${JSON.stringify(current)}
 ${body.prompt?.trim() ? `[사용자 요청] ${body.prompt.trim()}` : ''}
 
-규칙: 현재 문구와 비슷한 길이(공백 제외 ${Math.ceil(current.replace(/\s/g, '').length * 1.2) + 2}자 이내)와 같은 줄 수(${current.split('\n').length}줄)를 유지하고, 줄바꿈은 \\n 으로 쓴다. 상품 정보에 없는 수치·인증은 지어내지 않는다.
+규칙: 현재 문구와 비슷한 길이(공백 제외 ${Math.ceil(current.replace(/\s/g, '').length * 1.2) + 2}자 이내)와 같은 줄 수(${current.split('\n').length}줄)를 유지하고, 줄바꿈은 \\n 으로 쓴다.
+${PLACEHOLDER_RULES}
 
 ${NATURAL_COPY_RULES}
 

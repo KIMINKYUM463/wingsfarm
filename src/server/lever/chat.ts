@@ -1,12 +1,12 @@
 import 'server-only';
 import type { ChatEditChange, ChatEditRequest, ChatEditResult, ChatTextAlign } from '@/shared/types/chatEdit';
 import { describeWarnings, findUnsupportedClaims } from './catalog/factGuard';
-import { getDraft, evidenceText } from './drafts/repo';
 import { NATURAL_COPY_RULES } from './copyStyle';
 import { contextBrief } from './copywriter';
 import { requireGemini } from './gemini';
 import { badRequest } from './http';
-import { getProject, type ProjectRecord } from './projects';
+import { projectEvidence } from './productFacts';
+import { getProject } from './projects';
 
 /**
  * 에디터 AI 채팅 수정 — "이 페이지 문구 더 짧게"처럼 말하면 문구를 고쳐 캔버스에 적용한다
@@ -46,12 +46,6 @@ function sanitizeRequest(body: ChatEditRequest) {
     .slice(-LIMITS.history)
     .map((h) => `${h.role === 'assistant' ? 'AI' : '사용자'}: ${clean(h.text, 300)}`);
   return { message, targets: scope ? [scope] : frames, scoped: Boolean(scope), history };
-}
-
-async function projectEvidence(project: ProjectRecord) {
-  const draft = project.draftLayout && (await getDraft(project.draftLayout.draftId).catch(() => null));
-  if (draft) return evidenceText(draft.input, draft.plan?.analysis?.reviewQuotes);
-  return [project.productName, project.description, ...(project.context?.sellingPoints ?? [])].join('\n');
 }
 
 interface RawChange {

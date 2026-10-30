@@ -9,7 +9,8 @@ import type {
   TemplateCopyStatus,
   UpdateFrameRequest,
 } from '@/features/editor/types';
-import { contextBrief, pageCopyOf, rewriteFrame } from './copywriter';
+import { pageCopyOf, rewriteFrame } from './copywriter';
+import { copyBrief } from './productFacts';
 import { asFrame, asNode, cloneWithNewIds, countImageSlots } from './frames/tree';
 import { requireGemini } from './gemini';
 import { badRequest, notFound, noContent, ok } from './http';
@@ -49,7 +50,7 @@ async function writeTemplateCopy(
   if (!(await getGeminiApiKey())) return { frames, copyStatus: 'no_key' };
 
   const gemini = await requireGemini();
-  const brief = contextBrief(project, project.context);
+  const brief = await copyBrief(project);
   const pageCopy = pageCopyOf(sortFrames(project.frames));
   let failures = 0;
   const written = await Promise.all(

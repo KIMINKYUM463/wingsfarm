@@ -3,7 +3,8 @@ import pLimit from 'p-limit';
 import type { ProjectFrame } from '@/features/editor/types';
 import { createDetailPageSchema, type CreateDetailPageRequest, type ProjectGenerationStatus } from '@/shared/types/detail-page';
 import { findCategory } from './catalog/categories';
-import { contextBrief, rewriteFrame } from './copywriter';
+import { rewriteFrame } from './copywriter';
+import { copyBrief } from './productFacts';
 import { asFrame, asNode, cloneWithNewIds } from './frames/tree';
 import { loadInlineImages, requireGemini, type GeminiClient } from './gemini';
 import { ApiError, badRequest, notFound } from './http';
@@ -123,7 +124,7 @@ async function runGeneration(jobId: string) {
 
   await runStage(jobId, 'ai', async () => {
     await patchJob(jobId, { status: 'ai_processing' });
-    const brief = contextBrief(project, context);
+    const brief = await copyBrief(project, context);
     let failures = 0;
     let lastError: unknown;
     const frames = await Promise.all(
