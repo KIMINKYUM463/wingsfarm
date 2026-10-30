@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import type { KonvaElement } from '@/shared/types/konva';
 
-const { checkSection } = await import('./sectionCheck.ts');
+const { buildFixMessage, checkSection, splitFixes } = await import('./sectionCheck.ts');
 
 const el = (props: Record<string, unknown>) => props as unknown as KonvaElement;
 const fixes = (elements: KonvaElement[]) => checkSection(elements).filter((n) => n.tone === 'fix').map((n) => n.text);
@@ -31,6 +31,25 @@ describe('섹션 기본 점검', () => {
     assert.equal(notes.filter((n) => n.tone === 'fix').length, 5);
     assert.ok(notes.find((n) => n.text.startsWith('채울 문구'))?.fixRequest, '문구 문제는 AI로 고칠 수 있다');
     assert.equal(notes.find((n) => n.text.startsWith('빈 사진'))?.fixRequest, undefined, '사진은 직접 넣어야 한다');
+  });
+
+  it('고칠 점을 AI가 고칠 것(중복 제거)과 직접 할 것으로 나눈다', () => {
+    const { auto, manual } = splitFixes([
+      { text: '작은 글자', fixRequest: '글자 키워줘' },
+      { text: '제목이 약해요', fixRequest: '제목 바꿔줘' },
+      { text: '작은 글자(AI)', fixRequest: '글자 키워줘' },
+      { text: '빈 사진 자리' },
+      { text: '빈 사진 자리' },
+    ]);
+    assert.deepEqual(auto, ['글자 키워줘', '제목 바꿔줘']);
+    assert.deepEqual(manual, ['빈 사진 자리']);
+  });
+
+  it('여러 요청은 번호 목록 한 문장으로, 한도(500자)를 넘는 항목은 뺀다', () => {
+    assert.equal(buildFixMessage(['제목 바꿔줘']), '제목 바꿔줘');
+    const message = buildFixMessage(['제목 바꿔줘', '글자 키워줘', '가'.repeat(480)]);
+    assert.match(message, /\n1\. 제목 바꿔줘\n2\. 글자 키워줘$/);
+    assert.ok(message.length <= 500);
   });
 
   it('숨긴 요소는 점검하지 않는다', () => {

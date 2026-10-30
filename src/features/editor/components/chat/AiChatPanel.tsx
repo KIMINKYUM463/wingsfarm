@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Icon from '@/shared/ui/Icon';
-import { showToast } from '@/utils/toast';
 import { errorMessage } from '@/shared/lib/errorMessage';
 import { chatEditProject } from '@/features/editor/api';
 import { useProjectDetail } from '@/features/editor/hooks/useProjectDetail';
 import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useAiChatStore, type ChatTurn } from '@/features/editor/store/useAiChatStore';
-import { applyChatChanges, collectCanvasTexts, frameNameOf, revertChatChanges } from '@/features/editor/lib/chat-canvas';
+import { applyChatChanges, collectCanvasTexts, frameNameOf } from '@/features/editor/lib/chat-canvas';
+import { ChangeList, RevertButton, WarningBox } from './ChatResultParts';
 import { useCenteredFrameId } from '@/features/editor/hooks/useCenteredFrameId';
 
 /** 추천 칩 — 문구·구성 수정과 궁금한 것 */
@@ -176,17 +176,9 @@ export function AiChatPanel() {
 }
 
 function TurnView({ turn, onFollowUp }: { turn: ChatTurn; onFollowUp: (message: string) => void }) {
-  const updateTurn = useAiChatStore((state) => state.updateTurn);
   const [showChanges, setShowChanges] = useState(false);
   const result = turn.result;
   const pages = result ? [...new Set(result.changes.map((c) => c.frameName))] : [];
-
-  const revert = () => {
-    if (!result) return;
-    const skipped = revertChatChanges(result.changes);
-    updateTurn(turn.id, { reverted: true });
-    showToast.success(skipped ? `되돌렸어요. 직접 고친 문구 ${skipped}개는 그대로 뒀어요.` : '수정 전으로 되돌렸어요.');
-  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -212,40 +204,13 @@ function TurnView({ turn, onFollowUp }: { turn: ChatTurn; onFollowUp: (message: 
                   <button type="button" className="font-semibold text-gray-600 hover:text-gray-900" onClick={() => setShowChanges(!showChanges)}>
                     {showChanges ? '접기' : '결과 보기'}
                   </button>
-                  {turn.reverted ? (
-                    <span className="text-gray-400">되돌림</span>
-                  ) : (
-                    <button type="button" className="font-semibold text-(--color-point)" onClick={revert}>
-                      되돌리기
-                    </button>
-                  )}
+                  <RevertButton turn={turn} />
                 </span>
               </div>
-              {showChanges && (
-                <ul className="flex flex-col gap-1.5 text-xs">
-                  {result.changes.map((c) => (
-                    <li key={c.elementId} className="rounded-lg bg-gray-50 px-2 py-1.5">
-                      <span className="text-gray-400 line-through">{c.before.text}</span>
-                      <br />
-                      <span className="text-gray-900">
-                        {c.after.text ?? c.before.text}
-                        {c.after.align && ` · ${c.after.align === 'center' ? '가운데' : c.after.align === 'right' ? '오른쪽' : '왼쪽'} 정렬`}
-                        {c.after.fontSize && ` · ${c.before.fontSize}→${c.after.fontSize}px`}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              {showChanges && <ChangeList changes={result.changes} />}
             </>
           )}
-          {result.warnings.length > 0 && (
-            <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
-              <p className="font-semibold">사실 확인이 필요해요</p>
-              {result.warnings.map((w) => (
-                <p key={w}>· {w}</p>
-              ))}
-            </div>
-          )}
+          <WarningBox warnings={result.warnings} />
           {result.followUps.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {result.followUps.map((f) => (

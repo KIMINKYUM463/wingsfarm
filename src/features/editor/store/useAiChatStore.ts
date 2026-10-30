@@ -24,7 +24,8 @@ interface AiChatState {
   open: boolean;
   turns: ChatTurn[];
   setOpen: (open: boolean) => void;
-  enqueue: (turn: Pick<ChatTurn, 'message' | 'scopeFrameId' | 'scopeName'>) => void;
+  /** @returns 추가한 요청 id (결과를 따라가려면 turns에서 찾는다) */
+  enqueue: (turn: Pick<ChatTurn, 'message' | 'scopeFrameId' | 'scopeName'>) => string;
   updateTurn: (id: string, patch: Partial<ChatTurn>) => void;
   reset: () => void;
 }
@@ -33,7 +34,11 @@ export const useAiChatStore = create<AiChatState>()((set) => ({
   open: false,
   turns: [],
   setOpen: (open) => set({ open }),
-  enqueue: (turn) => set((state) => ({ turns: [...state.turns, { ...turn, id: crypto.randomUUID(), status: 'queued' }] })),
+  enqueue: (turn) => {
+    const id = crypto.randomUUID();
+    set((state) => ({ turns: [...state.turns, { ...turn, id, status: 'queued' }] }));
+    return id;
+  },
   updateTurn: (id, patch) => set((state) => ({ turns: state.turns.map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
   reset: () => set((state) => ({ turns: state.turns.filter((t) => t.status === 'running') })),
 }));

@@ -51,3 +51,31 @@ export function checkSection(elements: KonvaElement[]): SectionNote[] {
   if (texts.length && !placeholders && !small && !long) notes.push({ tone: 'good', text: '문구가 다 채워졌고 휴대폰에서도 읽기 좋은 크기예요.' });
   return notes;
 }
+
+/** 고칠 점 → AI가 문구로 고칠 것(같은 요청은 하나로) / 직접 해야 할 것(사진·배치 등) */
+export function splitFixes(notes: Pick<SectionNote, 'text' | 'fixRequest'>[]) {
+  const auto = new Map<string, string>();
+  const manual: string[] = [];
+  for (const { text, fixRequest } of notes) {
+    if (fixRequest) {
+      if (!auto.has(fixRequest)) auto.set(fixRequest, text);
+    } else if (!manual.includes(text)) {
+      manual.push(text);
+    }
+  }
+  return { auto: [...auto.keys()], manual };
+}
+
+/** AI 채팅 요청 길이 한도 (서버 chat.ts LIMITS.message) */
+const FIX_MESSAGE_MAX = 500;
+
+/** 여러 고치기 요청을 AI 편집 도우미에 보낼 한 문장으로 묶는다 (한도를 넘는 항목은 뺀다) */
+export function buildFixMessage(requests: string[]) {
+  if (requests.length === 1) return requests[0].slice(0, FIX_MESSAGE_MAX);
+  let message = '이 페이지를 아래 개선점대로 한 번에 고쳐줘. 상품 정보에 없는 내용은 새로 만들지 마.';
+  requests.forEach((request, i) => {
+    const line = `\n${i + 1}. ${request}`;
+    if (message.length + line.length <= FIX_MESSAGE_MAX) message += line;
+  });
+  return message;
+}
