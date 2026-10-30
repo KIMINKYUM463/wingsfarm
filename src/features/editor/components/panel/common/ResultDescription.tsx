@@ -62,8 +62,8 @@ const ResultDescription = <T extends FieldValues>({
                     src={selectedAsset.thumbnailUrl}
                     alt="참조 이미지"
                     fill
+                    unoptimized
                     className="object-cover"
-                    sizes="80px"
                   />
                   <CloseButton
                     variant="solid"
