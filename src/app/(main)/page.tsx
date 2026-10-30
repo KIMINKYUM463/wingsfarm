@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import type { SeasonCategory } from "@/types";
 import { AreaChart, Sparkline } from "@/components/charts";
 import { KeywordDetail } from "@/components/KeywordDetail";
+import { AiTeam } from "@/components/dashboard/AiTeam";
 import { TodayOps } from "@/components/dashboard/TodayOps";
 import { CountUp, stagger } from "@/components/motion";
 import { growthText } from "@/lib/format";
@@ -164,6 +165,8 @@ export default function DashboardPage() {
           )}
         </div>
       </section>
+
+      <AiTeam />
 
       <TodayOps />
 
