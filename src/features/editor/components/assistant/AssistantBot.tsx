@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import clsx from 'clsx';
 import Icon from '@/shared/ui/Icon';
@@ -20,6 +21,7 @@ import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useDraggableDock } from './useDraggableDock';
 
 const ROBOT_SIZE = 56;
+const ROBOT_IMAGE = '/assistant-robot.webp';
 /** 처음 자리: 오른쪽 구성 목록(272px + 간격)을 가리지 않는 캔버스 오른쪽 아래 */
 const DEFAULT_DOCK = { right: 296, bottom: 80 };
 const POSITION_KEY = 'wf-assistant-position';
@@ -143,7 +145,8 @@ export function AssistantBot() {
           {open ? (
             <div className="flex flex-col" style={{ maxHeight: bubbleMaxHeight }}>
               <div className="flex items-start justify-between gap-2 border-b border-gray-100 px-4 py-3">
-                <div className="min-w-0">
+                <Image src={ROBOT_IMAGE} alt="" width={36} height={36} className="shrink-0 rounded-full" />
+                <div className="min-w-0 flex-1">
                   <p className="font-semibold text-gray-900">AI 도우미</p>
                   {tourStep === null && frame && (
                     <p className="truncate text-xs text-gray-500">
@@ -220,14 +223,15 @@ export function AssistantBot() {
         type="button"
         aria-label="AI 도우미"
         title="AI 도우미 (끌어서 옮길 수 있어요)"
-        className="relative flex h-full w-full cursor-grab touch-none items-center justify-center rounded-full bg-(--color-point) text-white shadow-lg ring-4 ring-white active:cursor-grabbing"
+        className={clsx(
+          'relative block h-full w-full cursor-grab touch-none rounded-full shadow-[0_8px_24px_rgba(37,99,235,0.35)] ring-2 ring-white transition-shadow hover:shadow-[0_10px_32px_rgba(37,99,235,0.5)] active:cursor-grabbing',
+          !open && 'animate-bob',
+        )}
         {...handlers}
       >
-        <span className={clsx('flex', !open && 'animate-bob')}>
-          <Icon name="smart_toy" width={30} fill />
-        </span>
+        <Image src={ROBOT_IMAGE} alt="" width={ROBOT_SIZE} height={ROBOT_SIZE} draggable={false} priority className="h-full w-full rounded-full select-none" />
         {!open && fixCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold">
+          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white ring-2 ring-white">
             {fixCount}
           </span>
         )}
