@@ -4,7 +4,7 @@ import { defaultCutSource, sceneIdeas } from '@/shared/lib/draftMedia';
 import type { DraftAnalysis, DraftInput, DraftPlan, DraftProgress, DraftRecord, DraftSection, PhotoAnalysis } from '@/shared/types/draft';
 import { CATEGORIES, findCategory } from '../catalog/categories';
 import { derivePalette, normalizePalette, palettePresets, TONE_PRESETS } from '../catalog/palette';
-import { defaultFlow, findSectionType, LENGTH_TARGET, sectionTypesFor, type SectionType } from '../catalog/sections';
+import { defaultFlow, findSectionType, LENGTH_TARGET, sectionTypesFor, withAiNotice, type SectionType } from '../catalog/sections';
 import { loadInlineImages, requireGemini, type GeminiClient } from '../gemini';
 import { ApiError, badRequest } from '../http';
 import { getProject } from '../projects';
@@ -297,9 +297,10 @@ async function runPlan(draftId: string) {
     const fallback = defaultFlow(input.categoryId, input.length, (t) => !lockedReason(t, keys));
     await setProgress(draftId, { step: 'facts', message: '상품 정보를 정리했어요' });
 
-    const outlineIds = reuse
-      ? reuse.sectionTypeIds.filter((id) => available.some((t) => t.id === id))
-      : await planOutline(gemini, input, available, fallback);
+    const outlineIds = withAiNotice(
+      reuse ? reuse.sectionTypeIds.filter((id) => available.some((t) => t.id === id)) : await planOutline(gemini, input, available, fallback),
+      input.imageMode === 'ai',
+    );
     const types = outlineIds.map((id) => findSectionType(input.categoryId, id)).filter((t): t is SectionType => Boolean(t));
     await setProgress(draftId, {
       step: 'matching',

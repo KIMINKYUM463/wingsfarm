@@ -270,6 +270,17 @@ const GENERIC_FLOW = {
 
 export const LENGTH_TARGET = { short: [12, 15], long: [20, 25] } as const;
 
+const AI_NOTICE_ID = 'notice_ai';
+
+/**
+ * AI 사진을 쓰면 AI 고지를 맨 끝에 꼭 넣고, 안 쓰면 뺀다.
+ * 네이버쇼핑은 2026-07-10부터 AI로 만든 상세페이지 이미지에 AI 활용 표시를 요구한다(신선식품은 의무).
+ */
+export function withAiNotice(ids: string[], usesAiImages: boolean) {
+  const rest = ids.filter((id) => id !== AI_NOTICE_ID);
+  return usesAiImages ? [...rest, AI_NOTICE_ID] : rest;
+}
+
 export function defaultFlow(categoryId: string, length: 'short' | 'long', available: (type: SectionType) => boolean) {
   const types = sectionTypesFor(categoryId);
   const flow = FLOWS[categoryId as CategoryId] ?? GENERIC_FLOW;

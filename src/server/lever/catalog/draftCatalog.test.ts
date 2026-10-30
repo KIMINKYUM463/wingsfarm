@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { findUnsupportedClaims } from './factGuard.ts';
 import { countPaletteNodes, derivePalette, luminance, normalizePalette, recolorTree, TONE_PRESETS } from '../../../shared/lib/palette.ts';
-import { defaultFlow, LENGTH_TARGET, sectionTypesFor } from './sections.ts';
+import { defaultFlow, LENGTH_TARGET, sectionTypesFor, withAiNotice } from './sections.ts';
 import { estimateLines } from '../templates/nodes.ts';
 
 describe('사실 검사', () => {
@@ -14,6 +14,12 @@ describe('사실 검사', () => {
   it('입력에 근거가 있으면 경고하지 않는다', () => {
     assert.deepEqual(findUnsupportedClaims('산지직송으로 보내요', '배송: 산지직송'), []);
     assert.deepEqual(findUnsupportedClaims('당도 13브릭스', '특징: 평균 당도 13Brix'), []);
+  });
+
+  it('입력에 없는 배송 약속·고객센터 정보를 찾는다', () => {
+    const labels = findUnsupportedClaims('오늘 출발! 평일 오전 10시~오후 5시 1588-1234', '상품명: 사과').map((w) => w.label);
+    assert.deepEqual(labels, ['배송 약속', '연락처·운영 시간']);
+    assert.deepEqual(findUnsupportedClaims('오후 2시 전 주문은 당일 발송', '배송: 오후 2시 전 주문 당일 발송'), []);
   });
 
   it('감성 표현은 통과한다', () => {
@@ -57,6 +63,12 @@ describe('섹션 카탈로그', () => {
     assert.ok(!flow.includes('review'));
     assert.ok(!flow.includes('point_producer'));
     assert.ok(flow.length >= LENGTH_TARGET.short[0] - 3);
+  });
+
+  it('AI 사진을 쓰면 AI 고지를 맨 끝에 한 번만 넣고, 안 쓰면 뺀다', () => {
+    assert.deepEqual(withAiNotice(['hero', 'notice_ai', 'faq'], true), ['hero', 'faq', 'notice_ai']);
+    assert.deepEqual(withAiNotice(['hero', 'faq'], true), ['hero', 'faq', 'notice_ai']);
+    assert.deepEqual(withAiNotice(['hero', 'notice_ai', 'faq'], false), ['hero', 'faq']);
   });
 
   it('카테고리 전용 섹션이 공통 섹션을 덮어쓴다', () => {
