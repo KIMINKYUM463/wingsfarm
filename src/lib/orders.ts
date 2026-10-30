@@ -3,6 +3,7 @@
  * 마켓 API 없이 파일·붙여넣기만 다룬다 (계정 정보 불필요).
  */
 import type { OrderField, Sku, Supplier, TemplateColumn } from "@/types";
+import { findHeaderRowBy, matchColumns, normalizeHeader } from "./table.ts";
 
 /** 주문 표에서 읽어 오는 필드 (발주서 양식 필드 + 상세주소) */
 export type SourceField = Exclude<OrderField, "bundleGroup" | "supplyPrice" | "constant"> | "addressDetail";
@@ -46,49 +47,17 @@ export interface Order {
   raw: string[];
 }
 
-const norm = (s: string) => s.replace(/[\s_\-()[\]/·.]/g, "").toLowerCase();
-
-/**
- * 머리글로 각 필드의 열을 찾는다.
- * 같은 열이 두 필드에 잡히지 않도록 "정확히 같은 이름"을 먼저 모두 배정한 뒤 "포함"으로 나머지를 채운다.
- */
+/** 머리글로 각 필드의 열을 찾는다 */
 export function detectMapping(headers: string[]): ColumnMapping {
-  const normalized = headers.map(norm);
-  const used = new Set<number>();
-  const mapping: ColumnMapping = {};
-  const assign = (match: (header: string, synonym: string) => boolean) => {
-    for (const { field, synonyms } of SOURCE_FIELDS) {
-      if (mapping[field] !== undefined) continue;
-      for (const synonym of synonyms) {
-        const index = normalized.findIndex((h, i) => !used.has(i) && h !== "" && match(h, norm(synonym)));
-        if (index >= 0) {
-          mapping[field] = index;
-          used.add(index);
-          break;
-        }
-      }
-    }
-  };
-  assign((h, s) => h === s);
-  assign((h, s) => h.includes(s));
+  const mapping: ColumnMapping = matchColumns(headers, SOURCE_FIELDS);
   // 통합배송지가 있으면 상세배송지를 붙이면 주소가 두 번 들어간다
-  if (mapping.address !== undefined && normalized[mapping.address] === norm("통합배송지")) delete mapping.addressDetail;
+  if (mapping.address !== undefined && normalizeHeader(headers[mapping.address]) === normalizeHeader("통합배송지")) delete mapping.addressDetail;
   return mapping;
 }
 
 /** 앞쪽 몇 줄 중 필드 이름이 가장 많이 들어 있는 줄을 머리글로 본다 (제목 줄이 있는 엑셀 대응) */
-export function findHeaderRow(rows: string[][], scanRows = 5) {
-  let best = 0;
-  let bestScore = -1;
-  rows.slice(0, scanRows).forEach((row, i) => {
-    const score = Object.keys(detectMapping(row)).length;
-    if (score > bestScore) {
-      best = i;
-      bestScore = score;
-    }
-  });
-  return best;
-}
+export const findHeaderRow = (rows: string[][], scanRows = 5) =>
+  findHeaderRowBy(rows, (row) => Object.keys(detectMapping(row)).length, scanRows);
 
 export const missingRequired = (mapping: ColumnMapping) => SOURCE_FIELDS.filter((f) => f.required && mapping[f.field] === undefined);
 
@@ -271,26 +240,9 @@ export const INVOICE_FIELDS = {
 
 export type InvoiceMapping = Partial<Record<keyof typeof INVOICE_FIELDS, number>>;
 
-export function detectInvoiceMapping(headers: string[]): InvoiceMapping {
-  const normalized = headers.map(norm);
-  const used = new Set<number>();
-  const mapping: InvoiceMapping = {};
-  for (const exact of [true, false]) {
-    for (const [field, synonyms] of Object.entries(INVOICE_FIELDS) as [keyof typeof INVOICE_FIELDS, string[]][]) {
-      if (mapping[field] !== undefined) continue;
-      for (const synonym of synonyms) {
-        const s = norm(synonym);
-        const index = normalized.findIndex((h, i) => !used.has(i) && h !== "" && (exact ? h === s : h.includes(s)));
-        if (index >= 0) {
-          mapping[field] = index;
-          used.add(index);
-          break;
-        }
-      }
-    }
-  }
-  return mapping;
-}
+const INVOICE_FIELD_LIST = (Object.entries(INVOICE_FIELDS) as [keyof typeof INVOICE_FIELDS, string[]][]).map(([field, synonyms]) => ({ field, synonyms }));
+
+export const detectInvoiceMapping = (headers: string[]): InvoiceMapping => matchColumns(headers, INVOICE_FIELD_LIST);
 
 const COURIERS: [RegExp, string][] = [
   [/cj|대한통운/i, "CJ대한통운"],

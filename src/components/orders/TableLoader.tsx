@@ -23,7 +23,7 @@ export function TableLoader({ onLoad, multiple, hint }: { onLoad: (tables: Loade
     try {
       const tables = await Promise.all(files.map(async (file) => ({ name: file.name, rows: await readTableFile(file) })));
       const empty = tables.find((t) => t.rows.length < 2);
-      if (empty) throw new Error(`${empty.name}: 머리글과 주문 줄을 찾지 못했어요.`);
+      if (empty) throw new Error(`${empty.name}: 머리글과 내용 줄을 찾지 못했어요.`);
       onLoad(tables);
     } catch (err) {
       setError(errorMessage(err, "파일을 읽지 못했어요."));

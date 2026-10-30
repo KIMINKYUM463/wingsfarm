@@ -44,6 +44,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/orders", label: "발주서 도우미", short: "발주", icon: "📦" },
       { href: "/margin", label: "가격·마진", short: "마진", icon: "🧮" },
+      { href: "/ads", label: "쿠팡 광고 분석", short: "광고", icon: "🎯" },
       { href: "/ledger", label: "매출 장부", short: "장부", icon: "📒" },
       { href: "/cs", label: "CS 도우미", short: "CS", icon: "💬" },
       { href: "/reviews", label: "리뷰 분석", short: "리뷰", icon: "⭐" },
