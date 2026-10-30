@@ -26,8 +26,6 @@ const Logo = ({
   logoHeight = 14,
 }: LogoProps) => {
   const colorClass = color === 'white' ? 'text-white' : 'text-[#101010]';
-  /** 심볼 그라데이션(#34d399 → #047857)과 같은 초록 — 로고 안에 다른 색을 섞지 않는다 */
-  const accentClass = color === 'white' ? 'text-emerald-300' : 'text-emerald-700';
 
   return (
     <Link
@@ -43,7 +41,7 @@ const Logo = ({
           className={`font-extrabold whitespace-nowrap tracking-tight ${colorClass} ${logoClassName}`}
           style={{ fontSize: logoHeight + 2 }}
         >
-          {BRAND} <span className={accentClass}>상세페이지</span>
+          {BRAND} <span className="text-(--color-point)">상세페이지</span>
         </span>
       )}
     </Link>
