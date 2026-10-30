@@ -1,6 +1,7 @@
 import 'server-only';
 import type { Asset, AssetOrigin, AssetStatus } from '@/features/assets/types';
 import type { AssetFileInfo } from '@/features/detail-page/types';
+import { markAiAssetUrl } from '@/shared/lib/aiImageLabel';
 import { graphicUrl, isGraphicAssetId } from './catalog/graphics';
 import { badRequest, notFound } from './http';
 import { publicUrl, safeExt, saveFile, signedUploadUrl } from './storage';
@@ -31,8 +32,11 @@ const readAll = () => readJson<AssetRecord[]>(FILE, []);
 const updateAll = <R>(mutate: (assets: AssetRecord[]) => AssetRecord[], pick: (assets: AssetRecord[]) => R) =>
   updateJson(FILE, [] as AssetRecord[], mutate, pick);
 
+const assetUrl = (record: Pick<AssetRecord, 'path' | 'origin'>) =>
+  record.origin === 'ai_generation' ? markAiAssetUrl(publicUrl(record.path)) : publicUrl(record.path);
+
 const toAsset = (record: AssetRecord): Asset => {
-  const url = publicUrl(record.path);
+  const url = assetUrl(record);
   return {
     id: record.id,
     status: record.status,
@@ -87,7 +91,7 @@ export async function markReady(assetIds: string[]) {
   return updateAll(
     (assets) => assets.map((a) => (ids.has(a.id) && a.status === 'pending' ? { ...a, status: 'ready' } : a)),
     (assets) =>
-      Object.fromEntries(assets.filter((a) => ids.has(a.id)).map((a) => [a.id, publicUrl(a.path)])),
+      Object.fromEntries(assets.filter((a) => ids.has(a.id)).map((a) => [a.id, assetUrl(a)])),
   );
 }
 
@@ -119,7 +123,7 @@ export async function createAssetFromBuffer(input: {
   };
   await saveFile(record.path, input.data);
   await updateAll((assets) => [...assets, record], () => null);
-  return { ...record, url: publicUrl(record.path) };
+  return { ...record, url: assetUrl(record) };
 }
 
 const DEFAULT_LIMIT = 50;
@@ -176,7 +180,7 @@ export async function resolveAssetUrls(assetIds: Iterable<string>) {
       urls[id] = graphicUrl(id);
     } else {
       const record = records.get(id);
-      if (record) urls[id] = publicUrl(record.path);
+      if (record) urls[id] = assetUrl(record);
     }
   }
   return urls;
