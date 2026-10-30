@@ -1,7 +1,7 @@
 import 'server-only';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { HeroMotionCredit, HeroMotionKind } from '@/shared/types/heroMotion';
+import type { HeroMotionKind, StockSource } from '@/shared/types/heroMotion';
 import { findAssetRecord } from '../assets';
 import { asNode, isImageSlot, walk } from '../frames/tree';
 import { requireGemini } from '../gemini';
@@ -15,15 +15,14 @@ import {
   GIF_STEPS,
   heroGifArgs,
   panClipArgs,
-  pickVideoFile,
   stockClipArgs,
   stockOrientation,
   VIDEO_PROMPT_RULES,
   videoAspect,
   videoClipArgs,
-  type PexelsVideo,
 } from './motion';
-import { downloadPexelsFile, getPexelsVideo, searchPexelsVideos } from './pexels';
+import { downloadStockFile, getStockClipSource, searchStockVideos } from './stock';
+import { isStockSource, pickVideoFile, type StockClipSource } from './stockSources';
 
 type Target = Pick<HeroMotionRecord, 'frameId' | 'elementId' | 'assetId' | 'width' | 'height'>;
 
@@ -65,10 +64,10 @@ async function makeClip(kind: PhotoMotionKind, source: { data: Buffer; mimeType:
 }
 
 /** 무료 영상 → 내려받아 가운데 구간을 사진 자리 크기로 자른 클립 */
-async function makeStockClip(video: PexelsVideo, target: Target) {
-  const file = pickVideoFile(video.video_files, target.width, target.height);
+async function makeStockClip(source: StockSource, video: StockClipSource, target: Target) {
+  const file = pickVideoFile(video.files, target.width, target.height);
   if (!file) throw new ApiError(502, '이 영상은 내려받을 수 있는 파일이 없어요. 다른 영상을 골라 주세요.');
-  const data = await downloadPexelsFile(file.link);
+  const data = await downloadStockFile(source, file.link);
   return withTempDir(async (dir) => {
     const input = path.join(dir, 'stock.mp4');
     const clip = path.join(dir, 'clip.mp4');
@@ -78,11 +77,11 @@ async function makeStockClip(video: PexelsVideo, target: Target) {
   });
 }
 
-async function runStockMotion(projectId: string, video: PexelsVideo, target: Target, credit: HeroMotionCredit) {
-  const base = { ...target, kind: 'stock' as const, credit };
+async function runStockMotion(projectId: string, source: StockSource, video: StockClipSource, target: Target) {
+  const base = { ...target, kind: 'stock' as const, credit: video.credit };
   try {
     const clipPath = `assets/motion-${projectId}-${Date.now()}.mp4`;
-    await saveFile(clipPath, await makeStockClip(video, target));
+    await saveFile(clipPath, await makeStockClip(source, video, target));
     await setMotion(projectId, { ...base, status: 'ready', clipPath, notice: null, updatedAt: nowIso() });
   } catch (err) {
     console.error('[lever] stock motion failed', err);
@@ -128,18 +127,18 @@ export async function getHeroMotion(projectId: string) {
 }
 
 /** 작업을 걸어 두고 바로 돌아온다 (AI 영상은 1~3분) — 화면은 프로젝트 조회로 상태를 확인 */
-export async function startHeroMotion(projectId: string, kind: HeroMotionKind, options: { videoId?: number } = {}) {
+export async function startHeroMotion(projectId: string, kind: HeroMotionKind, options: { source?: unknown; videoId?: unknown } = {}) {
   const project = await getProject(projectId);
   if (isMotionRunning(project.heroMotion)) throw badRequest('움직이는 컷을 만들고 있어요. 잠시만 기다려 주세요.');
 
   if (kind === 'stock') {
     const target = findHeroTarget(project, true);
     if (!target) throw badRequest(NO_HERO_SLOT);
-    if (!Number.isInteger(options.videoId) || Number(options.videoId) <= 0) throw badRequest('가져올 영상을 골라 주세요.');
-    const video = await getPexelsVideo(Number(options.videoId));
-    const credit = { author: video.user?.name ?? 'Pexels', url: video.url };
-    const pending = await setMotion(projectId, { ...target, kind, credit, status: 'pending', clipPath: null, notice: null, updatedAt: nowIso() });
-    void runStockMotion(projectId, video, target, credit);
+    const videoId = Number(options.videoId);
+    if (!isStockSource(options.source) || !Number.isInteger(videoId) || videoId <= 0) throw badRequest('가져올 영상을 골라 주세요.');
+    const video = await getStockClipSource(options.source, videoId);
+    const pending = await setMotion(projectId, { ...target, kind, credit: video.credit, status: 'pending', clipPath: null, notice: null, updatedAt: nowIso() });
+    void runStockMotion(projectId, options.source, video, target);
     return { heroMotion: toHeroMotionInfo(pending.heroMotion) };
   }
 
@@ -158,7 +157,7 @@ export async function searchHeroStock(projectId: string, query: string | null) {
   if (!target) throw badRequest(NO_HERO_SLOT);
   const q = (query ?? '').trim().slice(0, 80) || project.productName.trim();
   if (!q) throw badRequest('검색어를 입력해 주세요.');
-  return { query: q, videos: await searchPexelsVideos(q, stockOrientation(target.width, target.height)) };
+  return { query: q, ...(await searchStockVideos(q, stockOrientation(target.width, target.height))) };
 }
 
 // ===== 다운로드: 섹션 문구와 합성한 GIF =====

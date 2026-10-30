@@ -10,6 +10,7 @@ import { useSelectionStore } from '@/features/editor/store/useSelectionStore';
 import { PLATFORMS } from '@/features/editor/lib/download-options';
 import { formatCost, HERO_VIDEO_USD, MEDIA_COST } from '@/shared/lib/draftMedia';
 import { Modal } from '@/shared/ui/SimpleModal';
+import { STOCK_SITES } from '@/shared/constants/stockSites';
 import { StockVideoPicker } from './StockVideoPicker';
 import type { HeroMotionInfo } from '@/shared/types/heroMotion';
 import type { KonvaElement, KonvaFrameElement } from '@/shared/types/konva';
@@ -38,7 +39,7 @@ function firstImageSlot(elements: KonvaElement[]): KonvaElement | null {
 /**
  * 에디터 위쪽 안내 칩
  * - 빈 사진 자리 / 채울 문구([입력 필요]) N곳 → 누를 때마다 다음 자리로 이동·선택
- * - 맨 위 움직이는 컷: 만드는 중 / 보기·GIF 받기 / 다시 만들기 / 무료 영상(Pexels)으로 바꾸기
+ * - 맨 위 움직이는 컷: 만드는 중 / 보기·GIF 받기 / 다시 만들기 / 무료 영상(Pexels·Pixabay)으로 바꾸기
  */
 export function EditorMediaBar({ projectId }: { projectId: string }) {
   const frames = useActiveFrames();
@@ -135,7 +136,7 @@ function HeroMotionModal({
             <a href={motion.credit.url} target="_blank" rel="noreferrer" className="underline">
               {motion.credit.author}
             </a>{' '}
-            · Pexels 무료 영상
+            · {STOCK_SITES[motion.credit.source ?? 'pexels'].label} 무료 영상
           </p>
         )}
 
@@ -186,7 +187,7 @@ function HeroMotionModal({
 
         <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
           <div className="text-sm font-semibold text-gray-900">무료 영상으로 바꾸기</div>
-          <StockVideoPicker projectId={projectId} disabled={busy} onPick={(videoId) => start.mutate({ kind: 'stock', videoId })} />
+          <StockVideoPicker projectId={projectId} disabled={busy} onPick={(video) => start.mutate({ kind: 'stock', source: video.source, videoId: video.id })} />
         </div>
       </div>
     </Modal>

@@ -1,10 +1,15 @@
 /** 맨 위 움직이는 컷 상태 (프로젝트마다 하나) */
 export type HeroMotionKind = 'pan' | 'video' | 'stock';
 
-/** 무료 영상 출처 표시 (Pexels) */
+/** 무료 영상 사이트 */
+export type StockSource = 'pexels' | 'pixabay';
+
+/** 무료 영상 출처 표시 */
 export interface HeroMotionCredit {
   author: string;
   url: string;
+  /** 예전 기록에는 없다 → Pexels */
+  source?: StockSource;
 }
 
 export interface HeroMotionInfo {
@@ -24,6 +29,7 @@ export interface HeroMotionInfo {
 
 /** 무료 영상 검색 결과 한 건 */
 export interface StockVideo {
+  source: StockSource;
   id: number;
   thumbnail: string;
   /** 초 */

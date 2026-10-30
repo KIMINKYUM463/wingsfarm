@@ -7,6 +7,7 @@ export type HealthResponse = {
   kamis: boolean;
   farmMap: boolean;
   pexels: boolean;
+  pixabay: boolean;
   passwordLock: boolean;
   textModel: string;
   imageModel: string;
@@ -22,6 +23,7 @@ export function GET() {
     kamis: has("KAMIS_CERT_KEY", "KAMIS_CERT_ID"),
     farmMap: has("DATA_GO_KR_KEY"),
     pexels: has("PEXELS_API_KEY"),
+    pixabay: has("PIXABAY_API_KEY"),
     passwordLock: has("APP_PASSWORD"),
     textModel: OPENAI_MODEL,
     imageModel: OPENAI_IMAGE_MODEL,

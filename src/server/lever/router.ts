@@ -95,8 +95,8 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['POST', 'projects/:id/generate/keywords', async ({ params, body }) => generateKeywords(params.id, await body())],
   ['GET', 'projects/:id/hero-motion', ({ params }) => getHeroMotion(params.id)],
   ['POST', 'projects/:id/hero-motion', async ({ params, body }) => {
-    const { kind, videoId } = await body<{ kind?: string; videoId?: number }>();
-    return startHeroMotion(params.id, kind === 'video' || kind === 'stock' ? kind : 'pan', { videoId });
+    const { kind, source, videoId } = await body<{ kind?: string; source?: unknown; videoId?: unknown }>();
+    return startHeroMotion(params.id, kind === 'video' || kind === 'stock' ? kind : 'pan', { source, videoId });
   }],
   ['GET', 'projects/:id/hero-motion/stock', ({ params, query }) => searchHeroStock(params.id, query.get('q'))],
   ['POST', 'projects/:id/hero-motion/gif', async ({ params, body }) => buildHeroGif(params.id, await body())],

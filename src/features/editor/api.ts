@@ -4,7 +4,7 @@ import { CustomError } from '@/shared/lib/CustomError';
 import type { CreatePageFromFigmaOutput } from '@/shared/types/actions';
 import type { KonvaFrameElement } from '@/shared/types/konva';
 import type { ChatEditRequest, ChatEditResult } from '@/shared/types/chatEdit';
-import type { HeroMotionInfo, HeroMotionKind, StockVideo } from '@/shared/types/heroMotion';
+import type { HeroMotionInfo, HeroMotionKind, StockSource, StockVideo } from '@/shared/types/heroMotion';
 import type {
   ExternalApiResponse,
   ProjectDetailResponse,
@@ -339,14 +339,21 @@ type HeroMotionResponse = ExternalApiResponse<{ heroMotion: HeroMotionInfo | nul
 export const getHeroMotion = async (projectId: string) =>
   (await httpClient.get<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION(projectId), { withAuth: true })).data.heroMotion;
 
-export type HeroMotionRequest = { kind: Exclude<HeroMotionKind, 'stock'> } | { kind: 'stock'; videoId: number };
+export type HeroMotionRequest = { kind: Exclude<HeroMotionKind, 'stock'> } | { kind: 'stock'; source: StockSource; videoId: number };
+
+export interface HeroStockResult {
+  query: string;
+  videos: StockVideo[];
+  /** 한 사이트만 실패했을 때의 안내 */
+  notices: string[];
+}
 
 export const startHeroMotion = async (projectId: string, request: HeroMotionRequest) =>
   (await httpClient.post<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION(projectId), request, { withAuth: true })).data.heroMotion;
 
 /** 무료 영상 검색 (검색어가 비면 서버가 상품명으로 찾는다) */
 export const searchHeroStock = async (projectId: string, query: string) =>
-  (await httpClient.get<ExternalApiResponse<{ query: string; videos: StockVideo[] }>>(ENDPOINTS.PROJECTS.HERO_MOTION_STOCK(projectId, query), { withAuth: true }))
+  (await httpClient.get<ExternalApiResponse<HeroStockResult>>(ENDPOINTS.PROJECTS.HERO_MOTION_STOCK(projectId, query), { withAuth: true }))
     .data;
 
 export interface HeroGifRequest {
