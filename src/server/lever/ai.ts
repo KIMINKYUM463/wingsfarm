@@ -6,6 +6,7 @@ import { CATEGORIES, categoryImageUrl, findCategory } from './catalog/categories
 import { findImageStyle } from './catalog/styles';
 import { sceneIdeas } from '@/shared/lib/draftMedia';
 import { asNode, collectEditableTexts, collectPromptGuides, findNode, isImageSlot, walk } from './frames/tree';
+import { NATURAL_COPY_RULES } from './copyStyle';
 import { contextBrief } from './copywriter';
 import { distinctFrom, productPhotoPrompt, sceneForIndex } from './photoPrompt';
 import { closestAspectRatio, loadInlineImage, loadInlineImages, requireGemini, type InlineImage } from './gemini';
@@ -193,7 +194,12 @@ ${guides.length ? `[섹션 작성 가이드]\n${guides.join('\n')}\n` : ''}
 ${body.prompt?.trim() ? `[사용자 요청] ${body.prompt.trim()}` : ''}
 
 규칙: 현재 문구와 비슷한 길이(공백 제외 ${Math.ceil(current.replace(/\s/g, '').length * 1.2) + 2}자 이내)와 같은 줄 수(${current.split('\n').length}줄)를 유지하고, 줄바꿈은 \\n 으로 쓴다. 상품 정보에 없는 수치·인증은 지어내지 않는다.
+
+${NATURAL_COPY_RULES}
+
 JSON 형식: {"text":"..."}`,
+    [],
+    'copy',
   );
   if (!result.text?.trim()) throw badRequest('문구를 생성하지 못했습니다. 다시 시도해주세요.');
   return { elementId: body.elementId, text: result.text };

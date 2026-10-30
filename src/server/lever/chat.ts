@@ -2,6 +2,7 @@ import 'server-only';
 import type { ChatEditChange, ChatEditRequest, ChatEditResult, ChatTextAlign } from '@/shared/types/chatEdit';
 import { describeWarnings, findUnsupportedClaims } from './catalog/factGuard';
 import { getDraft, evidenceText } from './drafts/repo';
+import { NATURAL_COPY_RULES } from './copyStyle';
 import { contextBrief } from './copywriter';
 import { requireGemini } from './gemini';
 import { badRequest } from './http';
@@ -88,7 +89,12 @@ ${history.length ? `\n[이전 대화]\n${history.join('\n')}\n` : ''}
 - 질문이거나 문구로 할 수 없는 요청(사진 편집 등)이면 changes는 비우고 reply로 방법을 안내한다.
 - reply: 한 문장 요약 (예: "히어로 문구 5개를 더 짧게 다듬었어요").
 - followUps: 이어서 해볼 만한 요청 2개 (짧은 명령문).
+
+${NATURAL_COPY_RULES}
+
 JSON 형식: {"reply":"...","changes":[{"id":"...","text":"...","align":"center","fontScale":1.2}],"followUps":["...","..."]}`,
+    [],
+    'copy',
   );
 
   const evidence = await projectEvidence(project);

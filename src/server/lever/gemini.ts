@@ -1,4 +1,5 @@
 import 'server-only';
+import { canFallback, TEXT_MODELS, type TextTier } from './geminiModels';
 import { ApiError } from './http';
 import { getGeminiApiKey } from './settings';
 import { parseVideoResponse, videoRequestBody, type ParsedVideo, type VideoAspect } from './media/motion';
@@ -6,11 +7,10 @@ import { loadFile, mimeFromPath, toStoragePath } from './storage';
 
 /**
  * Gemini REST 클라이언트 (레버페이지와 동일하게 사용자가 등록한 Gemini API 키 사용)
- * - 텍스트: JSON 응답 모드
+ * - 텍스트: JSON 응답 모드 (판매 문구는 copy 등급 모델, 나머지는 fast 등급)
  * - 이미지: 상품 사진을 참조 이미지로 넣어 같은 상품이 유지되도록 생성
  */
 const API = 'https://generativelanguage.googleapis.com/v1beta';
-const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || 'gemini-2.5-flash';
 const IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image';
 
 export interface InlineImage {
@@ -35,6 +35,12 @@ export function closestAspectRatio(width: number, height: number) {
 interface GeminiPart {
   text?: string;
   inlineData?: InlineImage;
+  thought?: boolean;
+}
+
+interface Fallback {
+  model: string;
+  generationConfig: Record<string, unknown>;
 }
 
 interface GeminiResponse {
@@ -56,7 +62,12 @@ const toApiError = (status: number, body: GeminiResponse) => {
 export class GeminiClient {
   constructor(private apiKey: string) {}
 
-  private async generate(model: string, parts: GeminiPart[], generationConfig: Record<string, unknown>) {
+  private async generate(
+    model: string,
+    parts: GeminiPart[],
+    generationConfig: Record<string, unknown>,
+    fallback?: Fallback,
+  ): Promise<GeminiPart[]> {
     const res = await fetch(`${API}/models/${model}:generateContent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this.apiKey },
@@ -64,21 +75,36 @@ export class GeminiClient {
       cache: 'no-store',
     });
     const body = (await res.json().catch(() => ({}))) as GeminiResponse;
-    if (!res.ok) throw toApiError(res.status, body);
+    if (!res.ok) {
+      if (fallback && canFallback(res.status, body.error?.message ?? '')) {
+        console.warn(`[lever] ${model} 응답 실패(${res.status}) → ${fallback.model}로 다시 시도`);
+        return this.generate(fallback.model, parts, fallback.generationConfig);
+      }
+      throw toApiError(res.status, body);
+    }
     if (body.promptFeedback?.blockReason) {
       throw new ApiError(400, '안전 정책으로 생성이 거절되었습니다. 문구나 이미지를 바꿔 다시 시도해주세요.');
     }
     return body.candidates?.[0]?.content?.parts ?? [];
   }
 
-  /** JSON으로 답하게 하고 파싱해서 반환 */
-  async generateJson<T>(prompt: string, images: InlineImage[] = []): Promise<T> {
+  /**
+   * JSON으로 답하게 하고 파싱해서 반환
+   * @param tier 'copy'면 판매 문구용 최상위 모델을 쓰고, 실패하면 fast 모델로 한 번 더 시도한다
+   */
+  async generateJson<T>(prompt: string, images: InlineImage[] = [], tier: TextTier = 'fast'): Promise<T> {
+    const { model, generationConfig } = TEXT_MODELS[tier];
+    const fast = TEXT_MODELS.fast;
     const parts = await this.generate(
-      TEXT_MODEL,
+      model,
       [{ text: prompt }, ...images.map((inlineData) => ({ inlineData }))],
-      { responseMimeType: 'application/json', temperature: 0.8 },
+      generationConfig,
+      model === fast.model ? undefined : fast,
     );
-    const text = parts.map((p) => p.text ?? '').join('').replace(/^```(?:json)?\s*|\s*```$/g, '');
+    const text = parts
+      .filter((p) => !p.thought)
+      .map((p) => p.text ?? '')
+      .join('').replace(/^```(?:json)?\s*|\s*```$/g, '');
     try {
       return JSON.parse(text) as T;
     } catch {

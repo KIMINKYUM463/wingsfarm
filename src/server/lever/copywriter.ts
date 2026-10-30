@@ -1,6 +1,7 @@
 import 'server-only';
 import type { ProjectFrame } from '@/features/editor/types';
 import { findCategory } from './catalog/categories';
+import { NATURAL_COPY_RULES } from './copyStyle';
 import { asFrame, asNode, applyTexts, collectEditableTexts, collectPromptGuides } from './frames/tree';
 import type { GeminiClient } from './gemini';
 import type { ProductContext, ProjectRecord } from './projects';
@@ -83,7 +84,11 @@ ${JSON.stringify(texts.map((t) => ({ id: t.id, text: t.text, maxChars: maxCharsO
 - 대괄호 [ ] 자리표시는 상품 정보에 그 사실이 있을 때만 채우고, 없으면 대괄호째 그대로 둔다.
 - 영문 라벨(예: POINT 01, BEST)은 형식을 유지한다.
 
+${NATURAL_COPY_RULES}
+
 JSON 형식: {"texts":[{"id":"...","text":"..."}]}`,
+    [],
+    'copy',
   );
 
   const allowed = new Set(texts.map((t) => t.id));

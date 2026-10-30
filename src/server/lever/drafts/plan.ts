@@ -3,6 +3,7 @@ import pLimit from 'p-limit';
 import { defaultCutSource, sceneIdeas } from '@/shared/lib/draftMedia';
 import type { DraftAnalysis, DraftInput, DraftPlan, DraftProgress, DraftRecord, DraftSection, PhotoAnalysis } from '@/shared/types/draft';
 import { CATEGORIES, findCategory } from '../catalog/categories';
+import { NATURAL_COPY_RULES } from '../copyStyle';
 import { derivePalette, normalizePalette, palettePresets, TONE_PRESETS } from '../catalog/palette';
 import { defaultFlow, findSectionType, LENGTH_TARGET, sectionTypesFor, withAiNotice, type SectionType } from '../catalog/sections';
 import { loadInlineImages, requireGemini, type GeminiClient } from '../gemini';
@@ -26,7 +27,9 @@ const COPY_RULES = `규칙:
 - 문장마다 evidence에 근거 id를 단다(예: ["feature:2"]). 사진에서 본 사실은 "photo:번호", 감성 표현처럼 사실 주장이 없는 문장은 ["general"].
 - 판매자가 채워야 하는 정보(배송일·연락처 등)가 자료에 없으면 "[입력 필요]"라고 쓴다.
 - 다른 상품을 깎아내리지 않는다. 의학적 효능을 단정하지 않는다.
-- 메인 문구는 짧고 구체적으로(공백 포함 22자 이내, 필요하면 \\n으로 두 줄). 픽셀·글꼴은 지정하지 않는다.`;
+- 메인 문구는 짧고 구체적으로(공백 포함 22자 이내, 필요하면 \\n으로 두 줄). 픽셀·글꼴은 지정하지 않는다.
+
+${NATURAL_COPY_RULES}`;
 
 const IMAGE_PLAN_RULES = `컷(사진) 계획 규칙:
 - scene: 짧은 장면 이름(15자 이내). plan: 배경·구도·조명·소품을 구체적으로 한두 문장(한국어).
@@ -214,6 +217,8 @@ JSON 형식:
  "subtitle":{"text":"설명 문구","evidence":["..."]} 또는 null,
  "items":[{"title":{"text":"항목 제목","evidence":["..."]} 또는 null,"text":{"text":"항목 내용","evidence":["..."]}}],
  "cuts":[{"scene":"장면 이름","plan":"촬영 지시문","role":"hero","photoIndexes":[0],"itemIndex":null,"modelAllowed":false}]}`,
+    [],
+    'copy',
   );
   return finalizeSection(result, type, ctx, position);
 }
@@ -469,6 +474,8 @@ ${features}
 6. 메인 문구는 짧게 쓰고, 픽셀·좌우 위치·글꼴 크기는 지정하지 마세요.
 7. 전체 3,000자 이내로 쓰세요.
 8. 예시 문구나 확인되지 않은 항목은 완성본에 남기지 말고, Markdown으로 출력하세요.
+
+## ${NATURAL_COPY_RULES}
 
 ## 양식
 # ${input.productName || '[상품명]'} 상세페이지 기획안

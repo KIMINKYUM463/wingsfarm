@@ -20,10 +20,13 @@ const frameOf = (id: string, frameOrder: string, children: FrameNode[], status: 
 /** AI 대신 받은 프롬프트를 기록하고, 정해 둔 문구를 돌려준다 */
 const fakeWriter = (texts: Record<string, string>) => {
   const prompts: string[] = [];
+  const tiers: (string | undefined)[] = [];
   return {
     prompts,
-    generateJson: async <T,>(prompt: string) => {
+    tiers,
+    generateJson: async <T,>(prompt: string, _images?: unknown[], tier?: string) => {
       prompts.push(prompt);
+      tiers.push(tier);
       return { texts: Object.entries(texts).map(([id, value]) => ({ id, text: value })) } as T;
     },
   };
@@ -55,6 +58,14 @@ describe('템플릿 문구 → 상품 문구', () => {
     assert.match(prompt, /대괄호 \[ \] 자리표시/);
     assert.doesNotMatch(prompt, /"id":"prompt"/);
     assert.equal(textsOf(frame).title, '이것만은\n자신 있어요', '원본 프레임은 그대로');
+  });
+
+  it('판매 문구는 copy 등급 모델과 문체 규칙으로 쓴다', async () => {
+    const writer = fakeWriter({ title: '아삭해요' });
+    await rewriteFrame(writer, '상품명: 참외', frameOf('f1', 'a1', [text('title', '제목')]));
+    assert.deepEqual(writer.tiers, ['copy']);
+    assert.match(writer.prompts[0], /AI가 쓴 티가 나지 않게/);
+    assert.match(writer.prompts[0], /"선사합니다"/);
   });
 
   it('AI가 빈 문구를 주면 템플릿 문구를 남긴다', async () => {
