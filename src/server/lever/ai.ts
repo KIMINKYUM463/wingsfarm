@@ -5,7 +5,7 @@ import { createAssetFromBuffer, findAssetRecord, markReady, resolveAssetUrls } f
 import { CATEGORIES, categoryImageUrl, findCategory } from './catalog/categories';
 import { findImageStyle } from './catalog/styles';
 import { asNode, collectEditableTexts, collectPromptGuides, findNode, isImageSlot, walk } from './frames/tree';
-import { contextBrief } from './generation';
+import { contextBrief } from './copywriter';
 import { closestAspectRatio, loadInlineImage, loadInlineImages, requireGemini, type InlineImage } from './gemini';
 import { badRequest, notFound } from './http';
 import { getProject, updateProject } from './projects';

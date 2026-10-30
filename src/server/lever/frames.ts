@@ -1,15 +1,20 @@
 import 'server-only';
+import pLimit from 'p-limit';
 import type {
   AddFrameRequest,
   AddTemplateFrameRequest,
   ApplyTemplateRequest,
   DuplicateFrameRequest,
   ProjectFrame,
+  TemplateCopyStatus,
   UpdateFrameRequest,
 } from '@/features/editor/types';
+import { contextBrief, pageCopyOf, rewriteFrame } from './copywriter';
 import { asFrame, asNode, cloneWithNewIds, countImageSlots } from './frames/tree';
+import { requireGemini } from './gemini';
 import { badRequest, notFound, noContent, ok } from './http';
-import { buildTemplateFrame, frameAssetUrls, getProject, sortFrames, updateProject } from './projects';
+import { buildTemplateFrame, frameAssetUrls, getProject, sortFrames, updateProject, type ProjectRecord } from './projects';
+import { getGeminiApiKey } from './settings';
 import { newId, nowIso } from './store';
 import { getTemplate, pickTemplate } from './templates/repo';
 import { autoBackup } from './versions';
@@ -29,6 +34,42 @@ const withoutGhostsOf = (frames: ProjectFrame[], part2: string) =>
   frames.filter((f) => !(f.status === 'ghost' && f.part2 === part2));
 
 const withAssetUrls = async (frame: ProjectFrame) => ({ ...frame, assetUrls: await frameAssetUrls([frame]) });
+
+const copyLimit = pLimit(3);
+
+/**
+ * 템플릿 예시 문구 → 이 프로젝트 상품에 맞는 문구
+ * 키가 없거나 AI가 실패한 프레임은 템플릿 문구 그대로 둔다 (템플릿 적용 자체는 막지 않는다)
+ */
+async function writeTemplateCopy(
+  project: ProjectRecord,
+  frames: ProjectFrame[],
+): Promise<{ frames: ProjectFrame[]; copyStatus: TemplateCopyStatus }> {
+  if (!frames.length) return { frames, copyStatus: 'written' };
+  if (!(await getGeminiApiKey())) return { frames, copyStatus: 'no_key' };
+
+  const gemini = await requireGemini();
+  const brief = contextBrief(project, project.context);
+  const pageCopy = pageCopyOf(sortFrames(project.frames));
+  let failures = 0;
+  const written = await Promise.all(
+    frames.map((frame) =>
+      copyLimit(() =>
+        rewriteFrame(gemini, brief, frame, pageCopy).catch((err) => {
+          console.error('[lever] template copy failed', frame.id, err);
+          failures += 1;
+          return frame;
+        }),
+      ),
+    ),
+  );
+  return { frames: written, copyStatus: failures ? 'failed' : 'written' };
+}
+
+const withProductCopy = async (project: ProjectRecord, frame: ProjectFrame) => {
+  const { frames, copyStatus } = await writeTemplateCopy(project, [frame]);
+  return { frame: frames[0], copyStatus };
+};
 
 /** POST /projects/{id}/frames — 빈 프레임/직접 만든 프레임 추가 */
 export async function addFrame(projectId: string, body: AddFrameRequest) {
@@ -62,18 +103,15 @@ export async function addTemplateFrame(projectId: string, body: AddTemplateFrame
   const project = await getProject(projectId);
   const ghost = project.frames.find((f) => f.status === 'ghost' && f.part2 === body.part2);
   const template = await pickTemplate(body.part2, project.categoryId);
-  const frame = await buildTemplateFrame(
-    projectId,
-    template,
-    ghost?.frameOrder ?? body.frame_order,
-    ghost?.id,
-    project.draftLayout?.palette,
+  const { frame, copyStatus } = await withProductCopy(
+    project,
+    await buildTemplateFrame(projectId, template, ghost?.frameOrder ?? body.frame_order, ghost?.id, project.draftLayout?.palette),
   );
   await updateProject(projectId, (p) => ({
     ...p,
     frames: [...withoutGhostsOf(p.frames, body.part2), frame],
   }));
-  return ok(await withAssetUrls(frame), 201);
+  return ok({ ...(await withAssetUrls(frame)), copyStatus }, 201);
 }
 
 /** POST /projects/{id}/frames/template/{templateId} — 특정 템플릿 적용 (새로 만들기 / 덮어쓰기) */
@@ -82,22 +120,23 @@ export async function applyTemplate(projectId: string, templateId: string, body:
   const project = await getProject(projectId);
   const palette = project.draftLayout?.palette;
 
-  let frame: ProjectFrame;
+  let built: ProjectFrame;
   if (body?.mode === 'overwrite') {
     if (!body.frame_id) throw badRequest('덮어쓸 frame_id가 필요합니다.');
     const target = findFrame(project.frames, body.frame_id);
-    frame = await buildTemplateFrame(projectId, template, target.frameOrder, target.id, palette);
-    frame.createdAt = target.createdAt;
+    built = await buildTemplateFrame(projectId, template, target.frameOrder, target.id, palette);
+    built.createdAt = target.createdAt;
   } else {
     if (!body?.frame_order) throw badRequest('frame_order가 필요합니다.');
-    frame = await buildTemplateFrame(projectId, template, body.frame_order, undefined, palette);
+    built = await buildTemplateFrame(projectId, template, body.frame_order, undefined, palette);
   }
+  const { frame, copyStatus } = await withProductCopy(project, built);
 
   await updateProject(projectId, (p) => ({
     ...p,
     frames: [...withoutGhostsOf(p.frames, template.part2).filter((f) => f.id !== frame.id), frame],
   }));
-  return ok(await withAssetUrls(frame), body?.mode === 'overwrite' ? 200 : 201);
+  return ok({ ...(await withAssetUrls(frame)), copyStatus }, body?.mode === 'overwrite' ? 200 : 201);
 }
 
 /** PATCH /projects/{id}/frames/{frameId} — 부분 수정 (저장·순서·이름·크기) */
@@ -168,7 +207,10 @@ export async function regenerateFrames(projectId: string) {
       return { ...next, frameName: frame.frameName, createdAt: frame.createdAt };
     }),
   );
-  const regenerated = frames.filter((f, i) => f !== project.frames[i]);
+  const { frames: regenerated, copyStatus } = await writeTemplateCopy(
+    project,
+    frames.filter((f, i) => f !== project.frames[i]),
+  );
   await updateProject(projectId, (p) => ({
     ...p,
     frames: p.frames.map((f) => regenerated.find((r) => r.id === f.id) ?? f),
@@ -178,6 +220,7 @@ export async function regenerateFrames(projectId: string) {
     regeneratedFrameCount: regenerated.length,
     frames: sortFrames(regenerated),
     assetUrls: await frameAssetUrls(regenerated),
+    copyStatus,
   };
 }
 

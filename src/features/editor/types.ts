@@ -144,11 +144,20 @@ export interface AddTemplateFrameRequest {
 }
 
 /**
+ * 템플릿 문구를 상품에 맞게 썼는지
+ * - written: AI가 상품 정보로 다시 씀
+ * - no_key: Gemini 키가 없어 템플릿 예시 문구 그대로
+ * - failed: AI 실패로 (일부) 템플릿 예시 문구 그대로
+ */
+export type TemplateCopyStatus = 'written' | 'no_key' | 'failed';
+
+/**
  * 템플릿 기반 프레임 추가 응답 데이터
  */
 export interface AddTemplateFrameData extends ProjectFrame {
   /** 템플릿 내 에셋 ID → URL 매핑 */
   assetUrls: Record<string, string>;
+  copyStatus?: TemplateCopyStatus;
 }
 
 /**
@@ -183,6 +192,7 @@ export interface ApplyTemplateRequest {
 export interface ApplyTemplateData extends ProjectFrame {
   /** 템플릿 내 에셋 ID → URL 매핑 */
   assetUrls: Record<string, string>;
+  copyStatus?: TemplateCopyStatus;
 }
 
 /**
@@ -202,6 +212,7 @@ export interface RegenerateFramesData {
   frames: ProjectFrame[];
   /** 템플릿 내 에셋 ID → URL 매핑 */
   assetUrls: Record<string, string>;
+  copyStatus?: TemplateCopyStatus;
 }
 
 /**

@@ -6,6 +6,7 @@ import { useAutoSaveStore } from '@/features/editor/store/useAutoSaveStore';
 import { useScrollToElement } from '@/features/editor/hooks/useScrollToElement';
 import { cloneElement } from '@/features/editor/lib/element-cloner';
 import { injectRootIdToFrame } from '@/features/editor/lib/rootId-utils';
+import { notifyTemplateCopy } from '@/features/editor/lib/templateCopy';
 import { KonvaFrameElement, isKonvaFrameElement } from '@/shared/types/konva';
 import {
   addTemplateFrame,
@@ -76,6 +77,7 @@ export const useFrameCrud = ({ projectId, frameId }: UseFrameCrudParams) => {
     onSuccess: (response, { ghostId }) => {
       const { frames, flatElements, assetUrls } = useCanvasDataStore.getState();
       const serverFrame = response.data;
+      notifyTemplateCopy(serverFrame.copyStatus);
 
       // 중복 방지: 이미 해당 ID의 프레임이 있으면 스킵
       if (frames.some((f) => f.id === serverFrame.id && f.id !== ghostId)) {
@@ -215,6 +217,7 @@ export const useFrameCrud = ({ projectId, frameId }: UseFrameCrudParams) => {
     onSuccess: (response, { mode, frameId: targetFrameId, tempId }) => {
       const { frames, flatElements, assetUrls } = useCanvasDataStore.getState();
       const serverFrame = response.data;
+      notifyTemplateCopy(serverFrame.copyStatus);
 
       // 템플릿의 assetUrls를 store에 병합
       if (serverFrame.assetUrls && Object.keys(serverFrame.assetUrls).length > 0) {

@@ -2,7 +2,7 @@ import 'server-only';
 import type { ChatEditChange, ChatEditRequest, ChatEditResult, ChatTextAlign } from '@/shared/types/chatEdit';
 import { describeWarnings, findUnsupportedClaims } from './catalog/factGuard';
 import { getDraft, evidenceText } from './drafts/repo';
-import { contextBrief } from './generation';
+import { contextBrief } from './copywriter';
 import { requireGemini } from './gemini';
 import { badRequest } from './http';
 import { getProject, type ProjectRecord } from './projects';

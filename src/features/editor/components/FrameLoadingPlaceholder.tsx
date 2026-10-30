@@ -56,6 +56,8 @@ interface FrameLoadingPlaceholderProps {
   index?: number;
   /** 마지막 프레임 여부 (하단 간격 계산용) */
   isLastFrame?: boolean;
+  /** 로딩 막대 아래 안내 문구 */
+  message?: string;
 }
 
 /**
@@ -73,6 +75,7 @@ export function FrameLoadingPlaceholder({
   frameId,
   index = 0,
   isLastFrame = false,
+  message,
 }: FrameLoadingPlaceholderProps) {
   const { width: viewportWidth, height: viewportHeight } = useWindowSize(16);
   const manualZoomPercentage = useManualZoomPercentage();
@@ -126,7 +129,7 @@ export function FrameLoadingPlaceholder({
 
   const placeholder = (
     <div
-      className="flex items-center justify-center bg-gray-100"
+      className="flex flex-col items-center justify-center gap-4 bg-gray-100"
       style={{ width: placeholderWidth, height: placeholderHeight }}
       suppressHydrationWarning
     >
@@ -144,6 +147,7 @@ export function FrameLoadingPlaceholder({
           style={{ animation: 'loading-bar-pulse 1.2s ease-in-out infinite', animationDelay: '0.4s' }}
         />
       </div>
+      {message && <p className="text-sm text-gray-600">{message}</p>}
     </div>
   );
 

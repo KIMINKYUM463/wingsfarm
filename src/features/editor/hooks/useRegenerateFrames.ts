@@ -12,6 +12,7 @@ import { useLoadingStore } from '@/shared/ui/Loading';
 import { queryKeys } from '@/shared/constants/queryKeys';
 import { mutationKeys } from '@/shared/constants/mutationKeys';
 import { uploadThumbnailAndInvalidate } from '@/features/editor/lib/thumbnail';
+import { notifyTemplateCopy, TEMPLATE_COPY_LOADING } from '@/features/editor/lib/templateCopy';
 import type { ProjectDetailResponse } from '@/features/editor/types';
 
 const MAX_FRAMES_FOR_REGENERATE = 50;
@@ -77,6 +78,7 @@ export const useRegenerateFrames = () => {
 
       // 재생성 후 썸네일 업로드 (mutationKey로 자동 저장 스킵됨, 썸네일은 직접 호출)
       uploadThumbnailAndInvalidate(projectId, queryClient, 'RegenerateFrames');
+      notifyTemplateCopy(response.data.copyStatus);
     },
   });
 
@@ -103,7 +105,7 @@ export const useRegenerateFrames = () => {
     });
 
     if (confirmed) {
-      showLoading('템플릿 재생성 중...');
+      showLoading(`템플릿 재생성 중... ${TEMPLATE_COPY_LOADING}`);
       try {
         await mutateAsync();
       } finally {
