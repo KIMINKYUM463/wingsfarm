@@ -1,6 +1,6 @@
 /**
  * 쿠팡 광고 분석 — 광고센터 "광고 보고서"(엑셀) → 지표·손익분기 ROAS 비교·키워드 진단.
- * 쿠팡은 판매자 광고 데이터 API를 열어 두지 않아 파일만 다룬다 (계정 정보 불필요).
+ * 쿠팡은 판매자 광고 데이터 API를 열어 두지 않아 파일만 다룬다. 실제 주문 매출은 coupangWing.ts(윙 Open API).
  */
 import type { Channel, CostDefaults, Sku } from "@/types";
 import { buildSkuInput, calcMargin } from "./margin.ts";

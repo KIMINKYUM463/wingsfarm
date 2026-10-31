@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { HealthResponse } from "@/app/api/health/route";
 import { Badge, Card } from "@/components/ui";
 
-const ITEMS: { key: keyof Pick<HealthResponse, "openai" | "naverDatalab" | "naverAd" | "kamis" | "farmMap" | "pexels" | "pixabay" | "passwordLock">; label: string; uses: string; env: string }[] = [
+const ITEMS: { key: keyof Pick<HealthResponse, "openai" | "naverDatalab" | "naverAd" | "kamis" | "farmMap" | "pexels" | "pixabay" | "coupangWing" | "passwordLock">; label: string; uses: string; env: string }[] = [
   { key: "openai", label: "OpenAI", uses: "상세페이지 판매 문구·CS·상품명·태그·썸네일·마케팅·리뷰 분석·문자 주문 정리", env: "OPENAI_API_KEY" },
   { key: "naverDatalab", label: "네이버 데이터랩", uses: "대시보드 트렌드·검색 추이·고객층", env: "NAVER_CLIENT_ID / SECRET" },
   { key: "naverAd", label: "네이버 검색광고", uses: "월간 검색수·연관 키워드·소싱 평가 검색 수요", env: "NAVER_AD_API_KEY 외 2개" },
@@ -12,6 +12,7 @@ const ITEMS: { key: keyof Pick<HealthResponse, "openai" | "naverDatalab" | "nave
   { key: "farmMap", label: "공공데이터포털", uses: "전국 산지 지도 — GAP·친환경 인증 생산자·APC (무료 키)", env: "DATA_GO_KR_KEY" },
   { key: "pexels", label: "Pexels 무료 영상", uses: "상세페이지 맨 위 움직이는 컷을 무료 영상으로 바꾸기 (무료 키)", env: "PEXELS_API_KEY" },
   { key: "pixabay", label: "Pixabay 무료 영상", uses: "무료 영상 검색 결과 늘리기 — Pexels와 함께 보여줌 (무료 키)", env: "PIXABAY_API_KEY" },
+  { key: "coupangWing", label: "쿠팡 윙 Open API", uses: "광고 분석 — 광고 기간의 실제 쿠팡 매출로 전체 매출 대비 광고비 보기", env: "COUPANG_VENDOR_ID 외 2개" },
   { key: "passwordLock", label: "비밀번호 잠금", uses: "배포 시 남의 AI 사용 차단 (내 PC면 선택)", env: "APP_PASSWORD" },
 ];
 

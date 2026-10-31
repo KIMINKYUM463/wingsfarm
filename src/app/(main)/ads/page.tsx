@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { AdReport } from "@/components/ads/AdReport";
+import { WingSales } from "@/components/ads/WingSales";
 import { TableLoader, type LoadedTable } from "@/components/orders/TableLoader";
 import { Button, Card, Field, Notice, NumberInput, PageHeader, Toggle } from "@/components/ui";
 import { parseAdReport, productBreakEven, type AdRow } from "@/lib/coupangAds";
@@ -84,7 +85,7 @@ export default function AdsPage() {
               <li>보고서 구조를 <b>키워드</b> 단위까지 펼치기</li>
               <li>생성된 보고서를 <b>엑셀 다운로드</b> → 여기에 끌어다 놓기</li>
             </ol>
-            <Notice className="mt-3">쿠팡은 판매자 광고 데이터를 API로 제공하지 않아 파일로 분석해요. 보고서 예약을 걸면 매일·매주·매월 오전 8시에 자동으로 만들어져요.</Notice>
+            <Notice className="mt-3">쿠팡은 판매자 광고 데이터를 API로 제공하지 않아 파일로 분석해요. 대신 실제 주문 매출은 윙 Open API로 불러와 비교할 수 있어요. 보고서 예약을 걸면 매일·매주·매월 오전 8시에 자동으로 만들어져요.</Notice>
           </Card>
         </div>
       ) : (
@@ -112,6 +113,9 @@ export default function AdsPage() {
             </p>
           </Card>
           <AdReport rows={report.rows} breakEvenOf={breakEvenOf} linkedSkuOf={linkedSkuOf} baseBreakEven={baseBreakEven} costMultiplier={withVat ? VAT : 1} />
+          <div className="mt-6">
+            <WingSales key={report.name} rows={report.rows} costMultiplier={withVat ? VAT : 1} breakEven={baseBreakEven} />
+          </div>
         </>
       )}
     </>

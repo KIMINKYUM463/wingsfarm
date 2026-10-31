@@ -8,6 +8,7 @@ export type HealthResponse = {
   farmMap: boolean;
   pexels: boolean;
   pixabay: boolean;
+  coupangWing: boolean;
   passwordLock: boolean;
   textModel: string;
   imageModel: string;
@@ -24,6 +25,7 @@ export function GET() {
     farmMap: has("DATA_GO_KR_KEY"),
     pexels: has("PEXELS_API_KEY"),
     pixabay: has("PIXABAY_API_KEY"),
+    coupangWing: has("COUPANG_VENDOR_ID", "COUPANG_ACCESS_KEY", "COUPANG_SECRET_KEY"),
     passwordLock: has("APP_PASSWORD"),
     textModel: OPENAI_MODEL,
     imageModel: OPENAI_IMAGE_MODEL,
