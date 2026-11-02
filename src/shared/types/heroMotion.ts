@@ -7,6 +7,9 @@ export type StockSource = 'pexels' | 'pixabay';
 /** 무료 영상은 최대 이만큼 골라 AI가 컷 편집한다 */
 export const MAX_STOCK_PICKS = 3;
 
+/** 상세페이지 첫 섹션 위에 따로 들어가는 움직이는 컷 크기 (상세페이지 폭, 4:3) */
+export const HERO_CLIP_SIZE = { width: 860, height: 640 } as const;
+
 /** 고른 무료 영상 하나 */
 export interface StockPick {
   source: StockSource;
@@ -24,12 +27,17 @@ export interface HeroMotionCredit {
 export interface HeroMotionInfo {
   kind: HeroMotionKind;
   status: 'pending' | 'ready' | 'failed';
-  /** 움직이는 컷이 들어간 섹션(프레임)과 사진 자리 */
+  /** 사진으로 만든 컷의 원본 섹션(프레임)·사진 자리 (무료 영상은 빈 값) */
   frameId: string;
   elementId: string;
   /** 클립을 만든 원본 사진 — 사진을 바꾸면 다시 만들어야 한다 (무료 영상은 사진과 무관) */
   assetId: string;
+  /** 클립 크기 (예전 기록은 사진 자리 크기) */
+  width: number;
+  height: number;
   clipUrl: string | null;
+  /** 컷 편집 자막 (컷 순서) */
+  captions?: string[];
   /** 실패 이유 또는 대체 안내 (예: AI 영상 실패 → 줌·이동으로 대신) */
   notice: string | null;
   /** 예전 기록(영상 1개)의 출처 — 새 기록은 credits */
@@ -38,7 +46,7 @@ export interface HeroMotionInfo {
   credits?: HeroMotionCredit[];
   /** AI 편집 설명 (예: 컷 6개 · 7.2초) */
   summary?: string | null;
-  /** 상세페이지 맨 위에 넣었는지 — 만든 뒤 미리 보고 '적용'을 눌러야 들어간다 (예전 기록은 없음 = 적용됨) */
+  /** 상세페이지 첫 섹션 위에 넣었는지 — 만든 뒤 미리 보고 '적용'을 눌러야 들어간다 (예전 기록은 없음 = 적용됨) */
   applied?: boolean;
   updatedAt: string;
 }

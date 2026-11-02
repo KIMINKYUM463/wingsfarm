@@ -356,27 +356,21 @@ export const startHeroMotion = async (projectId: string, request: HeroMotionRequ
   (await httpClient.post<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION(projectId), request, { withAuth: true })).data.heroMotion;
 
 /** 미리 본 움직이는 컷을 상세페이지 맨 위에 넣기 */
-export const applyHeroMotion = async (projectId: string) =>
-  (await httpClient.post<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION_APPLY(projectId), {}, { withAuth: true })).data.heroMotion;
+/** 상세페이지 첫 섹션 위에 넣기 (applied=false면 빼기) */
+export const applyHeroMotion = async (projectId: string, applied = true) =>
+  (await httpClient.post<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION_APPLY(projectId), { applied }, { withAuth: true })).data.heroMotion;
 
 /** 무료 영상 검색 (검색어가 비면 서버가 상품명으로 찾는다) */
 export const searchHeroStock = async (projectId: string, query: string) =>
   (await httpClient.get<ExternalApiResponse<HeroStockResult>>(ENDPOINTS.PROJECTS.HERO_MOTION_STOCK(projectId, query), { withAuth: true }))
     .data;
 
-export interface HeroGifRequest {
-  below: string;
-  above: string;
-  rect: { x: number; y: number; width: number; height: number };
-  outWidth: number;
-}
-
-/** 섹션 레이어 + 움직이는 컷 → GIF (응답이 JSON이 아니라 파일이라 fetch로 직접 받는다) */
-export async function requestHeroGif(projectId: string, body: HeroGifRequest) {
+/** 움직이는 컷 → 상세페이지 폭 GIF (응답이 JSON이 아니라 파일이라 fetch로 직접 받는다) */
+export async function requestHeroGif(projectId: string, outWidth: number) {
   const res = await fetch(`/api/lever${ENDPOINTS.PROJECTS.HERO_MOTION_GIF(projectId)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ outWidth }),
   });
   if (!res.ok) {
     const error = (await res.json().catch(() => null)) as { message?: string } | null;

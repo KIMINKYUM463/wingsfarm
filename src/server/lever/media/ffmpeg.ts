@@ -30,12 +30,14 @@ function findFfmpeg() {
   return found;
 }
 
-export async function ffmpeg(args: string[], timeoutMs = 180_000) {
+/** cwd: 필터 안의 파일 이름(글꼴·자막)을 상대 경로로 쓰려면 그 폴더에서 실행한다 */
+export async function ffmpeg(args: string[], timeoutMs = 180_000, cwd?: string) {
   const bin = await findFfmpeg();
   if (!bin) {
     throw new ApiError(503, '움직이는 컷을 만들 ffmpeg를 찾지 못했어요. (설치 후 PATH 등록 또는 FFMPEG_PATH 설정)');
   }
   await exec(bin, ['-hide_banner', '-loglevel', 'error', ...args], {
+    cwd,
     timeout: timeoutMs,
     maxBuffer: 16 * 1024 * 1024,
     windowsHide: true,

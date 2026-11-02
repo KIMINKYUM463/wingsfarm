@@ -62,7 +62,7 @@ export interface ProjectRecord {
   heroMotion?: HeroMotionRecord;
 }
 
-export type HeroMotionRecord = Omit<HeroMotionInfo, 'clipUrl'> & { clipPath: string | null; width: number; height: number };
+export type HeroMotionRecord = Omit<HeroMotionInfo, 'clipUrl'> & { clipPath: string | null };
 
 /** 서버가 꺼져 작업이 끊기면 pending으로 남는다 → 일정 시간이 지나면 실패로 보여준다 */
 const STALE_MOTION_MS = 10 * 60 * 1000;
@@ -72,7 +72,7 @@ export const isMotionRunning = (motion: HeroMotionRecord | undefined) =>
 
 export const toHeroMotionInfo = (motion: HeroMotionRecord | undefined): HeroMotionInfo | null => {
   if (!motion) return null;
-  const { clipPath, width: _w, height: _h, ...info } = motion;
+  const { clipPath, ...info } = motion;
   const stale = motion.status === 'pending' && !isMotionRunning(motion);
   return {
     ...info,

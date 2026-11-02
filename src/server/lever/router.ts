@@ -99,7 +99,7 @@ const ROUTES: [Method, string, RouteHandler][] = [
     const { kind, videos, source, videoId } = await body<{ kind?: string; videos?: unknown; source?: unknown; videoId?: unknown }>();
     return startHeroMotion(params.id, kind === 'video' || kind === 'stock' ? kind : 'pan', { videos, source, videoId });
   }],
-  ['POST', 'projects/:id/hero-motion/apply', ({ params }) => applyHeroMotion(params.id)],
+  ['POST', 'projects/:id/hero-motion/apply', async ({ params, body }) => applyHeroMotion(params.id, await body())],
   ['GET', 'projects/:id/hero-motion/stock', ({ params, query }) => searchHeroStock(params.id, query.get('q'))],
   ['POST', 'projects/:id/hero-motion/gif', async ({ params, body }) => buildHeroGif(params.id, await body())],
 

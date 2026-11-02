@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import { useState } from 'react';
-import { useHeroMotion } from '@/features/editor/hooks/useHeroMotion';
+import type { HeroMotionState } from '@/features/editor/hooks/useHeroMotion';
 import { useScrollToElement } from '@/features/editor/hooks/useScrollToElement';
 import { elementTopInFrame, findBlankImageSlots, findPlaceholderTexts, isImageElement } from '@/features/editor/lib/element-finder';
 import { useActiveFrames } from '@/features/editor/store/useCanvasDataStore';
@@ -18,13 +18,13 @@ import type { KonvaElement, KonvaFrameElement } from '@/shared/types/konva';
 
 const chip = 'flex items-center gap-1.5 rounded-full border bg-white/95 px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur hover:border-gray-300';
 
-/** 페이지 맨 위 사진 자리 상태 — 사진이 있어야 사진으로 컷을 만들고, 자리만 있어도 무료 영상은 쓸 수 있다 */
-function heroSlotState(frames: KonvaFrameElement[]): 'none' | 'empty' | 'photo' {
+/** 페이지 맨 위 사진 자리에 사진이 있는지 — 있어야 사진으로 컷(줌·AI 영상)을 만든다 (무료 영상은 사진 없이도 된다) */
+function hasHeroPhoto(frames: KonvaFrameElement[]) {
   for (const frame of frames) {
     const slot = firstImageSlot(frame.children);
-    if (slot) return 'assetId' in slot && slot.assetId ? 'photo' : 'empty';
+    if (slot) return Boolean('assetId' in slot && slot.assetId);
   }
-  return 'none';
+  return false;
 }
 
 function firstImageSlot(elements: KonvaElement[]): KonvaElement | null {
@@ -40,28 +40,28 @@ function firstImageSlot(elements: KonvaElement[]): KonvaElement | null {
 /**
  * 에디터 위쪽 안내 칩
  * - 빈 사진 자리 / 채울 문구([입력 필요]) N곳 → 누를 때마다 다음 자리로 이동·선택
- * - 맨 위 움직이는 컷: 만드는 중 / 미리 보고 적용 / 보기·GIF 받기 / 다시 만들기 / 무료 영상(Pexels·Pixabay) 최대 3개로 AI 컷 편집
+ * - 맨 위 움직이는 컷(첫 섹션 위에 따로): 만드는 중 / 미리 보고 적용 / 보기·GIF 받기 / 다시 만들기 / 무료 영상 최대 3개로 AI 컷 편집
  */
-export function EditorMediaBar({ projectId }: { projectId: string }) {
+export function EditorMediaBar({
+  projectId,
+  hero,
+  motionOpen,
+  onMotionOpenChange,
+}: {
+  projectId: string;
+  hero: HeroMotionState;
+  motionOpen: boolean;
+  onMotionOpenChange: (open: boolean) => void;
+}) {
   const frames = useActiveFrames();
-  const hero = useHeroMotion(projectId);
-  const [motionOpen, setMotionOpen] = useState(false);
-
-  const heroSlot = heroSlotState(frames);
-  const showMotion = Boolean(hero.motion) || heroSlot !== 'none';
-  const hasTodo = frames.some((frame) => findBlankImageSlots(frame.children).length || findPlaceholderTexts(frame.children).length);
-  if (!hasTodo && !showMotion) return null;
-
   return (
     <div className="pointer-events-none fixed top-[calc(var(--header-h)+0.75rem)] left-1/2 z-30 flex -translate-x-1/2 gap-2">
       <TodoChip frames={frames} find={findBlankImageSlots} label="빈 사진 자리" />
       <TodoChip frames={frames} find={findPlaceholderTexts} label="채울 문구" />
-      {showMotion && (
-        <button type="button" className={clsx(chip, 'pointer-events-auto border-gray-100 text-gray-800')} onClick={() => setMotionOpen(true)}>
-          <MotionChipLabel motion={hero.motion} stale={hero.stale} applied={hero.applied} />
-        </button>
-      )}
-      <HeroMotionModal open={motionOpen} onClose={() => setMotionOpen(false)} projectId={projectId} hero={hero} canCreate={heroSlot === 'photo'} />
+      <button type="button" className={clsx(chip, 'pointer-events-auto border-gray-100 text-gray-800')} onClick={() => onMotionOpenChange(true)}>
+        <MotionChipLabel motion={hero.motion} stale={hero.stale} applied={hero.applied} />
+      </button>
+      <HeroMotionModal open={motionOpen} onClose={() => onMotionOpenChange(false)} projectId={projectId} hero={hero} canCreate={hasHeroPhoto(frames)} />
     </div>
   );
 }
@@ -102,7 +102,7 @@ function MotionChipLabel({ motion, stale, applied }: { motion: HeroMotionInfo | 
   if (motion.status === 'failed') return <span className="text-red-500">움직이는 컷 실패 · 다시 만들기</span>;
   if (stale) return <span className="text-amber-700">맨 위 사진이 바뀌었어요 · 움직이는 컷 다시 만들기</span>;
   if (!applied) return <span className="text-(--color-point)">✓ 움직이는 컷 완성 · 확인하고 적용하기</span>;
-  return <>▶ 움직이는 컷 보기 · GIF 받기</>;
+  return <>▶ 움직이는 컷 바꾸기 · GIF 받기</>;
 }
 
 function MotionCredits({ motion }: { motion: HeroMotionInfo }) {
@@ -135,19 +135,18 @@ function HeroMotionModal({
   open: boolean;
   onClose: () => void;
   projectId: string;
-  hero: ReturnType<typeof useHeroMotion>;
+  hero: HeroMotionState;
   canCreate: boolean;
 }) {
   const { motion, stale, ready, applied, start, apply, downloadGif, downloadingGif } = hero;
   const busy = motion?.status === 'pending' || start.isPending;
-  const { scrollToPosition } = useScrollToElement();
 
   const applyToTop = () =>
-    apply.mutate(undefined, {
-      onSuccess: (next) => {
+    apply.mutate(true, {
+      onSuccess: () => {
         onClose();
-        showToast.success('상세페이지 맨 위에 움직이는 컷을 넣었어요.');
-        if (next) scrollToPosition(next.frameId, 0, 0);
+        showToast.success('상세페이지 첫 섹션 위에 움직이는 컷을 넣었어요.');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       },
     });
 
@@ -168,21 +167,26 @@ function HeroMotionModal({
           </div>
         )}
         {ready && motion?.summary && <p className="-mt-2 text-sm text-gray-700">✦ {motion.summary}</p>}
+        {ready && motion?.captions?.length ? (
+          <p className="-mt-2 text-xs text-gray-500">자막: {motion.captions.map((caption) => `“${caption}”`).join(' → ')}</p>
+        ) : null}
         {motion?.notice && <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">{motion.notice}</p>}
         {ready && motion && <MotionCredits motion={motion} />}
 
         {ready && !applied && (
           <div className="flex flex-col gap-2 rounded-lg bg-(--color-point)/5 p-3">
             <button type="button" className="btn-primary text-sm" disabled={apply.isPending} onClick={applyToTop}>
-              {apply.isPending ? '넣는 중…' : '적용 — 상세페이지 맨 위에 넣기'}
+              {apply.isPending ? '넣는 중…' : '적용 — 상세페이지 맨 위(첫 섹션 위)에 넣기'}
             </button>
-            <p className="text-xs text-gray-500">마음에 안 들면 아래에서 영상을 다시 골라 새로 편집하세요. 적용 전까지 상세페이지는 그대로예요.</p>
+            <p className="text-xs text-gray-500">
+              템플릿은 그대로 두고 그 위에 영상 섹션이 하나 더 생겨요. 마음에 안 들면 아래에서 영상을 다시 골라 새로 편집하세요.
+            </p>
           </div>
         )}
 
         {applied && (
           <div className="flex flex-col gap-2">
-            <div className="text-sm font-semibold text-gray-900">GIF 받기 (섹션 문구까지 함께)</div>
+            <div className="text-sm font-semibold text-gray-900">GIF 받기</div>
             <div className="flex gap-2">
               {PLATFORMS.filter((p) => p.width).map((p) => (
                 <button
@@ -197,7 +201,7 @@ function HeroMotionModal({
               ))}
             </div>
             <p className="text-xs leading-5 text-gray-500">
-              스마트스토어·쿠팡 상세 편집기에서 <b>맨 위에 이 GIF</b>를 먼저 올리고, 그 아래에 상세 이미지(JPG)를 이어 붙이세요. 상세 이미지의 맨 위 섹션은 GIF와 겹치니 빼고 올려도 돼요.
+              스마트스토어·쿠팡 상세 편집기에서 <b>맨 위에 이 GIF</b>를 먼저 올리고, 그 아래에 상세 이미지(JPG)를 차례로 이어 붙이세요.
             </p>
           </div>
         )}

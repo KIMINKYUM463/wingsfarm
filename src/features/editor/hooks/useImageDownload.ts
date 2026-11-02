@@ -4,7 +4,6 @@ import JSZip from 'jszip';
 import { KonvaFrameElement } from '@/shared/types/konva';
 import { useActiveFrames, useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useStageRefStore } from '@/features/editor/store/useStageRefStore';
-import { HERO_VIDEO_NAME } from '@/features/editor/store/useHeroVideoStore';
 import { combineImagesClient, MIME_TYPES, type CombineFormat } from '@/features/editor/utils/combineImagesClient';
 import { CANVAS_WIDTH, qualityValue, type DownloadOptions } from '@/features/editor/lib/download-options';
 import { showToast } from '@/utils/toast';
@@ -113,37 +112,7 @@ export function withExportState<T>(stage: Konva.Stage, mainLayer: Konva.Layer, r
   }
 }
 
-const EXPORT_HIDDEN = ['._hover-overlay', '._hover-outline', '._selection-ui', '._group-overlay', '._frame-overlay', '._blank-guide', `.${HERO_VIDEO_NAME}`];
-
-/**
- * 움직이는 컷 GIF용 레이어 두 장 (원본 배율)
- * - below: 사진 자리보다 아래에 그려지는 것(배경 등) — 사진 자리부터 위는 숨김
- * - above: 사진 자리보다 위에 그려지는 것(어두운 막·문구) — 투명 배경
- */
-export function exportHeroLayers(stage: Konva.Stage, frame: KonvaFrameElement, elementId: string) {
-  const mainLayer = getMainLayer(stage);
-  const slot = mainLayer?.findOne(`#${elementId}`);
-  if (!mainLayer || !slot) return null;
-  return withExportState(stage, mainLayer, () => {
-    const shapes = mainLayer.find('Shape');
-    const slotIndex = shapes.indexOf(slot);
-    const rect = slot.getClientRect({ relativeTo: mainLayer });
-    const renderWith = (visible: (index: number) => boolean) => {
-      const original = shapes.map((s) => s.visible());
-      shapes.forEach((s, i) => s.visible(original[i] && visible(i)));
-      try {
-        return mainLayer.toDataURL({ mimeType: 'image/png', pixelRatio: 1, ...frameRect(frame) });
-      } finally {
-        shapes.forEach((s, i) => s.visible(original[i]));
-      }
-    };
-    return {
-      below: renderWith((i) => i < slotIndex),
-      above: renderWith((i) => i > slotIndex),
-      rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-    };
-  });
-}
+const EXPORT_HIDDEN = ['._hover-overlay', '._hover-outline', '._selection-ui', '._group-overlay', '._frame-overlay', '._blank-guide'];
 
 /** 자사몰용 상세 HTML (images 폴더와 함께 올려 쓰는 정적 페이지) */
 const buildDetailHtml = (title: string, width: number, fileNames: string[]) => `<!doctype html>

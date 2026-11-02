@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { useState } from 'react';
 import LeftSideBar from '@/shared/ui/Sidebar/LeftSideBar';
 import FrameListPanel from '@/features/editor/components/panel/frame/FrameListPanel';
 import CanvasFrame from '@/features/editor/components/canvas/CanvasFrame';
@@ -18,6 +19,8 @@ import { useEditorKeyboard } from '@/features/editor/hooks/useEditorKeyboard';
 import { FrameLoadingPlaceholder } from '@/features/editor/components/FrameLoadingPlaceholder';
 import { TEMPLATE_COPY_LOADING } from '@/features/editor/lib/templateCopy';
 import { EditorMediaBar } from '@/features/editor/components/overlay/EditorMediaBar';
+import { HeroMotionSection } from '@/features/editor/components/canvas/HeroMotionSection';
+import { useHeroMotion } from '@/features/editor/hooks/useHeroMotion';
 import type { KonvaFrameElement } from '@/shared/types/konva';
 
 interface KonvaEditorProps {
@@ -83,12 +86,16 @@ export function KonvaEditor({
   // AI 가이드 모달 표시 (초안 만들기 + 최초 조회 + localStorage로 중복 체크)
   useAiGuideModal(isInitialized && isDraftCreation && isFirstView);
 
+  // 맨 위 움직이는 컷: 위쪽 칩·모달과 첫 섹션 위 영상 섹션이 같은 상태를 쓴다
+  const hero = useHeroMotion(projectId);
+  const [motionOpen, setMotionOpen] = useState(false);
+
   return (
     <main className="flex-1 bg-gray-50">
       <LeftSideBar />
       <FrameListPanel />
       <AiChatPanel />
-      {!isLoading && <EditorMediaBar projectId={projectId} />}
+      {!isLoading && <EditorMediaBar projectId={projectId} hero={hero} motionOpen={motionOpen} onMotionOpenChange={setMotionOpen} />}
       <div
         className={clsx(
           'relative z-0 flex-1 overflow-hidden pb-(--footer-h)',
@@ -98,6 +105,7 @@ export function KonvaEditor({
           'pr-[calc(var(--right-sidebar-w)+var(--right-sidebar-gap))]',
         )}
       >
+        {!isLoading && <HeroMotionSection hero={hero} onEdit={() => setMotionOpen(true)} />}
         {isLoading ? (
           <FrameLoadingPlaceholder isToolPanelOpen={isToolPanelOpen} />
         ) : (

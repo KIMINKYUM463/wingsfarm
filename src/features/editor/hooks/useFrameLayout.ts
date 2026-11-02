@@ -39,7 +39,8 @@ const getSidebarValues = () => {
   return cachedSidebarValues ?? { leftSidebarWidth: 0, toolPanelWidth: 0, rightSidebarWidth: 0, rightSidebarGap: 0 };
 };
 
-export const useFrameLayout = (frame: KonvaFrameElement, config: FrameLayoutConfig = {}) => {
+/** frame은 크기만 쓴다 — 프레임이 아닌 섹션(맨 위 움직이는 컷)도 같은 배치를 쓸 수 있게 */
+export const useFrameLayout = (frame: Pick<KonvaFrameElement, 'width' | 'height'>, config: FrameLayoutConfig = {}) => {
   const { index = 0, isLastFrame = false, defaultFrameWidth = 860, defaultFrameHeight = 1080 } =
     config;
 

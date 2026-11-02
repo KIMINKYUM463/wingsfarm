@@ -13,9 +13,7 @@ import { useImagePattern } from '@/features/editor/hooks/useImagePattern';
 import { ImageControlOverlay } from '@/features/editor/components/canvas/layout/ImageHoverLayout';
 import { isImageElement, hasAssetImage } from '@/features/editor/lib/element-finder';
 import { ELEMENT_WRAP_NAME } from '@/features/editor/lib/animationPlayer';
-import { useHeroVideoStore } from '@/features/editor/store/useHeroVideoStore';
 import SlotPlaceholder from './SlotPlaceholder';
-import { HeroVideo } from './HeroVideo';
 
 interface KonvaRectProps {
   element: KonvaRectElement;
@@ -57,8 +55,7 @@ const KonvaRect = forwardRef<Konva.Rect, KonvaRectProps>(
     // 이미지 요소 플레이스홀더 표시 조건 (이미지만, 그래픽은 항상 assetId 존재):
     // 1. assetId가 없는 경우 (이미지 미지정)
     // 2. assetId는 있지만 assetUrl이 아직 없는 경우 (템플릿 적용 직후 등)
-    const heroVideoUrl = useHeroVideoStore((state) => (state.elementId === element.id ? state.url : null));
-    const showPlaceholder = isImage && !heroVideoUrl && (!storeAssetId || !imageUrl);
+    const showPlaceholder = isImage && (!storeAssetId || !imageUrl);
 
     return (
       <ImageControlOverlay element={element} elementRef={rectRef} onDragStart={onDragStart} onDragMove={onDragMove}>
@@ -133,7 +130,6 @@ const KonvaRect = forwardRef<Konva.Rect, KonvaRectProps>(
               // Performance: fill+stroke 동시 사용 시 2x draw 방지
               perfectDrawEnabled={false}
             />
-            {heroVideoUrl && <HeroVideo element={element} url={heroVideoUrl} />}
             {showPlaceholder && (
               <SlotPlaceholder x={element.x} y={element.y} width={element.width} height={element.height} blank={!storeAssetId} />
             )}

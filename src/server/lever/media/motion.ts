@@ -1,10 +1,10 @@
 /**
  * 맨 위 움직이는 컷 — 순수 함수 (요청·응답 해석, ffmpeg 인자)
  *
- * 흐름: 맨 위 사진 → 클립(사진 자리 크기, 무음 MP4) → 다운로드할 때 섹션 문구와 합성해 GIF
- * - pan: 사진을 천천히 확대하며 옆으로 이동 (ffmpeg, 무료)
- * - video: Gemini Omni 이미지→영상 (유료) 후 사진 자리 크기로 자르기
- * - stock: 무료 영상(Pexels·Pixabay) 최대 3개를 AI가 고른 장면으로 컷 편집해 사진 자리 크기로
+ * 흐름: 클립(HERO_CLIP_SIZE, 무음 MP4) → 상세페이지 첫 섹션 위에 따로 들어가는 영상 → 다운로드는 GIF
+ * - pan: 맨 위 사진을 천천히 확대하며 옆으로 이동 (ffmpeg, 무료)
+ * - video: Gemini Omni 이미지→영상 (유료) 후 클립 크기로 자르기
+ * - stock: 무료 영상(Pexels·Pixabay) 최대 3개를 AI가 고른 장면·자막으로 컷 편집 + 모션그래픽
  */
 
 export const VIDEO_MODEL = 'gemini-omni-1.1-flash';
@@ -100,9 +100,14 @@ export function videoClipArgs(input: string, output: string, width: number, heig
 export const MONTAGE = {
   cutMin: 0.8,
   cutMax: 2.5,
+  /** 컷 길이 합 기준 (전환이 겹치는 만큼 실제 영상은 조금 짧다) */
   totalMin: 4,
   totalMax: 8,
   maxCuts: 8,
+  /** 컷 사이 전환 길이(초) */
+  transition: 0.3,
+  /** 자막 최대 글자 수 (한 줄) */
+  captionMax: 14,
   /** AI가 보는 영상별 장면 수와 크기 */
   framesPerClip: 6,
   frameWidth: 320,
@@ -113,11 +118,22 @@ export interface MontageClip {
   duration: number;
 }
 
-/** 컷 하나 — clip은 0부터 */
+/** 컷 하나 — clip은 0부터, caption은 그 컷에 나오는 자막 (없으면 null) */
 export interface MontageCut {
   clip: number;
   start: number;
   duration: number;
+  caption: string | null;
+}
+
+/** 자막·태그 글자 정리: 한 줄, 제어 문자 제거, 글자 수 제한 (이모지 등은 글꼴에 없어 뺀다) */
+export function cleanCaption(raw: unknown, max: number = MONTAGE.captionMax): string | null {
+  if (typeof raw !== 'string') return null;
+  const text = raw
+    .replace(/[\p{Cc}\p{Extended_Pictographic}\uFE0F\u200D]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return Array.from(text).slice(0, max).join('').trim() || null;
 }
 
 const floor1 = (n: number) => Math.floor(n * 10) / 10;
@@ -131,27 +147,29 @@ export const sampleTimes = (duration: number, count: number = MONTAGE.framesPerC
   Array.from({ length: count }, (_, i) => floor1(duration * (0.05 + (0.9 * (i + 0.5)) / count)));
 
 /** 영상 안에 들어가게 맞춘 컷 (너무 짧은 영상이면 null) */
-function fitCut(clips: MontageClip[], clip: number, start: number, duration: number): MontageCut | null {
+function fitCut(clips: MontageClip[], clip: number, start: number, duration: number, caption: string | null = null): MontageCut | null {
   const length = clips[clip] && usableLength(clips[clip]);
   if (!length || length < MONTAGE.cutMin || !Number.isFinite(start) || !Number.isFinite(duration)) return null;
   const d = floor1(clamp(duration, MONTAGE.cutMin, Math.min(MONTAGE.cutMax, length)));
-  return { clip, start: floor1(clamp(start, 0, length - d)), duration: d };
+  return { clip, start: floor1(clamp(start, 0, length - d)), duration: d, caption };
 }
 
 /** 고른 개수별 컷 순서 — 영상을 번갈아 짧게 이어 붙인다 */
 const FALLBACK_ORDER: Record<number, number[]> = { 1: [0, 0, 0, 0], 2: [0, 1, 0, 1], 3: [0, 1, 2, 0, 1, 2] };
 
-/** AI 없이 만드는 기본 컷 편집: 각 영상을 고르게 나눈 지점에서 같은 길이로 */
-export function fallbackPlan(clips: MontageClip[]): MontageCut[] {
+/** AI 없이 만드는 기본 컷 편집: 각 영상을 고르게 나눈 지점에서 같은 길이로, 첫 컷 자막은 상품명 */
+export function fallbackPlan(clips: MontageClip[], productName = ''): MontageCut[] {
   const order = FALLBACK_ORDER[clips.length] ?? clips.map((_, i) => i);
   const cutLength = clamp(6 / order.length, MONTAGE.cutMin, MONTAGE.cutMax);
   const uses = clips.map((_, i) => order.filter((c) => c === i).length);
   const seen = clips.map(() => 0);
-  return order.flatMap((clip) => {
+  const cuts = order.flatMap((clip) => {
     const position = ++seen[clip] / (uses[clip] + 1);
     const cut = fitCut(clips, clip, clips[clip].duration * position - cutLength / 2, cutLength);
     return cut ? [cut] : [];
   });
+  if (cuts[0]) cuts[0].caption = cleanCaption(productName);
+  return cuts;
 }
 
 /** AI 답(clip은 1부터) → 검사·보정한 컷 목록. 규칙을 못 지키면 null (기본 편집으로 대신) */
@@ -160,8 +178,8 @@ export function normalizePlan(raw: unknown, clips: MontageClip[]): MontageCut[] 
   if (!Array.isArray(list)) return null;
   const cuts: MontageCut[] = [];
   let total = 0;
-  for (const item of list.slice(0, MONTAGE.maxCuts) as { clip?: unknown; start?: unknown; duration?: unknown }[]) {
-    const cut = fitCut(clips, Number(item?.clip) - 1, Number(item?.start), Number(item?.duration));
+  for (const item of list.slice(0, MONTAGE.maxCuts) as { clip?: unknown; start?: unknown; duration?: unknown; caption?: unknown }[]) {
+    const cut = fitCut(clips, Number(item?.clip) - 1, Number(item?.start), Number(item?.duration), cleanCaption(item?.caption));
     if (!cut) continue;
     if (total + cut.duration > MONTAGE.totalMax) break;
     cuts.push(cut);
@@ -171,7 +189,9 @@ export function normalizePlan(raw: unknown, clips: MontageClip[]): MontageCut[] 
   return total >= MONTAGE.totalMin && usesEveryClip ? cuts : null;
 }
 
-export const totalSeconds = (cuts: MontageCut[]) => floor1(cuts.reduce((sum, c) => sum + c.duration, 0) + 1e-9);
+/** 완성 영상 길이 — 컷 사이 전환만큼 겹친다 */
+export const totalSeconds = (cuts: Pick<MontageCut, 'duration'>[]) =>
+  floor1(cuts.reduce((sum, c) => sum + c.duration, 0) - MONTAGE.transition * Math.max(0, cuts.length - 1) + 1e-9);
 
 /** AI 편집 지시 — 이미지는 영상 순서·시각 순서로 함께 보낸다 */
 export function montagePrompt(productName: string, clips: MontageClip[], times: number[][]) {
@@ -184,7 +204,11 @@ export function montagePrompt(productName: string, clips: MontageClip[], times: 
     'Pick the best moments: sharp, well lit, appetizing and related to the product. Avoid blurry frames, text, watermarks and close-up faces.',
     'Open with the most eye-catching shot and alternate clips for a lively rhythm. Do not reuse the same moment twice.',
     `Rules: 3-${MONTAGE.maxCuts} cuts, each ${MONTAGE.cutMin}-${MONTAGE.cutMax} seconds, total ${MONTAGE.totalMin + 1}-${MONTAGE.totalMax} seconds, use every clip at least once, start + duration must be within the clip.`,
-    'Answer JSON only: {"cuts":[{"clip":1,"start":1.5,"duration":1.2}],"summary":"편집 의도를 한국어 한 문장으로"}',
+    'Cuts are joined with short animated transitions, and each cut gets a gentle zoom.',
+    `Write a Korean subtitle ("caption") for each cut: max ${MONTAGE.captionMax} characters, one line, natural ad copy about this product (freshness, taste, origin, season, how to enjoy).`,
+    'The first caption is a hook, the last invites the viewer (e.g. 지금 만나보세요). Leave caption "" for at most half of the cuts if the shot speaks for itself.',
+    'No prices, discounts, health or medical claims, superlatives (최고, 1등) or facts you cannot see. No emoji, no quotes.',
+    'Answer JSON only: {"cuts":[{"clip":1,"start":1.5,"duration":1.2,"caption":"산지에서 바로 온"}],"summary":"편집 의도를 한국어 한 문장으로"}',
   ].join('\n');
 }
 
@@ -197,12 +221,106 @@ export function frameGrabArgs(input: string, times: number[], outputs: string[])
   ];
 }
 
-/** 컷들을 사진 자리 크기로 맞춰 순서대로 이어 붙인다 (장면이 바로 바뀌는 컷 편집, 소리 없음) */
-export function montageArgs(cuts: { path: string; start: number; duration: number }[], output: string, width: number, height: number) {
-  const inputs = cuts.flatMap((c) => ['-ss', String(c.start), '-t', String(c.duration), '-i', c.path]);
-  const parts = cuts.map((_, i) => `[${i}:v]${fitFilter(width, height)},setsar=1,setpts=PTS-STARTPTS[v${i}]`);
-  const filter = `${parts.join(';')};${cuts.map((_, i) => `[v${i}]`).join('')}concat=n=${cuts.length}:v=1:a=0[out]`;
-  return ['-y', ...inputs, '-filter_complex', filter, '-map', '[out]', ...encodeArgs, output];
+/** 컷 사이 전환 효과 (차례로 돌려 쓴다) */
+export const TRANSITIONS = ['fade', 'slideleft', 'circleopen', 'slideup', 'dissolve', 'wipeleft'] as const;
+
+/** 자막·태그 파일 이름 — ffmpeg를 임시 폴더에서 실행하므로 상대 경로(윈도우 C: 경로 이스케이프를 피한다) */
+export const MONTAGE_FILES = {
+  font: 'font.otf',
+  tag: 'tag.txt',
+  caption: (i: number) => `caption-${i}.txt`,
+} as const;
+
+/** 브랜드 포인트 색 (--color-point) */
+const POINT_COLOR = '0x5DADEC';
+
+/** 0→1로 0.4초 동안 차오르는 값 (from초부터) — 필터 안 쉼표는 \, 로 */
+const easeIn = (from: number, seconds = 0.4) => `min(1\\,max(0\\,(t-${from})/${seconds}))`;
+
+/** 컷 하나: 채우기 → 천천히 확대·축소(번갈아) → 비네팅 → 자막(아래에서 떠오르며 나타남) */
+function cutFilter(cut: Pick<MontageCut, 'duration' | 'caption'>, i: number, width: number, height: number, withText: boolean) {
+  const w = even(width);
+  const h = even(height);
+  const frames = Math.max(1, Math.round(cut.duration * CLIP_FPS));
+  const zoom = i % 2 === 0 ? `1+0.08*on/${frames}` : `1.08-0.08*on/${frames}`;
+  const parts = [
+    // 2배로 키운 뒤 확대해야 zoompan의 계단 떨림이 줄어든다
+    `scale=${w * 2}:${h * 2}:force_original_aspect_ratio=increase`,
+    `crop=${w * 2}:${h * 2}`,
+    `fps=${CLIP_FPS}`,
+    `zoompan=z='${zoom}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=${w}x${h}:fps=${CLIP_FPS}`,
+    `trim=duration=${cut.duration}`,
+    'setpts=PTS-STARTPTS',
+    'setsar=1',
+    'vignette=PI/6',
+  ];
+  if (withText && cut.caption) {
+    const size = Math.min(Math.round(w * 0.062), Math.floor((w * 0.82) / Array.from(cut.caption).length));
+    const show = easeIn(i === 0 ? 0.15 : MONTAGE.transition);
+    parts.push(
+      [
+        `drawtext=fontfile=${MONTAGE_FILES.font}:textfile=${MONTAGE_FILES.caption(i)}:expansion=none`,
+        `fontsize=${size}:fontcolor=white:alpha=${show}`,
+        `x=(w-text_w)/2:y=h*0.8-text_h/2+${Math.round(h * 0.03)}*(1-${show})`,
+        `box=1:boxcolor=black@0.5:boxborderw=${Math.round(size * 0.45)}`,
+      ].join(':'),
+    );
+  }
+  return parts.join(',');
+}
+
+export interface MontageRender {
+  cuts: (Pick<MontageCut, 'start' | 'duration' | 'caption'> & { path: string })[];
+  output: string;
+  width: number;
+  height: number;
+  /** 글꼴(MONTAGE_FILES.font)이 있을 때만 자막·상품명 태그를 넣는다 */
+  withText: boolean;
+  /** 왼쪽 위 상품명 태그 (없으면 생략) */
+  tag: string | null;
+}
+
+/**
+ * 컷 편집 + 모션그래픽 (소리 없음)
+ * 컷마다 줌·자막 → 전환 효과로 이어 붙임 → 상품명 태그가 왼쪽에서 들어오고 → 아래 진행 막대가 차오른다
+ */
+export function montageArgs({ cuts, output, width, height, withText, tag }: MontageRender) {
+  const w = even(width);
+  const h = even(height);
+  const total = totalSeconds(cuts);
+  // 컷 끝 0.1초 여유를 더 읽어 trim 길이를 확실히 채운다
+  const inputs = cuts.flatMap((c) => ['-ss', String(c.start), '-t', String(floor1(c.duration + 0.1 + 1e-9)), '-i', c.path]);
+  const chains = cuts.map((cut, i) => `[${i}:v]${cutFilter(cut, i, w, h, withText)},format=yuv420p[v${i}]`);
+
+  let joined = 'v0';
+  let length = cuts[0]?.duration ?? 0;
+  for (let i = 1; i < cuts.length; i++) {
+    const offset = floor1(length - MONTAGE.transition + 1e-9);
+    const transition = TRANSITIONS[(i - 1) % TRANSITIONS.length];
+    chains.push(`[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset}[x${i}]`);
+    joined = `x${i}`;
+    length += cuts[i].duration - MONTAGE.transition;
+  }
+
+  const finish: string[] = [];
+  if (withText && tag) {
+    const size = Math.round(w * 0.03);
+    const show = easeIn(0.3, 0.5);
+    finish.push(
+      [
+        `drawtext=fontfile=${MONTAGE_FILES.font}:textfile=${MONTAGE_FILES.tag}:expansion=none`,
+        `fontsize=${size}:fontcolor=white:alpha=${show}`,
+        `x=${Math.round(w * 0.045)}-${Math.round(w * 0.05)}*(1-${show}):y=${Math.round(h * 0.06)}`,
+        `box=1:boxcolor=${POINT_COLOR}@0.9:boxborderw=${Math.round(size * 0.55)}`,
+      ].join(':'),
+    );
+  }
+  const barHeight = Math.max(4, Math.round(h * 0.008));
+  chains.push(`color=c=${POINT_COLOR}:s=${w}x${barHeight}:r=${CLIP_FPS}[bar]`);
+  chains.push(`[${joined}]${finish.length ? `${finish.join(',')},` : ''}null[base]`);
+  chains.push(`[base][bar]overlay=x=-w+w*t/${total}:y=H-h:shortest=1,format=yuv420p[out]`);
+
+  return ['-y', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-t', String(total), ...encodeArgs, output];
 }
 
 export type StockOrientation = 'landscape' | 'portrait' | 'square';
@@ -211,18 +329,6 @@ export const stockOrientation = (width: number, height: number): StockOrientatio
   const ratio = width / height;
   return ratio > 1.2 ? 'landscape' : ratio < 0.83 ? 'portrait' : 'square';
 };
-
-export interface GifLayers {
-  /** 사진 자리 아래 레이어(배경 포함, 불투명 PNG) */
-  below: string;
-  clip: string;
-  /** 사진 자리 위 레이어(어두운 막·문구, 투명 PNG) */
-  above: string;
-  output: string;
-  /** 섹션 안 사진 자리 위치 (PNG 픽셀 기준) */
-  rect: { x: number; y: number; width: number; height: number };
-  outWidth: number;
-}
 
 /** 용량이 크면 프레임 수 → 폭 → 색 수 순서로 줄인다 */
 export const GIF_STEPS = [
@@ -234,16 +340,13 @@ export const GIF_STEPS = [
 
 export { GIF_MAX_BYTES } from '@/shared/lib/draftMedia';
 
-export function heroGifArgs(layers: GifLayers, step: (typeof GIF_STEPS)[number]) {
-  const { x, y, width, height } = layers.rect;
-  const outWidth = even(layers.outWidth * step.scale);
+/** 클립 → 상세페이지 폭(outWidth)의 반복 GIF */
+export function heroGifArgs(clip: string, output: string, outWidth: number, step: (typeof GIF_STEPS)[number]) {
+  const width = even(outWidth * step.scale);
   const filter = [
-    `[1:v]fps=${step.fps},scale=${Math.round(width)}:${Math.round(height)}[clip]`,
-    `[0:v][clip]overlay=${Math.round(x)}:${Math.round(y)}:shortest=1[base]`,
-    `[base][2:v]overlay=0:0:shortest=1,scale=${outWidth}:-2:flags=lanczos,split[a][b]`,
+    `[0:v]fps=${step.fps},scale=${width}:-2:flags=lanczos,split[a][b]`,
     `[a]palettegen=max_colors=${step.colors}:stats_mode=diff[p]`,
     `[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`,
   ].join(';');
-  const still = (file: string) => ['-framerate', String(step.fps), '-loop', '1', '-i', file];
-  return ['-y', ...still(layers.below), '-i', layers.clip, ...still(layers.above), '-filter_complex', filter, '-loop', '0', layers.output];
+  return ['-y', '-i', clip, '-filter_complex', filter, '-loop', '0', output];
 }

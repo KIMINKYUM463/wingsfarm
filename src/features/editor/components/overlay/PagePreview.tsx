@@ -11,6 +11,7 @@ import { CANVAS_WIDTH } from '@/features/editor/lib/download-options';
 import { renderFrameJpeg } from '@/features/editor/lib/frameImage';
 import { useActiveFrames } from '@/features/editor/store/useCanvasDataStore';
 import { useStageRefStore } from '@/features/editor/store/useStageRefStore';
+import { useHeroVideoStore } from '@/features/editor/store/useHeroVideoStore';
 
 /** 돋보기 단계 (1 = 실제 크기) */
 const ZOOM_STEPS = [0.25, 0.33, 0.5, 0.67, 0.75, 0.9, 1, 1.25, 1.5, 2];
@@ -49,8 +50,11 @@ export function PagePreviewButton() {
 function PagePreviewModal({ onClose }: { onClose: () => void }) {
   const frames = useActiveFrames();
   const getStage = useStageRefStore((state) => state.getStage);
+  /** 첫 섹션 위에 넣은 움직이는 컷 (실제 상세페이지에선 GIF로 올린다) */
+  const heroVideo = useHeroVideoStore((state) => state.video);
   const pageWidth = frames[0]?.width || CANVAS_WIDTH;
-  const totalHeight = frames.reduce((sum, f) => sum + (f.height || 0), 0);
+  const heroHeight = heroVideo ? Math.round((pageWidth * heroVideo.height) / heroVideo.width) : 0;
+  const totalHeight = heroHeight + frames.reduce((sum, f) => sum + (f.height || 0), 0);
 
   const [pages, setPages] = useState<PreviewPage[]>([]);
   const [progress, setProgress] = useState(0);
@@ -143,7 +147,7 @@ function PagePreviewModal({ onClose }: { onClose: () => void }) {
         <div className="min-w-0">
           <p className="text-base font-semibold">미리보기</p>
           <p className="truncate text-xs text-gray-300">
-            페이지 {frames.length}개 · 폭 {pageWidth}px · 총 높이 {totalHeight.toLocaleString()}px
+            {heroVideo && '움직이는 컷(GIF) + '}페이지 {frames.length}개 · 폭 {pageWidth}px · 총 높이 {totalHeight.toLocaleString()}px
             {skipped > 0 && ` · ${skipped}개 페이지는 아직 불러오지 못해 빠졌어요`}
           </p>
         </div>
@@ -174,6 +178,17 @@ function PagePreviewModal({ onClose }: { onClose: () => void }) {
       <div ref={scrollRef} className="flex-1 overflow-auto" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
         <div className="mx-auto w-max py-8">
           <div className="bg-white shadow-2xl" style={{ width: pageWidth * effectiveZoom }}>
+            {heroVideo && (
+              <video
+                src={heroVideo.url}
+                className="block w-full"
+                style={{ aspectRatio: `${heroVideo.width} / ${heroVideo.height}` }}
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            )}
             {pages.map((page) => (
               // 페이지 사이 틈 없이 이어 붙인다 (block + 폭 100%)
               // eslint-disable-next-line @next/next/no-img-element

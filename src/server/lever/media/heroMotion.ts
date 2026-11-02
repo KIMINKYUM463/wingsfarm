@@ -1,7 +1,7 @@
 import 'server-only';
-import { readFile, stat, writeFile } from 'node:fs/promises';
+import { copyFile, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { MAX_STOCK_PICKS, type HeroMotionKind, type StockPick } from '@/shared/types/heroMotion';
+import { HERO_CLIP_SIZE, MAX_STOCK_PICKS, type HeroMotionKind, type StockPick } from '@/shared/types/heroMotion';
 import { findAssetRecord } from '../assets';
 import { asNode, isImageSlot, walk } from '../frames/tree';
 import { requireGemini } from '../gemini';
@@ -12,11 +12,13 @@ import { runInBackground } from '../background';
 import { nowIso } from '../store';
 import { ffmpeg, withTempDir } from './ffmpeg';
 import {
+  cleanCaption,
   fallbackPlan,
   frameGrabArgs,
   GIF_MAX_BYTES,
   GIF_STEPS,
   heroGifArgs,
+  MONTAGE_FILES,
   montageArgs,
   montagePrompt,
   normalizePlan,
@@ -34,19 +36,29 @@ import { parseStockPicks, pickVideoFile, type StockClipSource } from './stockSou
 
 type Target = Pick<HeroMotionRecord, 'frameId' | 'elementId' | 'assetId' | 'width' | 'height'>;
 
-/** 페이지 맨 위 사진 자리 — 사진으로 만드는 컷은 사진이 있어야 하고, 무료 영상은 빈 자리도 된다 */
-function findHeroTarget(project: ProjectRecord, allowEmpty = false): Target | null {
+/** 무료 영상 컷은 사진과 무관 — 첫 섹션 위에 들어갈 크기만 정한다 */
+const STOCK_TARGET: Target = { frameId: '', elementId: '', assetId: '', ...HERO_CLIP_SIZE };
+
+/** 사진으로 만드는 컷의 원본: 페이지 맨 위 사진 자리의 사진 (클립은 첫 섹션 위에 따로 들어간다) */
+function findHeroPhoto(project: ProjectRecord): Target | null {
   for (const frame of sortFrames(project.frames)) {
     if (frame.status !== 'active') continue;
     const slot = [...walk(asNode(frame.frameData))].find(isImageSlot);
     if (!slot) continue;
-    if (!slot.assetId && !allowEmpty) return null;
-    return { frameId: frame.id, elementId: slot.id, assetId: slot.assetId ?? '', width: Number(slot.width), height: Number(slot.height) };
+    return slot.assetId ? { frameId: frame.id, elementId: slot.id, assetId: slot.assetId, ...HERO_CLIP_SIZE } : null;
   }
   return null;
 }
 
-const NO_HERO_SLOT = '맨 위 섹션에 사진 자리가 없어요.';
+/** 자막 글꼴 (Pretendard Bold, OFL) — Vercel에도 함께 올라가도록 next.config의 outputFileTracingIncludes에 등록 */
+const CAPTION_FONT = path.join(process.cwd(), 'assets', 'fonts', 'Pretendard-Bold.otf');
+
+/** 작업 폴더에 글꼴을 복사한다 — 없으면 자막 없이 만든다 */
+const prepareFont = (dir: string) =>
+  copyFile(CAPTION_FONT, path.join(dir, MONTAGE_FILES.font)).then(
+    () => true,
+    (err) => (console.error('[lever] caption font missing', err), false),
+  );
 
 const setMotion = (projectId: string, motion: HeroMotionRecord) => updateProject(projectId, (p) => ({ ...p, heroMotion: motion }));
 
@@ -92,7 +104,7 @@ async function downloadStockInputs(inputs: StockInput[], target: Target, dir: st
 /** AI(Gemini)가 장면을 보고 컷을 고른다 — 키가 없거나 답이 규칙에 안 맞으면 기본 편집 + 안내 */
 async function planMontage(files: string[], clips: MontageClip[], productName: string, dir: string) {
   const gemini = await requireGemini().catch(() => null);
-  if (!gemini) return { cuts: fallbackPlan(clips), summary: null, notice: 'Gemini 키가 없어 AI 대신 기본 컷 편집으로 만들었어요.' };
+  if (!gemini) return { cuts: fallbackPlan(clips, productName), summary: null, notice: 'Gemini 키가 없어 AI 대신 기본 컷 편집으로 만들었어요(자막은 상품명만).' };
   try {
     const times = clips.map((clip) => sampleTimes(clip.duration));
     const frames = await Promise.all(
@@ -108,31 +120,43 @@ async function planMontage(files: string[], clips: MontageClip[], productName: s
     return { cuts, summary: typeof answer.summary === 'string' ? answer.summary.trim().slice(0, 120) || null : null, notice: null };
   } catch (err) {
     console.error('[lever] montage plan failed, using fallback', err);
-    return { cuts: fallbackPlan(clips), summary: null, notice: 'AI 편집이 잘 안 돼서 기본 컷 편집으로 만들었어요.' };
+    return { cuts: fallbackPlan(clips, productName), summary: null, notice: 'AI 편집이 잘 안 돼서 기본 컷 편집으로 만들었어요(자막은 상품명만).' };
   }
 }
 
-/** 무료 영상 1~3개 → AI가 고른 장면으로 컷 편집한 클립 (사진 자리 크기) */
+/** 무료 영상 1~3개 → AI가 고른 장면·자막으로 컷 편집 + 모션그래픽(줌·전환·상품명 태그·진행 막대) */
 async function makeStockMontage(inputs: StockInput[], target: Target, productName: string) {
   return withTempDir(async (dir) => {
-    const files = await downloadStockInputs(inputs, target, dir);
+    const [files, withText] = await Promise.all([downloadStockInputs(inputs, target, dir), prepareFont(dir)]);
     const clips = inputs.map(({ video }) => ({ duration: video.duration }));
     const plan = await planMontage(files, clips, productName, dir);
     if (!plan.cuts.length) throw new ApiError(400, '고른 영상이 너무 짧아요. 2초 넘는 영상을 골라 주세요.');
+
+    const tag = cleanCaption(productName, 20);
+    const texts = [
+      ...plan.cuts.map((cut, i) => [MONTAGE_FILES.caption(i), cut.caption] as const),
+      [MONTAGE_FILES.tag, tag] as const,
+    ].filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
+    await Promise.all(texts.map(([name, text]) => writeFile(path.join(dir, name), text, 'utf8')));
+
     const output = path.join(dir, 'clip.mp4');
-    await ffmpeg(montageArgs(plan.cuts.map((cut) => ({ ...cut, path: files[cut.clip] })), output, target.width, target.height));
-    const edit = `컷 ${plan.cuts.length}개 · ${totalSeconds(plan.cuts)}초`;
-    return { clip: await readFile(output), summary: plan.summary ? `${plan.summary} (${edit})` : edit, notice: plan.notice };
+    const cuts = plan.cuts.map((cut) => ({ ...cut, path: files[cut.clip] }));
+    await ffmpeg(montageArgs({ cuts, output, width: target.width, height: target.height, withText, tag }), 180_000, dir);
+
+    const captions = withText ? plan.cuts.flatMap((cut) => (cut.caption ? [cut.caption] : [])) : [];
+    const edit = `컷 ${plan.cuts.length}개 · ${totalSeconds(plan.cuts)}초 · 자막 ${captions.length}개`;
+    const notice = [plan.notice, withText ? null : '자막 글꼴을 찾지 못해 자막 없이 만들었어요.'].filter(Boolean).join(' ') || null;
+    return { clip: await readFile(output), summary: plan.summary ? `${plan.summary} (${edit})` : edit, captions, notice };
   });
 }
 
 async function runStockMotion(projectId: string, inputs: StockInput[], target: Target, productName: string, applied: boolean) {
   const base = { ...target, kind: 'stock' as const, credits: inputs.map(({ video }) => video.credit), applied };
   try {
-    const { clip, summary, notice } = await makeStockMontage(inputs, target, productName);
+    const { clip, summary, captions, notice } = await makeStockMontage(inputs, target, productName);
     const clipPath = `assets/motion-${projectId}-${Date.now()}.mp4`;
     await saveFile(clipPath, clip);
-    await setMotion(projectId, { ...base, status: 'ready', clipPath, summary, notice, updatedAt: nowIso() });
+    await setMotion(projectId, { ...base, status: 'ready', clipPath, summary, captions, notice, updatedAt: nowIso() });
   } catch (err) {
     console.error('[lever] stock motion failed', err);
     const notice = err instanceof ApiError ? err.message : '무료 영상으로 컷을 만들지 못했어요. 다른 영상을 골라 주세요.';
@@ -192,8 +216,7 @@ export async function startHeroMotion(projectId: string, kind: HeroMotionKind, o
   const applied = options.autoApply === true;
 
   if (kind === 'stock') {
-    const target = findHeroTarget(project, true);
-    if (!target) throw badRequest(NO_HERO_SLOT);
+    const target = STOCK_TARGET;
     const picks = parseStockPicks(options);
     if (!picks) throw badRequest(`가져올 영상을 1~${MAX_STOCK_PICKS}개 골라 주세요.`);
     const inputs = await Promise.all(picks.map(async (pick) => ({ pick, video: await getStockClipSource(pick.source, pick.videoId) })));
@@ -203,7 +226,7 @@ export async function startHeroMotion(projectId: string, kind: HeroMotionKind, o
     return { heroMotion: toHeroMotionInfo(pending.heroMotion) };
   }
 
-  const target = findHeroTarget(project);
+  const target = findHeroPhoto(project);
   if (!target) throw badRequest('맨 위 사진 자리에 사진을 먼저 넣어 주세요.');
   if (kind === 'video') await requireGemini();
   const pending = await setMotion(projectId, { ...target, kind, applied, status: 'pending', clipPath: null, notice: null, updatedAt: nowIso() });
@@ -211,73 +234,44 @@ export async function startHeroMotion(projectId: string, kind: HeroMotionKind, o
   return { heroMotion: toHeroMotionInfo(pending.heroMotion) };
 }
 
-/** POST /projects/{id}/hero-motion/apply — 미리 본 컷을 상세페이지 맨 위 사진 자리에 넣는다 */
-export async function applyHeroMotion(projectId: string) {
+/** POST /projects/{id}/hero-motion/apply — 미리 본 컷을 상세페이지 첫 섹션 위에 넣는다 ({ applied: false }면 뺀다) */
+export async function applyHeroMotion(projectId: string, body: { applied?: unknown } = {}) {
+  const applied = body.applied !== false;
   const project = await updateProject(projectId, (p) => {
     if (p.heroMotion?.status !== 'ready' || !p.heroMotion.clipPath) throw badRequest('적용할 움직이는 컷이 아직 없어요.');
-    return { ...p, heroMotion: { ...p.heroMotion, applied: true } };
+    return { ...p, heroMotion: { ...p.heroMotion, applied } };
   });
   return { heroMotion: toHeroMotionInfo(project.heroMotion) };
 }
 
-/** GET /projects/{id}/hero-motion/stock?q= — 사진 자리 모양에 맞는 무료 영상 검색 (검색어가 없으면 상품명) */
+/** GET /projects/{id}/hero-motion/stock?q= — 컷 모양(가로)에 맞는 무료 영상 검색 (검색어가 없으면 상품명) */
 export async function searchHeroStock(projectId: string, query: string | null) {
   const project = await getProject(projectId);
-  const target = findHeroTarget(project, true);
-  if (!target) throw badRequest(NO_HERO_SLOT);
   const q = (query ?? '').trim().slice(0, 80) || project.productName.trim();
   if (!q) throw badRequest('검색어를 입력해 주세요.');
-  return { query: q, ...(await searchStockVideos(q, stockOrientation(target.width, target.height))) };
+  return { query: q, ...(await searchStockVideos(q, stockOrientation(HERO_CLIP_SIZE.width, HERO_CLIP_SIZE.height))) };
 }
 
-// ===== 다운로드: 섹션 문구와 합성한 GIF =====
+// ===== 다운로드: 상세페이지 맨 위에 올릴 GIF =====
 
-const MAX_LAYER_BYTES = 20 * 1024 * 1024;
-
-const decodePng = (dataUrl: unknown) => {
-  const match = typeof dataUrl === 'string' ? dataUrl.match(/^data:image\/png;base64,(.+)$/) : null;
-  const data = match ? Buffer.from(match[1], 'base64') : null;
-  if (!data || data.length > MAX_LAYER_BYTES) throw badRequest('섹션 이미지를 읽지 못했어요.');
-  return data;
-};
-
-const finite = (value: unknown, min: number, max: number) => {
-  const n = Number(value);
-  if (!Number.isFinite(n) || n < min || n > max) throw badRequest('사진 자리 위치가 올바르지 않아요.');
-  return n;
-};
-
-interface GifBody {
-  below?: unknown;
-  above?: unknown;
-  rect?: { x?: unknown; y?: unknown; width?: unknown; height?: unknown };
-  outWidth?: unknown;
-}
-
-/** POST /projects/{id}/hero-motion/gif — 화면이 그린 아래·위 레이어 + 클립 → GIF (용량 맞춰 단계적으로 줄임) */
-export async function buildHeroGif(projectId: string, body: GifBody) {
+/** POST /projects/{id}/hero-motion/gif { outWidth } — 클립 → GIF (용량 맞춰 단계적으로 줄임) */
+export async function buildHeroGif(projectId: string, body: { outWidth?: unknown }) {
   const { heroMotion } = await getProject(projectId);
   if (heroMotion?.status !== 'ready' || !heroMotion.clipPath) throw badRequest('움직이는 컷이 아직 준비되지 않았어요.');
   const clip = await loadFile(heroMotion.clipPath);
   if (!clip) throw badRequest('움직이는 컷 파일이 없어요. 다시 만들어 주세요.');
-  const rect = {
-    x: finite(body.rect?.x, -4000, 4000),
-    y: finite(body.rect?.y, -4000, 8000),
-    width: finite(body.rect?.width, 2, 4000),
-    height: finite(body.rect?.height, 2, 8000),
-  };
-  const outWidth = finite(body.outWidth, 200, 1600);
-  const below = decodePng(body.below);
-  const above = decodePng(body.above);
+  const outWidth = Number(body.outWidth);
+  if (!Number.isFinite(outWidth) || outWidth < 200 || outWidth > 1600) throw badRequest('GIF 폭이 올바르지 않아요.');
 
   const gif = await withTempDir(async (dir) => {
-    const files = { below: path.join(dir, 'below.png'), above: path.join(dir, 'above.png'), clip: path.join(dir, 'clip.mp4'), output: path.join(dir, 'hero.gif') };
-    await Promise.all([writeFile(files.below, below), writeFile(files.above, above), writeFile(files.clip, clip)]);
+    const input = path.join(dir, 'clip.mp4');
+    const output = path.join(dir, 'hero.gif');
+    await writeFile(input, clip);
     for (const step of GIF_STEPS) {
-      await ffmpeg(heroGifArgs({ ...files, rect, outWidth }, step));
-      if ((await stat(files.output)).size <= GIF_MAX_BYTES || step === GIF_STEPS.at(-1)) break;
+      await ffmpeg(heroGifArgs(input, output, outWidth, step));
+      if ((await stat(output)).size <= GIF_MAX_BYTES || step === GIF_STEPS.at(-1)) break;
     }
-    return readFile(files.output);
+    return readFile(output);
   });
   return new Response(new Uint8Array(gif), {
     headers: { 'Content-Type': 'image/gif', 'Cache-Control': 'no-store', 'Content-Length': String(gif.length) },
