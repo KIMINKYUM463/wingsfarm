@@ -14,13 +14,7 @@
   --animate-slide-in-right: slide-in-right 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-blink: blink 4s ease-in-out infinite;
   --animate-bob: bob 3s ease-in-out infinite;
-  --animate-dash: dash 0.8s linear infinite;
 
-  @keyframes dash {
-    to {
-      stroke-dashoffset: -8;
-    }
-  }
   @keyframes slide-in-right {
     from {
       transform: translateX(100%);

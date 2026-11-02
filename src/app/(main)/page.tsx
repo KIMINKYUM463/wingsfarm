@@ -7,6 +7,7 @@ import { KeywordDetail } from "@/components/KeywordDetail";
 import { AiTeam } from "@/components/dashboard/AiTeam";
 import { TodayOps } from "@/components/dashboard/TodayOps";
 import { CountUp, stagger } from "@/components/motion";
+import type { Product } from "@/lib/aiTeam";
 import { growthText } from "@/lib/format";
 import {
   MIN_SCORE,
@@ -62,6 +63,14 @@ export default function DashboardPage() {
   const closeDetail = useCallback(() => setSelected(null), []);
   const today = useMemo(() => new Date(), []);
   const market = useMemo(() => marketSeries(data?.items ?? []), [data]);
+  const teamProducts = useMemo<Product[]>(
+    () =>
+      (data?.items ?? []).map((i) => {
+        const { score, growth } = currentTrend(i);
+        return { name: i.name, category: i.category, inSeason: i.inSeason, trend: data?.source === "naver" ? { score, growth } : null };
+      }),
+    [data],
+  );
 
   const view = useMemo(() => {
     const items: RankedItem[] = (data?.items ?? [])
@@ -166,7 +175,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <AiTeam />
+      <AiTeam products={teamProducts} minScore={MIN_SCORE} />
 
       <TodayOps />
 

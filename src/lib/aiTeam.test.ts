@@ -1,64 +1,92 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { AI_TEAM, botOf, bubbleOf, initialTeam, positionOf, stepTeam, type TeamState } from "./aiTeam.ts";
+import type { KamisPrice } from "./kamis.ts";
+import { LANES, STAGES, STAGE_TICKS, findPrice, initialLine, laneQueue, productIcon, stageText, stepLine, type LineState, type Product } from "./aiTeam.ts";
 
-const always = (n: number) => () => n;
+const product = (name: string, category: Product["category"], score: number, growth: number, inSeason = false): Product => ({ name, category, inSeason, trend: { score, growth } });
+const price = (patch: Partial<KamisPrice>): KamisPrice => ({
+  id: "x",
+  cls: "도매",
+  category: "과일류",
+  name: "사과/후지",
+  unit: "10kg",
+  latestDate: "당일",
+  today: 50000,
+  dayAgo: null,
+  monthAgo: 40000,
+  yearAgo: null,
+  ...patch,
+});
 
-/** 매 틱 진척도가 꽉 차고(rand=0.99) 항상 동료를 찾아가게(rand<0.6) 하려면 값을 번갈아 준다. */
-const sequence = (...values: number[]) => {
-  let i = 0;
-  return () => values[i++ % values.length];
+const products = [product("사과", "과일", 80, 0.1), product("딸기", "과일", 40, 0.9), product("배추", "채소", 60, -0.2), product("감귤", "과일", 1, 2)];
+const [fruit, veg, rising] = LANES;
+
+const run = (state: LineState, ticks: number, queues: Product[][]) => {
+  const events = [];
+  for (let t = 0; t < ticks; t++) {
+    const next = stepLine(state, queues);
+    state = next.state;
+    events.push(...next.events);
+  }
+  return { state, events };
 };
 
-const run = (state: TeamState, ticks: number, rand: () => number) => {
-  for (let t = 0; t < ticks; t++) state = stepTeam(state, rand).state;
-  return state;
-};
-
-describe("AI 팀 연출", () => {
-  it("모든 handoff 대상이 실제 팀원이다", () => {
-    for (const bot of AI_TEAM) for (const h of bot.handoffs) assert.ok(botOf(h.to), `${bot.id} → ${h.to}`);
+describe("AI 팀 소싱 라인", () => {
+  it("라인마다 많이 찾는 순·급상승 순으로 고르고, 관심도가 낮은 품목은 뺀다", () => {
+    assert.deepEqual(laneQueue(fruit, products, 3).map((p) => p.name), ["사과", "딸기"]);
+    assert.deepEqual(laneQueue(veg, products, 3).map((p) => p.name), ["배추"]);
+    assert.deepEqual(laneQueue(rising, products, 3).map((p) => p.name), ["딸기", "사과", "배추"]);
   });
 
-  it("일을 끝내면 완료 이벤트를 내고 다음 일로 넘어간다", () => {
-    const start: TeamState = { ...initialTeam(), bots: initialTeam().bots.map((b) => ({ ...b, progress: 95 })) };
-    const { state, events } = stepTeam(start, always(0.99));
-    assert.equal(state.done, AI_TEAM.length);
-    assert.ok(events.some((e) => e.text === botOf("trend").tasks[0].done));
-    assert.ok(state.bots.every((b) => b.task === 1 && b.progress === 0 && b.phase === "work"));
+  it("실시간 검색이 없으면 제철 품목으로 돈다", () => {
+    const season: Product[] = [
+      { name: "사과", category: "과일", inSeason: true, trend: null },
+      { name: "수박", category: "과일", inSeason: false, trend: null },
+    ];
+    assert.deepEqual(laneQueue(fruit, season, 3).map((p) => p.name), ["사과"]);
+    assert.equal(stageText(0, season[0], { farm: undefined, price: undefined }), "'사과' 지금 제철이에요");
   });
 
-  it("가기 → 전달 → 복귀 → 일 순서로 돌고, 한 동료에게 둘이 동시에 가지 않는다", () => {
-    let state = initialTeam();
-    const rand = sequence(0.99, 0, 0.1);
-    const phases = new Set<string>();
-    for (let t = 0; t < 60; t++) {
-      state = stepTeam(state, rand).state;
-      const targets = state.bots.filter((b) => b.to).map((b) => b.to);
-      assert.equal(new Set(targets).size, targets.length, "같은 동료를 둘이 찾아감");
-      for (const b of state.bots) {
-        phases.add(b.phase);
-        if (b.to) assert.notEqual(b.to, b.id);
-      }
+  it("포착 → 산지 → 시세 → 담기를 거쳐 다음 품목으로 넘어가고, 담을 때마다 1건", () => {
+    const queues = [[products[0], products[1]], [], []];
+    const start: LineState = { lanes: [{ cursor: 0, stage: 0, wait: 1 }, ...initialLine().lanes.slice(1)], done: 0 };
+    const stages: number[] = [];
+    let state = start;
+    const events = [];
+    for (let t = 0; t < STAGE_TICKS * STAGES.length * 2; t++) {
+      const next = stepLine(state, queues);
+      state = next.state;
+      events.push(...next.events);
+      stages.push(state.lanes[0].stage);
     }
-    assert.deepEqual([...phases].sort(), ["back", "go", "meet", "work"]);
+    assert.deepEqual([...new Set(stages)], [1, 2, 3, 0]);
+    assert.deepEqual(events.map((e) => e.product.name), ["사과", "딸기"]);
+    assert.equal(state.done, 2);
+    assert.deepEqual(state.lanes.slice(1), start.lanes.slice(1), "품목 없는 라인은 그대로");
   });
 
-  it("방문 중엔 상대 책상 옆, 복귀하면 자기 책상", () => {
-    const s = { ...initialTeam().bots[0], phase: "meet" as const, to: "detail" as const, say: "안녕" };
-    assert.deepEqual(positionOf(s), { x: botOf("detail").desk.x - 10, y: botOf("detail").desk.y });
-    assert.deepEqual(positionOf({ ...s, phase: "back" }), botOf("trend").desk);
+  it("오래 돌려도 커서가 줄 안에 있다", () => {
+    const queues = LANES.map((lane) => laneQueue(lane, products, 3));
+    const { state, events } = run(initialLine(), 500, queues);
+    state.lanes.forEach((s, i) => assert.ok(s.cursor < queues[i].length && s.stage <= 3));
+    assert.equal(state.done, events.length);
   });
 
-  it("찾아온 동료가 있으면 대답 말풍선을 띄운다", () => {
-    const bots = initialTeam().bots.map((b) => (b.id === "trend" ? { ...b, phase: "meet" as const, to: "detail" as const, say: "급상승!" } : b));
-    assert.equal(bubbleOf(bots[0], bots), "급상승!");
-    assert.match(bubbleOf(bots.find((b) => b.id === "detail")!, bots), /받았어요/);
+  it("도매 시세를 먼저 찾고, 품목명 앞부분이 정확히 같아야 한다", () => {
+    const items = [price({ cls: "소매", unit: "1개", today: 3000 }), price({}), price({ name: "사과대추", today: 9000 })];
+    assert.deepEqual(findPrice("사과", items), { cls: "도매", unit: "10kg", price: 50000, monthChange: 0.25 });
+    assert.equal(findPrice("배", items), null);
   });
 
-  it("오래 돌려도 상태가 망가지지 않는다", () => {
-    const state = run(initialTeam(), 500, sequence(0.3, 0.7, 0.1, 0.9, 0.5));
-    assert.equal(state.bots.length, AI_TEAM.length);
-    for (const b of state.bots) assert.ok(b.progress >= 0 && b.progress < 100 && b.task < botOf(b.id).tasks.length);
+  it("단계별 말풍선 — 불러오는 중·데이터 없음·실제 값", () => {
+    const apple = products[0];
+    assert.equal(stageText(0, apple, { farm: undefined, price: undefined }), "'사과' 검색 관심도 80 · 4주 대비 +10%");
+    assert.match(stageText(1, apple, { farm: undefined, price: undefined }), /찾는 중/);
+    assert.match(stageText(1, apple, { farm: null, price: undefined }), /직접 찾기/);
+    assert.equal(stageText(1, apple, { farm: { total: 1463, regions: 120, topRegion: "경북 청송군" }, price: undefined }), "경북 청송군 등 120개 시군구 · 산지 1,463곳");
+    assert.equal(stageText(2, apple, { farm: null, price: { cls: "도매", unit: "10kg", price: 50000, monthChange: 0.25 } }), "도매 10kg 50,000원 · 한 달 ▲25%");
+    assert.match(stageText(3, apple, { farm: null, price: null }), /담았어요/);
+    assert.equal(productIcon(apple), "🍎");
+    assert.equal(productIcon(product("고등어", "수산", 1, 0)), "🐟");
   });
 });
