@@ -131,33 +131,6 @@ export interface LedgerEntry {
   source: "manual" | "orders";
 }
 
-/** 소싱 후보 평가표의 손으로 매기는 점수 (1~5, 높을수록 좋음) */
-export interface SourcingManualScores {
-  /** 경쟁이 약할수록 높게 */
-  competition: number;
-  /** 파손·변질 위험이 낮을수록 높게 */
-  safety: number;
-  /** 공급처 물량·품질이 안정적일수록 높게 */
-  supply: number;
-}
-
-export interface SourcingCandidate {
-  id: string;
-  name: string;
-  category: SeasonCategory;
-  supplyPrice: number;
-  salePrice: number;
-  /** 셀러부담 택배비 + 포장비 */
-  extraCost: number;
-  channelId: ChannelId;
-  taxFree: boolean;
-  /** 월간 검색수 (네이버 검색광고, 불러오지 않았으면 null) */
-  monthlySearch: number | null;
-  scores: SourcingManualScores;
-  note: string;
-}
-
-
 export type SeasonCategory = "과일" | "채소" | "수산" | "축산" | "가공";
 
 export interface SeasonItem {

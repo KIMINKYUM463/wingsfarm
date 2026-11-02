@@ -5,8 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Badge, Card, EmptyState, Notice, PageHeader, Select, Table, Tabs, TextInput } from "@/components/ui";
 import { num } from "@/lib/format";
 import { errorMessage } from "@/lib/http";
-import { CATEGORY_ICON, PRICE_ALERT_RATE, changeRate, matchSkuPrices, priceIcon, splitItemName, type KamisPrice, type KamisResponse } from "@/lib/kamis";
-import { useAppStore } from "@/store/useAppStore";
+import { CATEGORY_ICON, PRICE_ALERT_RATE, changeRate, priceIcon, splitItemName, type KamisPrice, type KamisResponse } from "@/lib/kamis";
 
 const CLS_TABS = [
   { id: "도매", label: "🏭 도매 · 공급가 흐름" },
@@ -105,7 +104,6 @@ function SetupGuide() {
 }
 
 export default function PricesPage() {
-  const skus = useAppStore((s) => s.skus);
   const [data, setData] = useState<KamisResponse | null>(null);
   const [failed, setFailed] = useState("");
   const [cls, setCls] = useState<Cls>("도매");
@@ -121,7 +119,6 @@ export default function PricesPage() {
   }, []);
 
   const items = data?.items ?? [];
-  const linked = matchSkuPrices(skus, items);
   const clsItems = items.filter((i) => i.cls === cls);
   const categories = [...new Set(clsItems.map((i) => i.category).filter(Boolean))];
   const surging = clsItems.filter((i) => (monthRate(i) ?? 0) >= PRICE_ALERT_RATE).length;
@@ -155,60 +152,6 @@ export default function PricesPage() {
             <SummaryTile icon="📉" label="한 달 새 10%↓ 급락" value={`${falling}개`} tone="text-sky-600" hint="내린 순으로 보기" active={sort === "down"} onClick={() => setSort("down")} />
             <SummaryTile icon="🗓️" label="조사일" value={latestDate === "당일" ? "오늘" : (latestDate ?? "-")} hint={updatedTime && `${updatedTime} 갱신 · 3시간마다`} />
           </div>
-
-          <Card title="⭐ 내 상품과 같은 품목">
-            {linked.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-4 text-center">
-                <span className="text-3xl" aria-hidden>
-                  🔗
-                </span>
-                <p className="text-sm text-stone-500">상품명에 시세 품목명(예: 사과, 배, 감귤, 고구마)이 들어 있으면 자동으로 연결돼요.</p>
-                <Link href="/settings" className="text-sm font-medium text-emerald-700 hover:underline">
-                  설정에서 내 상품 등록하기 →
-                </Link>
-              </div>
-            ) : (
-              <Table>
-                <thead>
-                  <tr>
-                    <th>내 상품</th>
-                    <th>도매 품목</th>
-                    <th className="text-right">최근가</th>
-                    <th className="text-right">1개월 전 대비</th>
-                    <th className="text-right">1년 전 대비</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {linked.map(({ sku, price, monthChange }) => (
-                    <tr key={sku.id}>
-                      <td>
-                        <span className="font-medium text-stone-800">{sku.productName}</span> <span className="text-xs text-stone-400">{sku.optionName}</span>
-                      </td>
-                      <td>
-                        <ItemName item={price} />
-                      </td>
-                      <td className="text-right font-semibold tabular-nums">{num(price.today ?? 0)}원</td>
-                      <td className="text-right">
-                        <Change rate={monthChange} />
-                      </td>
-                      <td className="text-right">
-                        <Change rate={changeRate(price.today, price.yearAgo)} />
-                      </td>
-                      <td className="whitespace-nowrap text-right">
-                        {(monthChange ?? 0) >= PRICE_ALERT_RATE && (
-                          <Link href="/margin?tab=board" className="text-xs font-medium text-rose-600 hover:underline">
-                            인상 대비 마진 점검 →
-                          </Link>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
-          </Card>
-
           <Card
             title={
               <span className="flex items-center gap-2">

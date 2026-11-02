@@ -77,7 +77,6 @@ export const ROADMAP: RoadmapStage[] = [
     steps: [
       { id: "prod-trend", title: "트렌드·제철 보기", detail: "대시보드의 '지금 소싱하면 좋은 품목'과 제철 캘린더에서 후보를 3개 이상 고르세요.", href: "/" },
       { id: "prod-farm", title: "산지 찾기", detail: "전국 산지 지도에서 후보 품목을 고르면 인증 농가·산지유통센터가 많은 지역과 공개 연락처가 나옵니다.", href: "/farm-map" },
-      { id: "prod-score", title: "소싱 평가표로 비교", detail: "마진·시즌·검색수요·파손 위험을 점수로 비교해 1개를 고릅니다.", href: "/sourcing" },
       { id: "prod-price", title: "도매 시세 확인", detail: "공급가가 시세보다 비싸지 않은지, 요즘 시세가 오르는 중인지 봅니다.", href: "/prices" },
       { id: "prod-margin", title: "옵션·판매가 설계 (역마진 금지)", detail: "2·3·5kg 옵션별 권장가와 옵션명을 만들고, 광고비·CS 적립까지 넣어도 남는지 확인하세요.", href: "/margin?tab=options" },
     ],

@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Badge, Button, Modal } from "@/components/ui";
-import { SourcingForm, emptyCandidate } from "@/components/sourcing/SourcingForm";
-import { SEASON_ITEMS } from "@/lib/data/season";
+import { Badge, Button } from "@/components/ui";
 import { FARM_SOURCES, UNLOCATED, filterParams, regionLabel, type FarmFilter, type FarmRegionResponse, type FarmSite, type RegionStat } from "@/lib/farmMap";
 import { num } from "@/lib/format";
 import { errorMessage } from "@/lib/http";
-import { findSeasonItem } from "@/lib/season";
-import { useAppStore } from "@/store/useAppStore";
-import type { SourcingCandidate } from "@/types";
 
 const SOURCE_TONE = { gap: "good", eco: "info", apc: "warn" } as const;
 const sourceShort = (id: FarmSite["source"]) => FARM_SOURCES.find((s) => s.id === id)?.short ?? id;
@@ -53,8 +48,6 @@ export function RegionRanking({ regions, unlocated, onSelect }: { regions: Regio
 export function RegionDetail({ code, filter, onClose }: { code: string; filter: FarmFilter; onClose: () => void }) {
   const [data, setData] = useState<FarmRegionResponse | null>(null);
   const [failed, setFailed] = useState("");
-  const [candidate, setCandidate] = useState<SourcingCandidate | null>(null);
-  const channels = useAppStore((s) => s.channels);
   const query = `${filterParams(filter)}&code=${encodeURIComponent(code)}`;
 
   useEffect(() => {
@@ -76,20 +69,6 @@ export function RegionDetail({ code, filter, onClose }: { code: string; filter: 
 
   const current = data?.code === code ? data : null;
 
-  const toCandidate = (site: FarmSite) => {
-    const item = (filter.item || site.items[0]) ?? "";
-    const season = findSeasonItem(item, SEASON_ITEMS);
-    setCandidate({
-      ...emptyCandidate(channels[0]?.id ?? ""),
-      name: item,
-      category: season?.category ?? "과일",
-      scores: { competition: 3, safety: 3, supply: site.source === "apc" || site.farms >= 10 ? 4 : 3 },
-      note: [`산지: ${site.name} (${regionLabel(site.region)})`, site.phone && `연락처: ${site.phone}`, `${site.cert}${site.validUntil ? ` · ${site.validUntil}까지` : ""}`]
-        .filter(Boolean)
-        .join("\n"),
-    });
-  };
-
   return (
     <div>
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -104,17 +83,14 @@ export function RegionDetail({ code, filter, onClose }: { code: string; filter: 
       {failed && <p className="text-sm text-rose-600">{failed}</p>}
       <ul className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
         {current?.sites.map((site) => (
-          <SiteCard key={site.id} site={site} highlight={filter.item} onCandidate={() => toCandidate(site)} />
+          <SiteCard key={site.id} site={site} highlight={filter.item} />
         ))}
       </ul>
-      <Modal wide open={candidate !== null} title="소싱 후보로 평가하기" onClose={() => setCandidate(null)}>
-        {candidate && <SourcingForm initial={candidate} onDone={() => setCandidate(null)} />}
-      </Modal>
     </div>
   );
 }
 
-function SiteCard({ site, highlight, onCandidate }: { site: FarmSite; highlight: string; onCandidate: () => void }) {
+function SiteCard({ site, highlight }: { site: FarmSite; highlight: string }) {
   const where = site.region ? regionLabel(site.region) : site.address.split(" ").slice(0, 3).join(" ");
   const search = encodeURIComponent(`${site.name} ${where}`);
   const facts = [
@@ -160,9 +136,6 @@ function SiteCard({ site, highlight, onCandidate }: { site: FarmSite; highlight:
         <a href={`https://map.naver.com/p/search/${search}`} target="_blank" rel="noreferrer" className="text-stone-600 hover:underline">
           지도
         </a>
-        <button type="button" onClick={onCandidate} className="ml-auto font-medium text-emerald-700 hover:underline">
-          소싱 후보로 평가 →
-        </button>
       </div>
     </li>
   );

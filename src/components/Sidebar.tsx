@@ -23,7 +23,6 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/keywords", label: "키워드 분석", short: "키워드", icon: "🔍" },
       { href: "/season", label: "제철·콘텐츠 캘린더", short: "제철", icon: "🍑" },
-      { href: "/sourcing", label: "소싱 평가표", short: "소싱", icon: "⚖️" },
       { href: "/prices", label: "도매 시세", short: "시세", icon: "📈" },
       { href: "/farm-map", label: "전국 산지 지도", short: "산지", icon: "🗺️" },
     ],

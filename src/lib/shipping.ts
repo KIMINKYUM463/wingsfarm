@@ -97,7 +97,7 @@ export interface PrepStep {
 
 /** 명절 선물 시즌 준비 일정 — 선물세트 상세페이지 가이드·택배 특수기 운영을 기준으로 정리 */
 export const HOLIDAY_PREP_STEPS: PrepStep[] = [
-  { id: "plan", daysBefore: 45, title: "선물세트 구성·공급 물량 확정", hint: "공급처와 명절 물량·단가·선물 포장 가능 여부를 먼저 확정", href: "/sourcing" },
+  { id: "plan", daysBefore: 45, title: "선물세트 구성·공급 물량 확정", hint: "공급처와 명절 물량·단가·선물 포장 가능 여부를 먼저 확정" },
   { id: "price", daysBefore: 40, title: "선물세트 가격·옵션 설계", hint: "보자기·쇼핑백 등 포장비를 원가에 넣고 역마진 확인", href: "/margin?tab=options" },
   { id: "page", daysBefore: 35, title: "선물용 상세페이지·썸네일", hint: "전체 구성·수량·실제 포장 사진, 누구에게 좋은 선물인지 첫 화면에", href: "/detail-page" },
   { id: "check", daysBefore: 32, title: "등록 전 검수 (원산지·고시·과장 표현)", hint: "선물세트는 구성품별 원산지·소비기한을 빠짐없이", href: "/listing-check" },

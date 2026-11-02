@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Channel, ChannelId, ClaimRecord, CostDefaults, LedgerEntry, Sku, SourcingCandidate, Supplier } from "@/types";
+import type { Channel, ChannelId, ClaimRecord, CostDefaults, LedgerEntry, Sku, Supplier } from "@/types";
 import { DEFAULT_CHANNELS } from "@/lib/data/channels";
 import { DEFAULT_HOLIDAYS } from "@/lib/data/holidays";
 import { DEFAULT_COSTS, DEFAULT_CS_POLICY } from "@/lib/data/defaults";
@@ -10,7 +10,7 @@ import type { CsTone } from "@/lib/csAi";
 import { toDateKey } from "@/lib/format";
 
 const RECENT_KEYWORD_LIMIT = 12;
-const STORE_VERSION = 6;
+const STORE_VERSION = 7;
 
 export interface AppData {
   channels: Channel[];
@@ -27,7 +27,6 @@ export interface AppData {
   workingProduct: string;
   ledger: LedgerEntry[];
   claims: ClaimRecord[];
-  sourcing: SourcingCandidate[];
 }
 
 interface AppActions {
@@ -54,8 +53,6 @@ interface AppActions {
   removeLedgerEntry: (id: string) => void;
   upsertClaim: (claim: ClaimRecord) => void;
   removeClaim: (id: string) => void;
-  upsertSourcing: (candidate: SourcingCandidate) => void;
-  removeSourcing: (id: string) => void;
   importData: (data: AppData) => void;
   resetAll: () => void;
 }
@@ -73,13 +70,12 @@ const initialData = (): AppData => ({
   workingProduct: "",
   ledger: [],
   claims: [],
-  sourcing: [],
 });
 
 /** v1까지 기본 탑재됐던 샘플 데이터의 ID (사용자가 만든 항목은 UUID라 겹치지 않음) */
 const SAMPLE_ID = /^(sku-|sup-)/;
-/** v3에서 삭제된 기능의 데이터. claims는 v6에서 새 형식으로 다시 생겨서 v6 미만 데이터만 버린다 */
-const REMOVED_KEYS = ["orderLogs"];
+/** 삭제된 기능의 데이터 (orderLogs: v3, sourcing: v7). claims는 v6에서 새 형식으로 다시 생겨서 v6 미만 데이터만 버린다 */
+const REMOVED_KEYS = ["orderLogs", "sourcing"];
 
 const withoutRemovedKeys = (data: AppData) => Object.fromEntries(Object.entries(data).filter(([key]) => !REMOVED_KEYS.includes(key))) as AppData;
 
@@ -92,7 +88,6 @@ function migrateData(data: AppData, version: number): AppData {
     workingProduct: cleaned.workingProduct ?? "",
     ledger: cleaned.ledger ?? [],
     claims: version < 6 ? [] : (cleaned.claims ?? []),
-    sourcing: cleaned.sourcing ?? [],
   };
   return version < 2 ? { ...filled, suppliers: keep(filled.suppliers), skus: keep(filled.skus) } : filled;
 }
@@ -194,10 +189,6 @@ export const useAppStore = create<AppData & AppActions>()(
 
       removeClaim: (id) => set((s) => ({ claims: s.claims.filter((x) => x.id !== id) })),
 
-      upsertSourcing: (candidate) => set((s) => ({ sourcing: upsertById(s.sourcing, candidate) })),
-
-      removeSourcing: (id) => set((s) => ({ sourcing: s.sourcing.filter((x) => x.id !== id) })),
-
       importData: (data) => set(migrateData({ ...initialData(), ...data }, STORE_VERSION)),
 
       resetAll: () => set(initialData()),
@@ -223,5 +214,4 @@ export const pickAppData = (s: AppData): AppData => ({
   workingProduct: s.workingProduct ?? "",
   ledger: s.ledger ?? [],
   claims: s.claims ?? [],
-  sourcing: s.sourcing ?? [],
 });
