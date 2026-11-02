@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Tabs } from "@/components/ui";
-import { analyzeAdReport, type ReportPeriod } from "@/lib/adInsights";
+import { createFollowup, evaluateFollowup, reportSnapshot, samePeriod } from "@/lib/adFollowup";
+import { analyzeAdReport, type AdAction, type ReportPeriod } from "@/lib/adInsights";
 import { groupRows, type AdField, type AdRow, type BreakEvenOf } from "@/lib/coupangAds";
-import { num, won } from "@/lib/format";
+import { num, toDateKey, uid, won } from "@/lib/format";
+import { useAppStore } from "@/store/useAppStore";
 import { ActionPlan } from "./ActionPlan";
 import { AdHero } from "./AdHero";
 import { BehaviorPanel } from "./BehaviorPanel";
+import { FollowupPanel } from "./FollowupPanel";
 import { KeywordPanel } from "./KeywordPanel";
 import { Panel, SectionHeader, profitText, rateText, roasText } from "./parts";
 import { PlacementPanel } from "./PlacementPanel";
@@ -28,15 +31,43 @@ interface Props {
   settings: ReactNode;
 }
 
-/** 광고 보고서 정밀 분석: 등급·돈 → 할 일 → 지면·고객 → 상품 → 키워드 → 기간·캠페인 */
+/** 광고 보고서 정밀 분석: 등급·돈 → (지난 조치 결과) → 할 일 → 지면·고객 → 상품 → 키워드 → 기간·캠페인 */
 export function AdReport({ rows, fields, fileName, window, period, breakEvenOf, costMultiplier, settings }: Props) {
   const analysis = useMemo(() => analyzeAdReport(rows, fields, { breakEvenOf, costMultiplier, minClicks: MIN_CLICKS }), [rows, fields, breakEvenOf, costMultiplier]);
+  const followups = useAppStore((s) => s.adFollowups);
+  const reports = useAppStore((s) => s.adReports);
+  const addAdFollowup = useAppStore((s) => s.addAdFollowup);
+  const removeAdFollowup = useAppStore((s) => s.removeAdFollowup);
+  const saveAdReport = useAppStore((s) => s.saveAdReport);
+  const removeAdReport = useAppStore((s) => s.removeAdReport);
+
+  // 올린 보고서는 추이용으로 요약해 둔다 (같은 기간은 손익분기를 바꿀 때마다 덮어쓴다)
+  useEffect(() => {
+    const snapshot = reportSnapshot(rows, period, breakEvenOf);
+    if (snapshot) saveAdReport(snapshot);
+  }, [rows, period, breakEvenOf, saveAdReport]);
+
+  const views = useMemo(() => followups.map((followup) => ({ followup, result: evaluateFollowup(followup, rows, period) })), [followups, rows, period]);
+  const recorded = useMemo(() => (period ? followups.filter((f) => samePeriod(f.baseline, period)) : []), [followups, period]);
+
+  const record = (action: AdAction) => {
+    const followup = createFollowup(action, { rows, period, breakEvenOf, costMultiplier, doneAt: toDateKey(new Date()), id: uid() });
+    if (followup) addAdFollowup(followup);
+  };
+
+  // 결과가 나온 조치나 추이가 있으면 할 일보다 먼저, 기다리는 조치뿐이면 할 일 뒤에
+  const hasResults = views.some((v) => v.result.after !== null) || reports.length >= 2;
+  const followupPanel = (views.length > 0 || reports.length >= 2) && (
+    <FollowupPanel views={views} reports={reports} period={period} costMultiplier={costMultiplier} onRemove={removeAdFollowup} onRemoveReport={removeAdReport} />
+  );
 
   return (
     <div className="space-y-6">
       <AdHero overview={analysis.overview} period={period} fileName={fileName} window={window} withVat={costMultiplier > 1} />
       {settings}
-      <ActionPlan actions={analysis.actions} period={period} />
+      {hasResults && followupPanel}
+      <ActionPlan actions={analysis.actions} period={period} recorded={recorded} onRecord={record} onUndo={removeAdFollowup} />
+      {!hasResults && followupPanel}
       <PlacementPanel placements={analysis.placements} />
       <BehaviorPanel overview={analysis.overview} timing={analysis.timing} cross={analysis.cross} />
       <ProductMatrix products={analysis.products} />

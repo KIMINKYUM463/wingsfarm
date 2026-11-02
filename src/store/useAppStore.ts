@@ -6,10 +6,12 @@ import type { Channel, ChannelId, CostDefaults, Sku, Supplier } from "@/types";
 import { DEFAULT_CHANNELS } from "@/lib/data/channels";
 import { DEFAULT_COSTS, DEFAULT_CS_POLICY } from "@/lib/data/defaults";
 import type { CsTone } from "@/lib/csAi";
+import { samePeriod, withFollowup, withReport, type AdFollowup, type AdReportSnapshot } from "@/lib/adFollowup";
+import type { ReportPeriod } from "@/lib/adInsights";
 import { toDateKey } from "@/lib/format";
 
 const RECENT_KEYWORD_LIMIT = 12;
-const STORE_VERSION = 8;
+const STORE_VERSION = 9;
 
 export interface AppData {
   channels: Channel[];
@@ -23,6 +25,10 @@ export interface AppData {
   opsChecks: Record<string, boolean>;
   /** 상품명·태그·썸네일·마케팅 화면이 함께 쓰는 "작업 중인 상품" */
   workingProduct: string;
+  /** 광고 분석에서 "실행했어요"로 기록한 조치 (최근 것부터) */
+  adFollowups: AdFollowup[];
+  /** 올린 광고 보고서 요약 (기간 순) */
+  adReports: AdReportSnapshot[];
 }
 
 interface AppActions {
@@ -41,6 +47,10 @@ interface AppActions {
   clearRecentKeywords: () => void;
   toggleOpsCheck: (key: string) => void;
   resetOpsCadence: (periodKey: string, itemIds: string[]) => void;
+  addAdFollowup: (followup: AdFollowup) => void;
+  removeAdFollowup: (id: string) => void;
+  saveAdReport: (snapshot: AdReportSnapshot) => void;
+  removeAdReport: (period: ReportPeriod) => void;
   importData: (data: AppData) => void;
   resetAll: () => void;
 }
@@ -55,6 +65,8 @@ const initialData = (): AppData => ({
   recentKeywords: [],
   opsChecks: {},
   workingProduct: "",
+  adFollowups: [],
+  adReports: [],
 });
 
 /** v1까지 기본 탑재됐던 샘플 데이터의 ID (사용자가 만든 항목은 UUID라 겹치지 않음) */
@@ -78,6 +90,8 @@ function migrateData(data: AppData, version: number): AppData {
     ...cleaned,
     opsChecks: cleaned.opsChecks ?? {},
     workingProduct: cleaned.workingProduct ?? "",
+    adFollowups: cleaned.adFollowups ?? [],
+    adReports: cleaned.adReports ?? [],
   };
   const sampled = version < 2 ? { ...filled, suppliers: keep(filled.suppliers), skus: keep(filled.skus) } : filled;
   return version < 8 ? { ...sampled, suppliers: (sampled.suppliers ?? []).map(slimSupplier), skus: (sampled.skus ?? []).map(slimSku) } : sampled;
@@ -149,6 +163,14 @@ export const useAppStore = create<AppData & AppActions>()(
           return { opsChecks };
         }),
 
+      addAdFollowup: (followup) => set((s) => ({ adFollowups: withFollowup(s.adFollowups, followup) })),
+
+      removeAdFollowup: (id) => set((s) => ({ adFollowups: s.adFollowups.filter((f) => f.id !== id) })),
+
+      saveAdReport: (snapshot) => set((s) => ({ adReports: withReport(s.adReports, snapshot) })),
+
+      removeAdReport: (period) => set((s) => ({ adReports: s.adReports.filter((r) => !samePeriod(r, period)) })),
+
       importData: (data) => set(migrateData({ ...initialData(), ...data }, STORE_VERSION)),
 
       resetAll: () => set(initialData()),
@@ -171,4 +193,6 @@ export const pickAppData = (s: AppData): AppData => ({
   recentKeywords: s.recentKeywords,
   opsChecks: s.opsChecks ?? {},
   workingProduct: s.workingProduct ?? "",
+  adFollowups: s.adFollowups ?? [],
+  adReports: s.adReports ?? [],
 });

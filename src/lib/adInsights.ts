@@ -139,6 +139,9 @@ export function splitProductName(name: string) {
   return { base: base || name, option: [...new Set(rest.filter(Boolean))].join(" · ") };
 }
 
+/** 상품 포트폴리오의 묶음 기준 — 옵션을 뗀 기본 이름 */
+export const productKeyOf = (r: AdRow) => splitProductName(r.product || "(상품명 없음)").base;
+
 export type Quadrant = "star" | "rising" | "leak" | "drain";
 
 export const QUADRANT_META: Record<Quadrant, { label: string; hint: string; tone: "good" | "info" | "loss" | "warn" }> = {
@@ -162,7 +165,7 @@ export interface ProductStat extends ShareGroup {
 }
 
 export function productPortfolio(rows: AdRow[], ctx: AnalysisContext): ProductStat[] {
-  const groups = withShares(group(rows, (r) => splitProductName(r.product || "(상품명 없음)").base, ctx));
+  const groups = withShares(group(rows, productKeyOf, ctx));
   const averageCost = share(sumOf(groups, (g) => g.metrics.cost), groups.length);
   return groups.map((g) => {
     const profitable = (g.profit ?? 0) >= 0;
@@ -313,10 +316,13 @@ export interface AdAction {
   impactLabel?: string;
   items?: string[];
   copy?: { label: string; text: string };
+  /** 조치 대상 키워드·상품(기본 이름) 전체 — 조치 전후 비교의 기준이 된다 */
+  targets?: string[];
 }
 
 const TONE_ORDER: Record<ActionTone, number> = { loss: 0, warn: 1, good: 2, info: 3 };
 const loss = (groups: AdGroup[]) => sumOf(groups, (g) => Math.max(0, -(g.profit ?? 0)));
+const keysOf = (groups: AdGroup[]) => groups.map((g) => g.key);
 const roasText = (g: AdGroup) => (g.metrics.roas === null ? "-" : `${Math.round(g.metrics.roas)}%`);
 
 export interface ActionInput {
@@ -342,6 +348,7 @@ export function actionPlan({ overview, placements, products, keywords, cross }: 
       impactLabel: "아끼는 광고비",
       items: keywords.exclude.slice(0, 8).map((g) => `${g.key} · 클릭 ${g.metrics.clicks}회 · ${won(g.metrics.cost)}`),
       copy: { label: "제외 키워드 복사", text: keywords.exclude.map((g) => g.key).join("\n") },
+      targets: keysOf(keywords.exclude),
     });
   }
 
@@ -355,6 +362,7 @@ export function actionPlan({ overview, placements, products, keywords, cross }: 
       impact: loss(losing),
       impactLabel: "막을 수 있는 손실",
       items: losing.slice(0, 6).map((p) => `${p.key} · ROAS ${roasText(p)} / 손익분기 ${p.breakEven ? Math.round(p.breakEven) : "-"}%`),
+      targets: keysOf(losing),
     });
   }
 
@@ -367,6 +375,7 @@ export function actionPlan({ overview, placements, products, keywords, cross }: 
       impact: loss(keywords.cut),
       impactLabel: "막을 수 있는 손실",
       items: keywords.cut.slice(0, 6).map((g) => `${g.key} · ROAS ${roasText(g)}`),
+      targets: keysOf(keywords.cut),
     });
   }
 
@@ -393,6 +402,7 @@ export function actionPlan({ overview, placements, products, keywords, cross }: 
       impactLabel: "지금 남기는 이익",
       items: keywords.scale.slice(0, 6).map((g) => `${g.key} · ROAS ${roasText(g)} · 주문 ${g.metrics.orders}건`),
       copy: { label: "효자 키워드 복사", text: keywords.scale.map((g) => g.key).join("\n") },
+      targets: keysOf(keywords.scale),
     });
   }
 
@@ -406,6 +416,7 @@ export function actionPlan({ overview, placements, products, keywords, cross }: 
       impact: sumOf(rising, (p) => Math.max(0, p.profit ?? 0)),
       impactLabel: "지금 남기는 이익",
       items: rising.slice(0, 6).map((p) => `${p.key} · ROAS ${roasText(p)}`),
+      targets: keysOf(rising),
     });
   }
 

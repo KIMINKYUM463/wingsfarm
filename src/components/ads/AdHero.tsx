@@ -1,6 +1,6 @@
 import { GRADE_META, perMonth, type Overview, type ReportPeriod } from "@/lib/adInsights";
 import { num, won, wonShort } from "@/lib/format";
-import { RoasMeter, profitText, rateText, roasText } from "./parts";
+import { RoasMeter, dotted, profitText, rateText, roasText } from "./parts";
 
 const GRADE_STYLE = {
   A: "from-emerald-300 to-emerald-500 shadow-[0_0_40px_rgba(52,211,153,0.45)]",
@@ -8,8 +8,6 @@ const GRADE_STYLE = {
   C: "from-amber-200 to-amber-400 shadow-[0_0_32px_rgba(251,191,36,0.4)]",
   D: "from-rose-300 to-rose-500 shadow-[0_0_40px_rgba(244,63,94,0.45)]",
 } as const;
-
-const dotted = (iso: string) => iso.replaceAll("-", ".");
 
 interface Props {
   overview: Overview;

@@ -4,6 +4,8 @@ import { num, percent, wonShort } from "@/lib/format";
 export const roasText = (roas: number | null) => (roas === null ? "-" : `${num(roas)}%`);
 export const rateText = (value: number | null, digits = 1) => (value === null ? "-" : percent(value, digits));
 export const profitText = (value: number | null) => (value === null ? "-" : `${value >= 0 ? "+" : "−"}${wonShort(Math.abs(value))}`);
+/** "2026-11-03" → "2026.11.03" */
+export const dotted = (iso: string) => iso.replaceAll("-", ".");
 
 export const TONE_TEXT = { good: "text-emerald-600", loss: "text-rose-600", warn: "text-amber-600", info: "text-sky-600", default: "text-stone-900" } as const;
 export const TONE_DOT = { good: "bg-emerald-500", loss: "bg-rose-500", warn: "bg-amber-500", info: "bg-sky-500" } as const;
