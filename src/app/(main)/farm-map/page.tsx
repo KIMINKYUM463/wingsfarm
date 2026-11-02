@@ -47,7 +47,7 @@ function SetupGuide({ sources }: { sources: FarmMapResponse["sources"] }) {
         <li>
           프로젝트 폴더 <code className="rounded bg-stone-100 px-1">.env.local</code>에 한 줄 추가: <code className="rounded bg-stone-100 px-1">DATA_GO_KR_KEY=복사한키</code>
         </li>
-        <li>서버를 다시 켜고 이 화면을 열면 전국 데이터를 1~3분 동안 받아요 (그 뒤 7일마다 자동 갱신)</li>
+        <li>서버를 다시 켜고 이 화면을 열면 전국 데이터를 3~5분 동안 받아요 (그 뒤 7일마다 자동 갱신)</li>
       </ol>
       <p className="mt-3 text-xs text-stone-500">키를 막 발급받았으면 포털에 반영되기까지 1시간쯤 걸릴 수 있어요.</p>
     </Card>
@@ -124,7 +124,7 @@ export default function FarmMapPage() {
       {data?.phase === "missingKey" && <SetupGuide sources={data.sources} />}
       {loading && (
         <Notice tone="info" className="mb-4">
-          전국 산지 데이터를 받는 중이에요{data.progress ? ` — ${data.progress}` : ""}. 처음 한 번만 1~3분 걸려요.
+          전국 산지 데이터를 받는 중이에요{data.progress ? ` — ${data.progress}` : ""}. 처음 한 번만 3~5분 걸려요.
         </Notice>
       )}
       {data?.phase === "error" && (

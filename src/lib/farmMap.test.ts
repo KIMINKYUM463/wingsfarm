@@ -8,6 +8,7 @@ import {
   isCurrent,
   matchRegion,
   matchesFilter,
+  parseLooseJson,
   parsePage,
   publicPhone,
   rankSites,
@@ -101,6 +102,36 @@ describe("공공데이터 응답 읽기", () => {
     assert.match(xmlError(xml) ?? "", /인증키가 등록되지 않았어요/);
     assert.equal(xmlError('{"response":{}}'), null);
   });
+
+  it("CDATA로 감싼 XML 오류도 읽는다", () => {
+    const xml = '<?xml version="1.0" encoding="UTF-8"?><RESULT><HEAD><resultCode><![CDATA[30]]></resultCode><resultMsg><![CDATA[SERVICE_KEY_IS_NOT_REGISTERED_ERROR]]></resultMsg></HEAD></RESULT>';
+    assert.match(xmlError(xml) ?? "", /인증키가 등록되지 않았어요/);
+  });
+
+  it("코드 22라도 쪽 크기 초과면 호출 한도와 구분한다", () => {
+    const xml = "<RESULT><HEAD><resultCode><![CDATA[22]]></resultCode><resultMsg><![CDATA[LIMITED_NUMBER_OF_SERVICE_REQUESTS_EXCEEDS_ERROR(PAGE MAX COUNT : 100)]]></resultMsg></HEAD></RESULT>";
+    assert.match(xmlError(xml) ?? "", /PAGE MAX COUNT : 100/);
+  });
+
+  it("값 안의 줄바꿈·이스케이프 안 된 큰따옴표 (품질원 실제 응답 형식)", () => {
+    const text = [
+      '{"DATA":{"ROW":[',
+      "\t\t\t{",
+      '\t\t\t\t"PRDCR_GRP_NM":""Peresvet"  LLC",',
+      '\t\t\t\t"ITEM_NM":"이탈리안\n라이그라스",',
+      '\t\t\t\t"NOTE":"이미 \\"이스케이프\\"된 값",',
+      '\t\t\t\t"RPRSV_NM":"LLP"Mibeko""',
+      "\t\t\t}",
+      "]}}",
+    ].join("\r\n");
+    assert.throws(() => JSON.parse(text));
+    const row = (parseLooseJson(text) as { DATA: { ROW: Record<string, string>[] } }).DATA.ROW[0];
+    assert.equal(row.PRDCR_GRP_NM, '"Peresvet"  LLC');
+    assert.equal(row.ITEM_NM, "이탈리안 라이그라스");
+    assert.equal(row.NOTE, '이미 "이스케이프"된 값');
+    assert.equal(row.RPRSV_NM, 'LLP"Mibeko"');
+    assert.throws(() => parseLooseJson("<html>"));
+  });
 });
 
 describe("행 → 산지", () => {
@@ -167,6 +198,24 @@ describe("행 → 산지", () => {
     assert.equal(apc.phone, "063-538-1213");
     assert.equal(matchRegion(apc.address), "35040");
     assert.equal(fromApcRow({ DIST_CENT_NM: "곤명농협", LAT: "", LOT: "" })?.lat, null);
+  });
+
+  it("실제 응답 형식: 품질원 DATA.ROW, APC 카멜표기 칸", () => {
+    const page = parsePage({
+      HEAD: { resultCode: "00", resultMsg: "NORMAL_SERVICE", totalCount: 13456, numOfRows: 1, pageNo: 1 },
+      DATA: { ROW: [{ CERT_NO: "1029169", PRDCR_SE_VL: "1", PRDCR_GRP_NM: "김동민", ITEM_NM: "대파", GRP_STDG_CD_NM: "경기도 경기 고양시 일산서구 법곳동 ", PRDCR_CNT: "1", CLTVTN_AREA_VL: "15300", CERT_VLD_END_YMD: "2028-10-31" }] },
+    });
+    assert.equal(page.total, 13456);
+    assert.equal(page.rows.length, 1);
+    const gap = fromGapRow(page.rows[0]);
+    assert.equal(gap?.areaM2, 15300);
+    assert.equal(matchRegion(gap?.address ?? ""), "31104");
+
+    const apc = fromApcRow({ distCentNm: "청도농협(1센터)", lctnRoadNmAddr: "경상북도 청도군 청도읍 한내길 170", lat: "35.64554905", lot: "128.7467798", majItemNm: "복숭아, 감", telno: "054-373-3702", mngInstNm: "청도농협", fndnYr: "2014" });
+    assert.equal(apc?.address, "경상북도 청도군 청도읍 한내길 170");
+    assert.deepEqual(apc?.items, ["복숭아", "감"]);
+    assert.equal(apc?.owner, "청도농협");
+    assert.notEqual(matchRegion(apc?.address ?? ""), "");
   });
 
   it("칸 이름이 전혀 다르면 받은 칸을 알려 준다", () => {

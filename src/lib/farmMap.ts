@@ -83,18 +83,46 @@ export function parsePage(json: unknown): ParsedPage {
   if (code && !["00", "0", "000", "INFO-000"].includes(code)) {
     return { rows: [], total: null, error: code === "03" || /NODATA/i.test(message) ? null : `${message || "오류"} (코드 ${code})` };
   }
+  // 표준데이터: response.body.items.item / 품질원 API: DATA.ROW
   const items = findKey(json, "items");
-  const inner = items && typeof items === "object" && !Array.isArray(items) ? (items as Row).item : items;
+  const inner = (items && typeof items === "object" && !Array.isArray(items) ? (items as Row).item : items) ?? findKey(json, "ROW");
   const list = Array.isArray(inner) ? inner : inner && typeof inner === "object" ? [inner] : [];
   const total = Number(str(findKey(json, "totalCount")));
   return { rows: list.filter((r): r is Row => Boolean(r) && typeof r === "object"), total: Number.isFinite(total) && total > 0 ? total : null, error: null };
 }
 
+const CONTROL_CHARS = /[\u0000-\u001f]/g;
+/** 한 줄에 `"KEY":"값",` 하나 — 값 부분만 잡는다 */
+const VALUE_LINE = /^(\s*"[^"]+"\s*:\s*")(.*)("\s*,?\s*)$/;
+
+/**
+ * 품질원 응답은 값 안의 줄바꿈("이탈리안\n라이그라스")과 큰따옴표(""Peresvet" LLC")를 이스케이프하지 않고 보낼 때가 있다.
+ * 제어 문자는 JSON 밖에선 공백과 같으니 공백으로 바꾸고, 그래도 안 되면 한 줄 한 속성 형식을 믿고 값 안의 따옴표를 이스케이프한다.
+ */
+export function parseLooseJson(text: string): unknown {
+  try {
+    return JSON.parse(text.replace(CONTROL_CHARS, " "));
+  } catch {
+    const repaired = text
+      .split(/\r?\n/)
+      .map((line) => line.replace(VALUE_LINE, (_, head: string, value: string, tail: string) => head + value.replace(/\\?"/g, '\\"') + tail))
+      .join("\n");
+    return JSON.parse(repaired.replace(CONTROL_CHARS, " "));
+  }
+}
+
+/** `<name>값</name>` 또는 `<name><![CDATA[값]]></name>` 의 값 */
+function xmlTag(text: string, name: string) {
+  const match = new RegExp(`<${name}>\\s*(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([^<]*))\\s*</${name}>`).exec(text);
+  return (match?.[1] ?? match?.[2])?.trim() || undefined;
+}
+
 /** 인증키가 틀리면 type=json이어도 XML로 온다 */
 export function xmlError(text: string): string | null {
-  const code = /<returnReasonCode>([^<]+)</.exec(text)?.[1] ?? /<resultCode>([^<]+)</.exec(text)?.[1];
-  const msg = /<returnAuthMsg>([^<]+)</.exec(text)?.[1] ?? /<resultMsg>([^<]+)</.exec(text)?.[1] ?? /<errMsg>([^<]+)</.exec(text)?.[1];
+  const code = xmlTag(text, "returnReasonCode") ?? xmlTag(text, "resultCode");
+  const msg = xmlTag(text, "returnAuthMsg") ?? xmlTag(text, "resultMsg") ?? xmlTag(text, "errMsg");
   if (!code && !msg) return null;
+  if (msg?.includes("PAGE MAX COUNT")) return `한 번에 받는 건수가 이 API의 한도를 넘었어요 (${msg.match(/PAGE MAX COUNT : \d+/)?.[0] ?? msg}).`;
   return KEY_ERRORS[code ?? ""] ?? `${msg ?? "오류"}${code ? ` (코드 ${code})` : ""}`;
 }
 
@@ -106,11 +134,14 @@ const KEY_ERRORS: Record<string, string> = {
   "32": "등록되지 않은 IP예요.",
 };
 
+/** LCTN_ROAD_NM_ADDR 와 lctnRoadNmAddr 를 같은 칸으로 본다 */
+const fieldKey = (name: string) => name.replace(/_/g, "").toLowerCase();
+
 /** 정확한 칸 이름 → 없으면 이름 패턴 (exclude에 걸리는 칸은 건너뜀) */
 function field(row: Row, exact: string[], pattern?: RegExp, exclude?: RegExp): string {
   const keys = Object.keys(row);
   for (const name of exact) {
-    const key = keys.find((k) => k.toLowerCase() === name.toLowerCase());
+    const key = keys.find((k) => fieldKey(k) === fieldKey(name));
     if (key && str(row[key])) return str(row[key]);
   }
   if (!pattern) return "";
@@ -164,8 +195,8 @@ export function fromGapRow(row: Row): Omit<FarmSite, "region"> | null {
     phone: "",
     lat: null,
     lng: null,
-    farms: numberOf(field(row, ["REG_FMHS_CNT", "RGST_FMHS_CNT"], /FMHS|FARM.*CNT/i)) ?? 1,
-    areaM2: numberOf(field(row, ["CLTVT_AREA_VL", "CTVT_AR"], /CLTVT|CTVT|AREA/i)),
+    farms: numberOf(field(row, ["REG_FMHS_CNT", "RGST_FMHS_CNT", "PRDCR_CNT"], /FMHS|FARM.*CNT/i)) ?? 1,
+    areaM2: numberOf(field(row, ["CLTVT_AREA_VL", "CLTVTN_AREA_VL", "CTVT_AR"], /CLTVT|CTVT|AREA/i)),
     planQty: numberOf(field(row, ["PRDCTN_PLAN_QTY", "PRDCTN_PLAN_QY"], /PLAN/i)),
     cert: "GAP",
     validUntil: ymd(field(row, ["CERT_VLD_END_YMD", "CRTFC_END_DE"], /END/i)),

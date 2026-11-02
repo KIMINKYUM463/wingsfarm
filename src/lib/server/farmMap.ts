@@ -1,7 +1,8 @@
 /**
  * 전국 산지 지도 데이터 — 공공데이터포털 3종을 전부 받아 `.data/farm-map/sites.json`에 7일 보관한다.
  * 키: 공공데이터포털 일반 인증키 하나(DATA_GO_KR_KEY)로 세 API를 모두 부른다. API마다 "활용신청"은 따로 눌러야 한다.
- * 한 번 받는 데 1~3분(약 50번 호출) — 처음엔 백그라운드로 받고 화면은 진행률을 보여 준다. 기한이 지나면 옛 데이터를 보여 주면서 다시 받는다.
+ * 품질원 API(GAP·친환경)는 한 쪽에 최대 100건이라 한 번 받는 데 약 450번 호출·3~5분 걸린다.
+ * 처음엔 백그라운드로 받고 화면은 진행률을 보여 준다. 기한이 지나면 옛 데이터를 보여 주면서 다시 받는다.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -12,6 +13,7 @@ import {
   fromGapRow,
   isCurrent,
   matchRegion,
+  parseLooseJson,
   parsePage,
   xmlError,
   type FarmSite,
@@ -23,8 +25,7 @@ import {
 const DIR = path.join(/*turbopackIgnore: true*/ process.cwd(), ".data", "farm-map");
 const FILE = path.join(DIR, "sites.json");
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
-const PAGE_SIZE = 1000;
-const MAX_PAGES = 80;
+const MAX_PAGES = 400;
 
 interface SourceConfig {
   id: FarmSource;
@@ -32,8 +33,15 @@ interface SourceConfig {
   url: string;
   /** 활용신청 페이지 */
   applyUrl: string;
+  /** 한 쪽에 받는 건수 (API가 허용하는 최대) */
+  pageSize: number;
+  /** 응답 형식 값 — 품질원 API는 대문자 "JSON"만 받는다 (소문자면 코드 10) */
+  type: "json" | "JSON";
   toSite: (row: Row) => Omit<FarmSite, "region"> | null;
 }
+
+/** 품질원 API: 한 쪽 최대 100건 (넘으면 코드 22 PAGE MAX COUNT) */
+const QUALITY_AGENCY = { pageSize: 100, type: "JSON" } as const;
 
 export const SOURCE_CONFIGS: SourceConfig[] = [
   {
@@ -41,6 +49,7 @@ export const SOURCE_CONFIGS: SourceConfig[] = [
     label: "GAP 인증정보",
     url: "https://apis.data.go.kr/1543145/GAPCERTINFO/getCertDataList",
     applyUrl: "https://www.data.go.kr/data/15141807/openapi.do",
+    ...QUALITY_AGENCY,
     toSite: fromGapRow,
   },
   {
@@ -48,6 +57,7 @@ export const SOURCE_CONFIGS: SourceConfig[] = [
     label: "친환경 인증정보",
     url: "https://apis.data.go.kr/1543145/ECFRDCERTINFO/getCertDataList",
     applyUrl: "https://www.data.go.kr/data/15141827/openapi.do",
+    ...QUALITY_AGENCY,
     toSite: fromEcoRow,
   },
   {
@@ -55,6 +65,8 @@ export const SOURCE_CONFIGS: SourceConfig[] = [
     label: "산지유통센터(APC) 표준데이터",
     url: "https://api.data.go.kr/openapi/tn_pubr_public_agric_dist_cent_api",
     applyUrl: "https://www.data.go.kr/data/15114142/standard.do",
+    pageSize: 1000,
+    type: "json",
     toSite: fromApcRow,
   },
 ];
@@ -95,7 +107,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function fetchPage(config: SourceConfig, page: number) {
   const url = new URL(config.url);
-  url.search = new URLSearchParams({ serviceKey: serviceKey(), pageNo: String(page), numOfRows: String(PAGE_SIZE), type: "json" }).toString();
+  url.search = new URLSearchParams({ serviceKey: serviceKey(), pageNo: String(page), numOfRows: String(config.pageSize), type: config.type }).toString();
   const res = await fetch(url, { signal: AbortSignal.timeout(30_000), cache: "no-store" });
   const text = await res.text();
   const xml = text.trimStart().startsWith("<") ? xmlError(text) : null;
@@ -103,37 +115,57 @@ async function fetchPage(config: SourceConfig, page: number) {
   if (!res.ok) throw new Error(`응답 오류(${res.status})`);
   let json: unknown;
   try {
-    json = JSON.parse(text);
+    json = parseLooseJson(text);
   } catch {
-    throw new Error("JSON이 아닌 응답이 왔어요. 잠시 후 다시 받아 보세요.");
+    throw new Error(`JSON이 아닌 응답이 왔어요: "${text.trim().slice(0, 80)}"`);
   }
   const parsed = parsePage(json);
   if (parsed.error) throw new Error(parsed.error);
   return parsed;
 }
 
+/** 한 쪽이 잠깐 실패하면 한 번 더 */
+async function fetchPageRetry(config: SourceConfig, page: number) {
+  try {
+    return await fetchPage(config, page);
+  } catch {
+    await sleep(1000);
+    return fetchPage(config, page);
+  }
+}
+
+/** 품질원 API는 한 쪽에 4초쯤 걸려 여러 쪽을 동시에 받는다 */
+const CONCURRENCY = 4;
+
 async function loadSource(config: SourceConfig, today: string): Promise<{ status: SourceStatus; sites: FarmSite[] }> {
   const status: SourceStatus = { id: config.id, label: config.label, applyUrl: config.applyUrl, count: 0, error: "" };
   const sites: FarmSite[] = [];
-  try {
-    let pages = 1;
-    for (let page = 1; page <= Math.min(pages, MAX_PAGES); page++) {
-      progress = `${config.label} ${page}/${pages}쪽`;
-      const { rows, total } = await fetchPage(config, page);
-      if (total) pages = Math.ceil(total / PAGE_SIZE);
-      const parsed = rows.map(config.toSite).filter((s) => s !== null);
-      const unknown = describeUnknownShape(rows, parsed.length);
-      if (unknown) throw new Error(unknown);
-      for (const site of parsed) {
-        if (isCurrent(site, today)) sites.push({ ...site, region: matchRegion(site.address) });
-      }
-      if (rows.length < PAGE_SIZE) break;
-      await sleep(250);
+  const collect = (rows: Row[]) => {
+    for (const site of rows.map(config.toSite)) {
+      if (site && isCurrent(site, today)) sites.push({ ...site, region: matchRegion(site.address) });
     }
+  };
+  try {
+    progress = `${config.label} 1쪽`;
+    const first = await fetchPageRetry(config, 1);
+    const unknown = describeUnknownShape(first.rows, first.rows.map(config.toSite).filter(Boolean).length);
+    if (unknown) throw new Error(unknown);
+    collect(first.rows);
+
+    const pages = Math.min(first.total ? Math.ceil(first.total / config.pageSize) : 1, MAX_PAGES);
+    const failed: number[] = [];
+    for (let start = 2; start <= pages; start += CONCURRENCY) {
+      const batch = Array.from({ length: Math.min(CONCURRENCY, pages - start + 1) }, (_, i) => start + i);
+      const results = await Promise.allSettled(batch.map((page) => fetchPageRetry(config, page)));
+      results.forEach((result, i) => (result.status === "fulfilled" ? collect(result.value.rows) : failed.push(batch[i])));
+      progress = `${config.label} ${batch.at(-1)}/${pages}쪽`;
+      await sleep(150);
+    }
+    if (failed.length) status.error = `${pages}쪽 중 ${failed.length}쪽을 받지 못했어요 (${failed.slice(0, 5).join(", ")}${failed.length > 5 ? " 등" : ""}쪽). 나머지는 반영됐어요.`;
   } catch (err) {
     status.error = err instanceof Error ? err.message : String(err);
-    console.error(`[farm-map] ${config.id}`, status.error);
   }
+  if (status.error) console.error(`[farm-map] ${config.id}`, status.error);
   status.count = sites.length;
   return { status, sites };
 }
