@@ -23,6 +23,8 @@ export interface ShapeTokens {
   stamp: 'seal' | 'burst';
   /** 색 띠 윗변: 곧게 / 물결 */
   edge: 'straight' | 'wave';
+  /** 메인 문구 마지막 줄 아래쪽에 형광펜처럼 포인트 색을 깐다 */
+  marker: boolean;
 }
 
 export interface DesignTokens {
@@ -63,6 +65,9 @@ const BASE_SURFACES: Record<SectionLayout, Surface> = {
   cta: 'main',
   contact: 'bgDark',
   notice: 'white',
+  /** 첫 화면 바로 아래 진한 색 띠 — 핵심 정보가 한 번에 눈에 들어오게 */
+  facts: 'main',
+  checklist: 'bgLight',
 };
 
 const fonts = (id: DesignStyleId) => ({ heading: designStyleOption(id).headingFont, body: 'Pretendard' });
@@ -78,7 +83,7 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: false,
     radius: { card: 28, image: 24, chip: 32 },
     card: 'fill',
-    shape: { shadow: 'soft', photo: 'even', frame: 'none', ornament: 'orb', stamp: 'seal', edge: 'straight' },
+    shape: { shadow: 'soft', photo: 'even', frame: 'none', ornament: 'orb', stamp: 'seal', edge: 'straight', marker: false },
     hero: 'stack',
     points: 'stack',
     surfaces: { ...BASE_SURFACES, hero: 'white', visual: 'white', points: 'white', size: 'white', steps: 'white', badges: 'white', story: 'bgLight', contact: 'bgLight' },
@@ -93,7 +98,7 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: false,
     radius: { card: 32, image: 40, chip: 32 },
     card: 'fill',
-    shape: { shadow: 'none', photo: 'organic', frame: 'none', ornament: 'blob', stamp: 'seal', edge: 'wave' },
+    shape: { shadow: 'none', photo: 'organic', frame: 'none', ornament: 'blob', stamp: 'seal', edge: 'wave', marker: true },
     hero: 'imageTop',
     points: 'zigzag',
     surfaces: { ...BASE_SURFACES, table: 'bgLight', notice: 'bgLight' },
@@ -108,10 +113,10 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: true,
     radius: { card: 0, image: 0, chip: 0 },
     card: 'outline',
-    shape: { shadow: 'none', photo: 'even', frame: 'line', ornament: 'diamond', stamp: 'seal', edge: 'straight' },
+    shape: { shadow: 'none', photo: 'even', frame: 'line', ornament: 'diamond', stamp: 'seal', edge: 'straight', marker: false },
     hero: 'overlay',
     points: 'zigzag',
-    surfaces: { ...BASE_SURFACES, hero: 'main', story: 'main', reviews: 'main', points: 'white', grid: 'white', table: 'white', faq: 'white', contact: 'bgLight' },
+    surfaces: { ...BASE_SURFACES, hero: 'main', facts: 'bgLight', story: 'main', reviews: 'main', points: 'white', grid: 'white', table: 'white', faq: 'white', contact: 'bgLight' },
   },
   /** 할인·이벤트: 아주 굵은 제목, 알약 배지, 큰 라운드, 강한 색 대비 */
   pop: {
@@ -123,7 +128,7 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: false,
     radius: { card: 36, image: 36, chip: 40 },
     card: 'fill',
-    shape: { shadow: 'hard', photo: 'even', frame: 'offset', ornament: 'sparkle', stamp: 'burst', edge: 'wave' },
+    shape: { shadow: 'hard', photo: 'even', frame: 'offset', ornament: 'sparkle', stamp: 'burst', edge: 'wave', marker: true },
     hero: 'stack',
     points: 'stack',
     surfaces: { ...BASE_SURFACES, hero: 'bgDark', grid: 'bgDark', badges: 'bgDark', steps: 'bgDark', faq: 'bgDark' },
@@ -138,10 +143,10 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: false,
     radius: { card: 0, image: 0, chip: 0 },
     card: 'stripe',
-    shape: { shadow: 'none', photo: 'even', frame: 'none', ornament: 'none', stamp: 'seal', edge: 'straight' },
+    shape: { shadow: 'none', photo: 'even', frame: 'none', ornament: 'none', stamp: 'seal', edge: 'straight', marker: false },
     hero: 'overlay',
     points: 'bleed',
-    surfaces: { ...BASE_SURFACES, visual: 'white', points: 'white', grid: 'white', size: 'white', steps: 'white', badges: 'white', faq: 'white', compare: 'bgLight' },
+    surfaces: { ...BASE_SURFACES, visual: 'white', points: 'white', grid: 'white', size: 'white', steps: 'white', badges: 'white', faq: 'white', compare: 'bgLight', checklist: 'white' },
   },
 };
 

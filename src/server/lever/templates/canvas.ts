@@ -1,9 +1,9 @@
 import type { DraftCut, DraftPalette } from '@/shared/types/draft';
-import { blobPath, bubblePath, burstPath, diamondPath, sparklePath, type Tail } from '@/shared/lib/shapePaths';
+import { blobPath, bubblePath, burstPath, clippedCirclePath, diamondPath, sparklePath, type Tail } from '@/shared/lib/shapePaths';
 import type { FrameNode } from '../frames/tree';
 import type { PaletteRole } from '../catalog/palette';
 import type { DesignTokens, Surface } from './designStyles';
-import { boxNode, GRAY, imageNode, INK, PAGE_WIDTH, pathNode, textNode, textWidth, WHITE, type BoxOptions, type Shadow, type TextOptions } from './nodes';
+import { boxNode, estimateLines, GRAY, imageNode, INK, PAGE_WIDTH, pathNode, textNode, textWidth, WHITE, type BoxOptions, type Shadow, type TextOptions } from './nodes';
 
 /**
  * 섹션 레이아웃·패턴 템플릿이 함께 쓰는 그리기 도구
@@ -21,8 +21,8 @@ export const ON_DARK_CARD = 'rgba(255, 255, 255, 0.08)';
 export const ON_DARK_LINE = 'rgba(255, 255, 255, 0.24)';
 export const TRANSPARENT = 'rgba(255, 255, 255, 0)';
 
-/** 860px 기준 글자 크기 (휴대폰에서 절반 가까이 줄어드는 것을 감안) */
-export const SIZE = { label: 26, title: 56, heroTitle: 72, sub: 30, itemTitle: 34, body: 30, small: 28, caption: 24, fine: 22 };
+/** 860px 기준 글자 크기 — 360px 휴대폰에서 약 42%로 줄어도 본문이 13px 이상 남게 (본문 32·보조 30·주석 26) */
+export const SIZE = { label: 26, title: 56, heroTitle: 72, sub: 32, itemTitle: 36, body: 32, small: 30, caption: 26, fine: 22 };
 
 /** 사진 위 글자가 읽히도록 아래로 갈수록 짙어지는 막 */
 const SCRIM_STOPS = [0, 'rgba(0, 0, 0, 0.12)', 0.35, 'rgba(0, 0, 0, 0.42)', 1, 'rgba(0, 0, 0, 0.74)'];
@@ -270,7 +270,8 @@ export class Canvas {
     this.ornament(this.y);
     this.label(label);
     const after = subtitle?.trim() ? 22 : 64;
-    this.heading(title, titleSize, { name: 'main_copy', gap: this.t.titleRule ? 28 : after });
+    const main = this.heading(title, titleSize, { name: 'main_copy', gap: this.t.titleRule ? 28 : after });
+    if (main) this.marker(main);
     if (this.t.titleRule) this.rule(after + 6);
     this.text(subtitle, SIZE.sub, { color: this.muted, lineHeight: 1.6, name: 'sub_copy', gap: 64 });
   }
@@ -291,24 +292,53 @@ export class Canvas {
     this.y += 3 + gap;
   }
 
+  /** 사진 위나 반전된 색 띠 안(dark가 바탕과 다를 때) — 장식·형광펜을 그리지 않는다 */
+  private get inverted() {
+    return this.dark !== (this.surface === 'main');
+  }
+
   /**
-   * 섹션 장식 (첫 머리말 위쪽 오른편, 모든 요소 뒤) — 섹션마다 한 번만.
-   * 사진 위나 반전된 색 띠 안(dark가 바탕과 다를 때)에서는 그리지 않는다
+   * 메인 문구 마지막 줄 아래쪽 형광펜 — 줄이 저절로 접히면 어디서 접힐지 몰라 그리지 않는다.
+   * 글자 뒤(같은 자리)에 깔아 글자를 가리지 않는다
+   */
+  private marker(node: FrameNode) {
+    if (!this.t.shape.marker || this.inverted) return;
+    const size = Number(node.fontSize);
+    const width = Number(node.width);
+    const font = String(node.fontFamily);
+    const lines = String(node.text).split('\n');
+    if (lines.some((line) => estimateLines(line, width, size, font) > 1)) return;
+    const lineH = size * Number(node.lineHeight);
+    const w = Math.min(width, textWidth(lines.at(-1)!, size, 0, font) + 20);
+    const x = node.align === 'center' ? Number(node.x) + (width - w) / 2 : Number(node.x) - 10;
+    const top = Number(node.y) + lineH * (lines.length - 1) + lineH * 0.56;
+    this.boxBehind(this.nodes.indexOf(node), x, top, w, Math.round(lineH * 0.34), this.palette.point, {
+      colorVar: 'point',
+      opacity: this.dark ? 0.4 : 0.3,
+      cornerRadius: Math.min(6, this.t.radius.chip),
+      name: 'title_marker',
+    });
+  }
+
+  /**
+   * 섹션 장식 (첫 머리말 오른편, 모든 요소 뒤) — 섹션마다 한 번만.
+   * 원·얼룩은 화면 오른쪽 끝에 걸쳐 잘리게 둬서 얼룩이 아니라 바탕 무늬로 보이게 한다
    */
   private ornament(top: number) {
-    if (this.ornamented || this.dark !== (this.surface === 'main')) return;
+    if (this.ornamented || this.inverted) return;
     this.ornamented = true;
     const paint: Paint = this.dark ? { fill: WHITE } : { fill: this.palette.point, colorVar: 'point' };
     const o = (opacity: number): BoxOptions => ({ colorVar: paint.colorVar, opacity, name: 'deco' });
-    const y = Math.max(0, top - 70);
+    const y = Math.max(0, top - 110);
     switch (this.t.shape.ornament) {
       case 'orb': {
-        const d = 300;
-        this.boxBehind(0, W - d - 20, y, d, d, paint.fill, { ...o(this.dark ? 0.08 : 0.14), cornerRadius: d / 2 });
+        const r = 190;
+        const visible = 230;
+        this.path(clippedCirclePath(r, visible), W - visible, y, visible, r * 2, paint.fill, o(this.dark ? 0.07 : 0.1), 0);
         return;
       }
       case 'blob':
-        this.path(blobPath(340, 300), W - 350, y, 340, 300, paint.fill, o(this.dark ? 0.08 : 0.2), 0);
+        this.path(blobPath(360, 320), W - 360, y, 360, 320, paint.fill, o(this.dark ? 0.07 : 0.14), 0);
         return;
       case 'sparkle':
         this.path(sparklePath(64), W - X - 64, y + 40, 64, 64, paint.fill, o(0.9), 0);

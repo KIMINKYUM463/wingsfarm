@@ -1,10 +1,10 @@
 import 'server-only';
 import pLimit from 'p-limit';
-import { defaultCutSource, sceneIdeas } from '@/shared/lib/draftMedia';
+import { defaultCutSource, sceneIdeas, spreadOwnCuts } from '@/shared/lib/draftMedia';
 import type { DraftAnalysis, DraftInput, DraftPlan, DraftProgress, DraftRecord, DraftSection, PhotoAnalysis } from '@/shared/types/draft';
 import { CATEGORIES, findCategory } from '../catalog/categories';
 import { NATURAL_COPY_RULES } from '../copyStyle';
-import { derivePalette, normalizePalette, palettePresets, TONE_PRESETS } from '../catalog/palette';
+import { derivePalette, normalizePalette, palettePresets, tintNeutralBackgrounds, TONE_PRESETS } from '../catalog/palette';
 import { defaultFlow, findSectionType, fitLength, LENGTH_TARGET, suggestableTypes, withAiNotice, type SectionType } from '../catalog/sections';
 import {
   allocatableFacts,
@@ -38,6 +38,8 @@ const COPY_RULES = `규칙:
 - 근거 자료에 있는 사실만 쓴다. 수치·소재·원산지·인증·효능·가격·순위·후기·산지직송 여부는 자료에 없으면 절대 쓰지 않는다.
 - 문장마다 evidence에 근거 id를 단다(예: ["feature:2"]). 사진에서 본 사실은 "photo:번호", 감성 표현처럼 사실 주장이 없는 문장은 ["general"].
 - 판매자가 채워야 하는 정보(배송일·연락처 등)가 자료에 없으면 "[입력 필요]"라고 쓴다.
+- 모르는 값을 "산지 정보 확인", "중량 확인", "상세 정보 참고"처럼 정보 없는 말로 채우지 않는다. 자료에 없는 항목은 아예 빼고, 꼭 있어야 하는 칸만 "[입력 필요]".
+- 형용사보다 숫자·지명·방법을 앞에 둔다("신선한 사과"보다 "새벽 수확 후 당일 발송").
 - 다른 상품을 깎아내리지 않는다. 의학적 효능을 단정하지 않는다.
 - 메인 문구는 짧고 구체적으로(공백 포함 22자 이내, 필요하면 \\n으로 두 줄). 픽셀·글꼴은 지정하지 않는다.
 
@@ -112,7 +114,7 @@ ${evidence}
   const fallback = palettePresets(input.categoryId)[0];
   return {
     analysis,
-    palette: normalizePalette(result.palette, fallback.palette),
+    palette: tintNeutralBackgrounds(normalizePalette(result.palette, fallback.palette)),
     paletteReason: String(result.paletteReason ?? '').slice(0, 120) || fallback.reason,
   };
 }
@@ -373,6 +375,16 @@ async function reviseRepeats(gemini: GeminiClient, ctx: SectionContext, types: S
   return next.map((s, i) => (remaining.has(i) ? { ...s, warnings: [...new Set([...s.warnings, `반복: ${remaining.get(i)!.join(' / ')}`])] } : s));
 }
 
+/** 페이지 전체 컷을 이어서 보고 같은 사진이 줄줄이 반복되지 않게 나눈다 */
+function spreadSectionCuts(sections: DraftSection[], photoCount: number) {
+  const spread = spreadOwnCuts(
+    sections.flatMap((s) => s.cuts),
+    photoCount,
+  );
+  let next = 0;
+  return sections.map((s) => ({ ...s, cuts: s.cuts.map(() => spread[next++]) }));
+}
+
 // ===== 기획 Job =====
 
 /** "기존 페이지 활용하기": 원본 페이지의 섹션 구성·색은 그대로, 내용만 새 상품으로 */
@@ -419,7 +431,7 @@ async function runPlan(draftId: string) {
     const ctx = sectionContext(input, analyzed.analysis);
     const written = await writeSections(draftId, gemini, ctx, types, outline);
     await setProgress(draftId, { step: 'copy', message: '섹션끼리 겹치는 말을 다듬고 있어요' });
-    const sections = await reviseRepeats(gemini, ctx, types, outline, written, facts);
+    const sections = spreadSectionCuts(await reviseRepeats(gemini, ctx, types, outline, written, facts), input.productImagePaths.length);
     const plan: DraftPlan = {
       sections,
       palette: reuse?.palette ?? analyzed.palette,

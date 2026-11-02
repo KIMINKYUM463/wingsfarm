@@ -1,7 +1,7 @@
 import { derivePalette, TONE_PRESETS } from '@/shared/lib/palette';
 import type { DraftPalette as Palette, PalettePreset as PaletteInfo, PaletteRole } from '@/shared/types/draft';
 
-export { derivePalette, normalizePalette, PALETTE_ROLES, TONE_PRESETS } from '@/shared/lib/palette';
+export { derivePalette, normalizePalette, PALETTE_ROLES, tintNeutralBackgrounds, TONE_PRESETS } from '@/shared/lib/palette';
 export type { Palette, PaletteInfo, PaletteRole };
 
 /** 카테고리별 기본 추천 톤 (사진 분석이 실패했을 때·"다른 조합 보기" 첫 화면) */

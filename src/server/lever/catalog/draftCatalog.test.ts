@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { findUnsupportedClaims } from './factGuard.ts';
-import { countPaletteNodes, derivePalette, luminance, normalizePalette, recolorTree, TONE_PRESETS } from '../../../shared/lib/palette.ts';
+import { countPaletteNodes, derivePalette, luminance, normalizePalette, recolorTree, tintNeutralBackgrounds, TONE_PRESETS } from '../../../shared/lib/palette.ts';
 import { defaultFlow, fitLength, LENGTH_TARGET, sectionTypesFor, suggestableTypes, withAiNotice } from './sections.ts';
 import { estimateLines } from '../templates/nodes.ts';
 
@@ -41,6 +41,15 @@ describe('색 팔레트', () => {
   it('형식이 틀린 색은 대표색 기준으로 다시 계산한다', () => {
     const p = normalizePalette({ main: '#1F5C99', point: 'red' }, derivePalette('#000000'));
     assert.equal(p.point, derivePalette('#1F5C99').point);
+  });
+
+  it('AI가 고른 회색 바탕은 대표색을 옅게 섞은 바탕으로 바꾸고, 색 있는 바탕·무채색 대표색은 그대로 둔다', () => {
+    const brown = { main: '#5C3A23', point: '#8B593E', bgLight: '#F8F8F8', bgDark: '#FBF1E6' };
+    const tinted = tintNeutralBackgrounds(brown);
+    assert.equal(tinted.bgLight, derivePalette('#5C3A23').bgLight);
+    assert.equal(tinted.bgDark, '#FBF1E6');
+    const mono = { main: '#3D3D3D', point: '#777777', bgLight: '#F8F8F8', bgDark: '#E8E8E8' };
+    assert.deepEqual(tintNeutralBackgrounds(mono), mono);
   });
 
   it('colorVar 요소만 다시 칠하고, 바뀌지 않은 가지는 그대로 둔다', () => {

@@ -55,18 +55,6 @@ export function bubblePath(width: number, bodyHeight: number, radius: number, ta
   );
 }
 
-/** 쿠폰: 양옆 가운데를 반원으로 파낸 표 */
-export function ticketPath(width: number, height: number, radius: number, notch: number) {
-  const r = Math.min(radius, height / 4, width / 4);
-  const k = Math.min(notch, height / 4);
-  const mid = height / 2;
-  const cut = (x: number, from: number, to: number) => `V${n(from)}A${n(k)} ${n(k)} 0 0 0 ${n(x)} ${n(to)}`;
-  return (
-    `M${n(r)} 0H${n(width - r)}${arc(r, width, r)}${cut(width, mid - k, mid + k)}V${n(height - r)}${arc(r, width - r, height)}` +
-    `H${n(r)}${arc(r, 0, height - r)}${cut(0, mid + k, mid - k)}V${n(r)}${arc(r, r, 0)}Z`
-  );
-}
-
 /** 톱니 스티커 (지름 size, 꼭짓점 points개, depth = 안쪽으로 파인 비율) */
 export function burstPath(size: number, points = 16, depth = 0.1) {
   const R = size / 2;
@@ -87,6 +75,29 @@ export function sparklePath(size: number) {
 }
 
 /** 마름모 */
+/**
+ * 오른쪽이 잘린 원 — 지름 2r 원에서 왼쪽 visible 폭만 남긴다 (화면 끝에 걸친 장식 원).
+ * 상자: 폭 visible × 높이 2r (visible은 r~2r)
+ */
+export function clippedCirclePath(r: number, visible: number) {
+  const v = Math.min(2 * r, Math.max(r, visible));
+  const dy = Math.sqrt(Math.max(0, r * r - (v - r) * (v - r)));
+  return `M${n(v)} ${n(r - dy)}A${n(r)} ${n(r)} 0 1 0 ${n(v)} ${n(r + dy)}Z`;
+}
+
+/** 채운 체크 표시 (size × size) */
+export function checkPath(size: number) {
+  const p = [
+    [0.12, 0.53],
+    [0.25, 0.4],
+    [0.41, 0.56],
+    [0.75, 0.22],
+    [0.88, 0.35],
+    [0.41, 0.82],
+  ];
+  return `M${p.map(([x, y]) => `${n(x * size)} ${n(y * size)}`).join('L')}Z`;
+}
+
 export const diamondPath = (size: number) => `M${n(size / 2)} 0L${n(size)} ${n(size / 2)}L${n(size / 2)} ${n(size)}L0 ${n(size / 2)}Z`;
 
 /** 아래로 좁아지는 사다리꼴 (inset = 아래 변 양쪽이 들어온 폭) */

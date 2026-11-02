@@ -140,21 +140,36 @@ export const POINTS_GROUP: PatternGroup = {
       },
     },
     {
-      key: 'circles',
-      name: '원형 사진 3개',
-      guide: `${GUIDE}\n원형 사진 3장 (상품 디테일)`,
+      key: 'standard',
+      name: '선별 기준',
+      guide: '메인 카피 (15자 이내)\n선별 기준 3줄: 기준 이름 (6자) + 실제 기준값 (입력한 수치·방법만, 모르면 줄을 지우세요)\n아래 한 줄: 기준에 못 미친 것을 어떻게 하는지',
       draw: (c) => {
-        c.header('POINT', '가까이서 보면\n더 좋아요');
+        c.header('STANDARD', '이 기준을\n통과한 것만 보내요');
+        const rules = [
+          ['당도', '[00브릭스 이상만]'],
+          ['크기', '[한 알 000g 이상]'],
+          ['겉모양', '[눌림·무름 없는 것만]'],
+        ];
         cardRow(
           c,
-          3,
-          (i, x, w, top) => {
-            const d = 200;
-            c.slot(x + (w - d) / 2, top, d, d, d / 2);
-            return titledAt(c, POINTS[i][0], POINTS[i][1], x, top + d + 28, w, { align: 'center', titleSize: 28, textSize: SIZE.fine });
+          1,
+          (_, x, w, top) => {
+            let y = top;
+            rules.forEach(([name, rule], i) => {
+              disc(c, '✓', x, y, 56, 26);
+              c.textAt(name, x + 84, y + 10, 160, SIZE.small, { weight: 700, color: c.muted, align: 'left', name: 'list_title' });
+              const t = c.textAt(rule, x + 244, y + 6, w - 244, SIZE.itemTitle, { weight: 800, align: 'left', name: 'list_item', fontFamily: c.t.font.heading });
+              y = Math.max(y + 56, bottomOf(t)) + 28;
+              if (i < rules.length - 1) {
+                c.box(x, y, w, 1, c.line, { name: 'divider' });
+                y += 29;
+              }
+            });
+            return y - 28;
           },
-          { bare: true, gap: 20, after: 0 },
+          { pad: 44 },
         );
+        c.text('[기준에 못 미친 상품은 따로 골라 보내지 않아요]', SIZE.small, { color: c.muted, name: 'sub_copy', gap: 0 });
         return 100;
       },
     },

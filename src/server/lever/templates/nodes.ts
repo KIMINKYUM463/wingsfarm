@@ -9,7 +9,8 @@ import type { PaletteRole } from '../catalog/palette';
  */
 export const PAGE_WIDTH = 860;
 export const INK = 'rgba(17, 24, 39, 1)';
-export const GRAY = 'rgba(107, 114, 128, 1)';
+/** 본문 보조 글자색 — 옅은 색 바탕에서도 명도 대비 4.5:1 이상 (휴대폰에서 절반으로 줄어도 읽히게) */
+export const GRAY = 'rgba(75, 85, 99, 1)';
 export const WHITE = 'rgba(255, 255, 255, 1)';
 
 export interface TextOptions {
@@ -41,8 +42,8 @@ export const charWidth = (ch: string, fontSize: number, fontFamily = 'Pretendard
 };
 
 /** 한 줄 문구의 대략적인 폭 (배지·알약 라벨 크기 계산용) */
-export const textWidth = (value: string, fontSize: number, letterSpacing = 0) =>
-  [...value].reduce((sum, ch) => sum + charWidth(ch, fontSize) + letterSpacing, 0);
+export const textWidth = (value: string, fontSize: number, letterSpacing = 0, fontFamily?: string) =>
+  [...value].reduce((sum, ch) => sum + charWidth(ch, fontSize, fontFamily) + letterSpacing, 0);
 
 /** 어절 단위 줄바꿈을 흉내 내 줄 수를 추정 (레이아웃 높이 계산용) */
 export function estimateLines(value: string, width: number, fontSize: number, fontFamily?: string) {

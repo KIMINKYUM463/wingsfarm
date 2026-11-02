@@ -23,7 +23,9 @@ export type SectionLayout =
   | 'badges'
   | 'cta'
   | 'contact'
-  | 'notice';
+  | 'notice'
+  | 'facts'
+  | 'checklist';
 
 export type EvidenceKey =
   | 'reviews'
@@ -115,6 +117,8 @@ const DEFAULT_ITEMS: Record<SectionLayout, [number, number]> = {
   cta: [1, 2],
   contact: [2, 4],
   notice: [1, 1],
+  facts: [2, 4],
+  checklist: [3, 4],
 };
 
 const DEFAULT_CUTS: Record<SectionLayout, SectionType['cuts']> = {
@@ -133,7 +137,29 @@ const DEFAULT_CUTS: Record<SectionLayout, SectionType['cuts']> = {
   cta: 'one',
   contact: 'none',
   notice: 'none',
+  facts: 'none',
+  checklist: 'one',
 };
+
+/** 농수산·식품 공통: 첫 화면 바로 아래 핵심 정보 / 잘 맞는 상황 */
+const SUMMARY = T(
+  'summary',
+  '한눈에 보는 상품',
+  '상품 설명',
+  'facts',
+  '산지·중량·수확 시기·보관처럼 사기 전에 확인하는 정보를 첫 화면 바로 아래에 큰 글씨로',
+  '근거 자료에 있는 값만 2~4칸. 항목 제목은 4자 이내(산지·중량·수확·보관·품종·크기), 내용은 14자 이내의 구체적인 값. 자료에 없는 칸은 만들지 않는다',
+  { evidence: 'origin' },
+);
+const RECOMMEND = T(
+  'recommend',
+  '이런 분께 추천',
+  '활용',
+  'checklist',
+  '이 상품이 잘 맞는 상황·사람',
+  '먹는 상황·선물·요리 용도처럼 장면이 그려지는 상황 3~4개, 한 줄 22자 이내 "~한 분". 건강 효능·질병은 쓰지 않는다',
+  { modelCapable: true },
+);
 
 // ===== 공통 섹션 =====
 const COMMON = [
@@ -163,6 +189,8 @@ const COMMON = [
 
 // ===== 카테고리 전용 섹션 =====
 const AGRI = [
+  SUMMARY,
+  RECOMMEND,
   T('season', '제철', '상품 설명', 'story', '지금이 가장 맛있는 이유 — 제철', '입력된 수확 시기·제철 정보만 사용', { evidence: 'harvest' }),
   T('selection_process', '선별 과정', '상품 설명', 'steps', '어떤 기준으로 골라 보내는지', '입력된 선별 기준만 단계로', { evidence: 'selection' }),
   T('point_producer', '농부 포인트', '스토리', 'story', '키운 사람의 이야기', '입력된 생산자 이야기만 사용', { evidence: 'producer', modelCapable: true }),
@@ -180,6 +208,8 @@ const AGRI = [
 ] as const satisfies readonly SectionType[];
 
 const FOOD = [
+  SUMMARY,
+  RECOMMEND,
   T('ingredients', '원재료', '상품 설명', 'table', '들어간 원재료와 함량', '입력된 원재료만'),
   T('no_additive', '무첨가', '상품 설명', 'grid', '넣지 않은 것들', '입력에 "무첨가"로 확인된 항목만', { evidence: 'facility', items: [2, 4], cuts: 'none' }),
   T('taste', '맛', '상품 설명', 'points', '맛과 식감 표현', '사진과 특징을 근거로 맛 표현 (과장 금지)'),
@@ -261,8 +291,12 @@ export const findSectionType = (categoryId: string, typeId: string) =>
  */
 const FLOWS: Partial<Record<CategoryId, { short: string[]; long: string[] }>> = {
   agri: {
-    short: ['hero', 'concept', 'review', 'quality', 'comparison', 'size_comparison', 'point_sum', 'point_origin', 'point_origin_reason', 'point_producer', 'point_producer_reason', 'conversion', 'shipping_method', 'faq', 'contact'],
-    long: ['hero', 'concept', 'review', 'season', 'quality', 'selection_process', 'comparison', 'size_comparison', 'point_sum', 'point_origin', 'point_origin_reason', 'point_producer', 'point_producer_reason', 'point_direct', 'recipe', 'storage_washing', 'options', 'package', 'conversion', 'promotion', 'shipping_method', 'delivery', 'faq', 'contact', 'notice_ai'],
+    short: ['hero', 'summary', 'concept', 'review', 'quality', 'comparison', 'size_comparison', 'point_sum', 'point_origin', 'point_origin_reason', 'point_producer', 'point_producer_reason', 'recommend', 'conversion', 'shipping_method', 'faq', 'contact'],
+    long: ['hero', 'summary', 'concept', 'review', 'season', 'quality', 'selection_process', 'comparison', 'size_comparison', 'point_sum', 'point_origin', 'point_origin_reason', 'point_producer', 'point_producer_reason', 'point_direct', 'recipe', 'storage_washing', 'recommend', 'options', 'package', 'conversion', 'promotion', 'shipping_method', 'delivery', 'faq', 'contact', 'notice_ai'],
+  },
+  food: {
+    short: ['hero', 'summary', 'concept', 'review', 'quality', 'taste', 'point_sum', 'recipe', 'recommend', 'spec', 'conversion', 'shipping_method', 'faq', 'contact'],
+    long: ['hero', 'summary', 'concept', 'review', 'certification', 'quality', 'taste', 'ingredients', 'no_additive', 'point_sum', 'detail', 'recipe', 'storage_washing', 'recommend', 'spec', 'options', 'package', 'conversion', 'promotion', 'shipping_method', 'delivery', 'faq', 'contact', 'notice_ai'],
   },
   electronics: {
     short: ['hero', 'problem', 'problem_cause', 'solution', 'quality', 'modes', 'usage', 'spec', 'review', 'conversion', 'faq', 'contact'],

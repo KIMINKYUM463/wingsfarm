@@ -27,6 +27,30 @@ export function defaultCutSource(mode: DraftImageMode, role: CutRole, photoCount
   return role === 'proof' && photoCount > 0 ? 'own' : 'ai';
 }
 
+/** 올린 사진 한 장을 페이지에서 그대로 쓰는 최대 횟수 — 넘으면 같은 사진이 섹션마다 반복돼 보인다 */
+export const OWN_PHOTO_REUSE_LIMIT = 2;
+
+/**
+ * "내 사진" 컷이 한 사진에 몰리지 않게 나눈다 (페이지 위에서부터 순서대로).
+ * 한도를 넘은 컷은 아직 덜 쓴 다른 사진으로 옮기고, 남은 사진이 없으면 AI 연출로 돌린다.
+ */
+export function spreadOwnCuts<T extends { source: CutSource; photoIndexes: number[] }>(cuts: T[], photoCount: number, limit = OWN_PHOTO_REUSE_LIMIT): T[] {
+  const used = new Map<number, number>();
+  const take = (photo: number) => used.set(photo, (used.get(photo) ?? 0) + 1);
+  return cuts.map((cut) => {
+    if (cut.source !== 'own') return cut;
+    const wanted = cut.photoIndexes[0] ?? 0;
+    if ((used.get(wanted) ?? 0) < limit) {
+      take(wanted);
+      return cut;
+    }
+    const spare = Array.from({ length: photoCount }, (_, i) => i).find((i) => (used.get(i) ?? 0) < limit);
+    if (spare === undefined) return { ...cut, source: 'ai' };
+    take(spare);
+    return { ...cut, photoIndexes: [spare, ...cut.photoIndexes.filter((i) => i !== spare)] };
+  });
+}
+
 /** 저장된 값 정리 (올린 사진이 없으면 "내 사진"은 빈 자리) */
 export function normalizeCutSource(value: unknown, photoCount: number): CutSource {
   if (value === 'blank') return 'blank';

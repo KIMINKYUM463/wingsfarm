@@ -98,6 +98,26 @@ export const countPaletteNodes = (node: PaletteNode): number =>
   (PALETTE_LINKS.some(([role]) => isPaletteRole(node[role])) ? 1 : 0) +
   (node.children ?? []).reduce((sum, child) => sum + countPaletteNodes(child), 0);
 
+/** 채도가 거의 없는 회색 계열인지 (RGB 세 값의 차이가 작다) */
+const isNeutral = (hex: string) => {
+  const rgb = hexToRgb(hex);
+  return Math.max(...rgb) - Math.min(...rgb) < 10;
+};
+
+/**
+ * AI가 고른 바탕이 무채색 회색이면 대표색을 옅게 섞은 바탕으로 바꾼다 — 회색 바탕은 식품을 칙칙해 보이게 한다.
+ * 판매자가 색상 탭에서 직접 고른 색에는 쓰지 않는다.
+ */
+export function tintNeutralBackgrounds(palette: DraftPalette): DraftPalette {
+  if (isNeutral(palette.main)) return palette;
+  const derived = derivePalette(palette.main);
+  return {
+    ...palette,
+    bgLight: isNeutral(palette.bgLight) ? derived.bgLight : palette.bgLight,
+    bgDark: isNeutral(palette.bgDark) ? derived.bgDark : palette.bgDark,
+  };
+}
+
 /** AI 응답이나 사용자 입력을 안전한 팔레트로 정리 (형식이 틀리면 대표색 기준으로 다시 계산) */
 export function normalizePalette(input: Partial<Record<PaletteRole, unknown>> | undefined, fallback: DraftPalette): DraftPalette {
   const main = typeof input?.main === 'string' && HEX_COLOR.test(input.main) ? input.main : fallback.main;

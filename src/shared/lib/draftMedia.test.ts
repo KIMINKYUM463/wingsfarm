@@ -1,6 +1,15 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { defaultCutSource, effectiveHeroMotion, estimateCostUsd, formatCost, HERO_VIDEO_USD, normalizeCutSource, sceneIdeas } from './draftMedia.ts';
+import {
+  defaultCutSource,
+  effectiveHeroMotion,
+  estimateCostUsd,
+  formatCost,
+  HERO_VIDEO_USD,
+  normalizeCutSource,
+  sceneIdeas,
+  spreadOwnCuts,
+} from './draftMedia.ts';
 
 describe('컷 사진 방식', () => {
   it('사진 자리 비워두기를 고르면 모든 컷이 빈 자리', () => {
@@ -13,6 +22,20 @@ describe('컷 사진 방식', () => {
     assert.equal(defaultCutSource('ai', 'detail', 2), 'ai');
     assert.equal(defaultCutSource('ai', 'hero', 2), 'ai');
     assert.equal(defaultCutSource('ai', 'proof', 0), 'ai');
+  });
+
+  it('올린 사진 한 장은 두 번까지만 그대로 쓰고, 남는 사진으로 옮기거나 AI 연출로 돌린다', () => {
+    const own = (photo: number) => ({ source: 'own' as const, photoIndexes: [photo] });
+    const one = spreadOwnCuts([own(0), own(0), own(0), { source: 'blank' as const, photoIndexes: [0] }], 1);
+    assert.deepEqual(
+      one.map((c) => c.source),
+      ['own', 'own', 'ai', 'blank'],
+    );
+    const two = spreadOwnCuts([own(0), own(0), own(0), own(0), own(0)], 2);
+    assert.deepEqual(
+      two.map((c) => `${c.source}:${c.photoIndexes[0]}`),
+      ['own:0', 'own:0', 'own:1', 'own:1', 'ai:0'],
+    );
   });
 
   it('저장할 때 빈 자리가 AI로 바뀌지 않는다', () => {

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { blobPath, bubblePath, burstPath, cornersOf, diamondPath, roundedRectPath, sparklePath, ticketPath, trapezoidPath, wavePath } from './shapePaths.ts';
+import { blobPath, bubblePath, burstPath, checkPath, clippedCirclePath, cornersOf, diamondPath, roundedRectPath, sparklePath, trapezoidPath, wavePath } from './shapePaths.ts';
 
 /** 경로의 끝점·곡선 손잡이 좌표 (모든 명령이 절대 좌표) */
 function points(d: string) {
@@ -48,7 +48,8 @@ describe('도형 경로', () => {
     assertInside(roundedRectPath(300, 200, [80, 20, 80, 20]), 300, 200);
     assertInside(bubblePath(560, 180, 36, { side: 'top', at: 32, size: 18 }), 560, 198);
     assertInside(bubblePath(560, 180, 36, { side: 'bottom', at: 9999, size: 18 }), 560, 198);
-    assertInside(ticketPath(740, 300, 28, 30), 740, 300);
+    assertInside(checkPath(52), 52, 52);
+    assertInside(clippedCirclePath(190, 230), 230, 380);
     assertInside(burstPath(200), 200, 200);
     assertInside(sparklePath(64), 64, 64);
     assertInside(diamondPath(14), 14, 14);

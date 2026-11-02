@@ -2,9 +2,11 @@ import type { DraftCut, DraftPalette, DraftSection } from '@/shared/types/draft'
 import type { DesignStyleId } from '@/shared/lib/designStyles';
 import type { FrameNode } from '../frames/tree';
 import type { SectionLayout, SectionType } from '../catalog/sections';
+import { checkPath } from '@/shared/lib/shapePaths';
 import { Canvas, CW, SIZE, STAR, W, X, type Place } from './canvas';
 import { designTokens } from './designStyles';
 import { frameNode, WHITE } from './nodes';
+import { bottomOf, cardRow } from './patterns/kit';
 
 /**
  * 초안 섹션 → Konva 프레임
@@ -335,6 +337,73 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
     c.space(20);
     c.card(start, X, top, CW, c.y - top);
     return {};
+  },
+
+  /** 한눈에 보는 상품: 작은 항목 이름 + 큰 값 칸을 두 칸씩 (홀수면 마지막 칸은 한 줄 전체) */
+  facts: (ctx) => {
+    const { c, s } = ctx;
+    header(ctx);
+    const align = c.t.align;
+    for (let row = 0; row < s.items.length; row += 2) {
+      const n = Math.min(2, s.items.length - row);
+      cardRow(
+        c,
+        n,
+        (col, x, w, top) => {
+          const i = row + col;
+          const title = itemTitle(s, i);
+          const name = title ? c.textAt(title, x, top, w, SIZE.caption, { weight: 700, color: c.muted, align, letterSpacing: 1, name: 'list_title' }) : null;
+          const value = c.textAt(itemText(s, i), x, name ? bottomOf(name) + 12 : top, w, 40, {
+            weight: c.t.headingWeight,
+            align,
+            lineHeight: 1.3,
+            fontFamily: c.t.font.heading,
+            name: 'list_item',
+          });
+          return bottomOf(value);
+        },
+        { pad: 36, after: 20 },
+      );
+    }
+    return { bottom: 90 };
+  },
+
+  /** 이런 분께 추천: 사진 아래 체크 줄을 카드 하나에 */
+  checklist: (ctx) => {
+    const { c, s, sectionCut } = ctx;
+    header(ctx);
+    c.image(sectionCut, X, CW, 520, 48);
+    const start = c.nodes.length;
+    const top = c.y;
+    const d = 52;
+    const textX = X + 40 + d + 28;
+    const textW = W - X - 40 - textX;
+    c.space(44);
+    s.items.forEach((_, i) => {
+      const rowTop = c.y;
+      const disc = c.accentPaint;
+      const mark = c.onAccent;
+      c.box(X + 40, rowTop, d, d, disc.fill, { cornerRadius: c.t.radius.chip ? d / 2 : 0, colorVar: disc.colorVar, name: 'badge_bg' });
+      c.path(checkPath(d * 0.64), X + 40 + d * 0.18, rowTop + d * 0.18, d * 0.64, d * 0.64, mark.color, { colorVar: mark.colorVar, name: 'badge' });
+      const title = itemTitle(s, i);
+      const head = title ? c.textAt(title, textX, rowTop + 4, textW, 34, { weight: 700, align: 'left', name: 'list_title' }) : null;
+      const body = c.textAt(itemText(s, i), textX, head ? bottomOf(head) + 8 : rowTop + 4, textW, title ? SIZE.small : SIZE.body, {
+        weight: title ? 400 : 600,
+        color: title ? c.muted : c.ink,
+        align: 'left',
+        lineHeight: 1.5,
+        name: 'list_item',
+      });
+      c.y = Math.max(rowTop + d, bottomOf(body));
+      if (i < s.items.length - 1) {
+        c.space(28);
+        c.box(X + 40, c.y, CW - 80, 1, c.line, { name: 'divider' });
+        c.space(29);
+      }
+    });
+    c.space(44);
+    c.card(start, X, top, CW, c.y - top);
+    return { bottom: 100 };
   },
 
   notice: ({ c, s }) => {

@@ -1,6 +1,5 @@
-import { ticketPath } from '@/shared/lib/shapePaths';
 import { CW, SIZE, W, X } from '../canvas';
-import { bottomOf, button, cardRow, columns, disc, divider, onAccent, outline, overlay, type PatternGroup } from './kit';
+import { bottomOf, button, cardRow, columns, disc, divider, outline, overlay, titledAt, type PatternGroup } from './kit';
 
 const SELLER = '(판매 정보 그대로)';
 
@@ -196,21 +195,36 @@ export const PURCHASE: PatternGroup = {
       },
     },
     {
-      key: 'coupon',
-      name: '쿠폰형 혜택',
-      guide: `메인 카피 (12자 이내)\n혜택 (크게, 실제 혜택만)\n혜택 설명 한 줄\n기간·조건 ${SELLER}`,
+      key: 'arrival',
+      name: '받으시면 이렇게',
+      guide: `메인 카피 (12자 이내)\n받은 뒤 할 일 4단계: 제목 8자 + 설명 1문장 (상품에 맞는 보관 온도·기간만)\n아래 상자: 문제가 있을 때 연락 기한·방법 ${SELLER}`,
       draw: (c) => {
-        c.header('BENEFIT', '지금 주문하면');
-        const top = c.y;
-        const start = c.nodes.length;
-        const color = onAccent(c);
-        const big = c.textAt('[혜택]', X + 60, top + 70, CW - 120, 64, { weight: 900, name: 'list_title', fontFamily: c.t.font.heading, ...color });
-        const sub = c.textAt('[혜택 설명 한 줄]', X + 60, bottomOf(big) + 12, CW - 120, SIZE.small, { name: 'list_item', ...color });
-        const h = Math.max(300, bottomOf(sub) - top + 70);
-        const paint = c.accentPaint;
-        c.path(ticketPath(CW, h, c.t.radius.card, 30), X, top, CW, h, paint.fill, { colorVar: paint.colorVar, shadow: c.shadow('card'), name: 'ticket' }, start);
-        c.y = top + h + 28;
-        c.text('[기간·조건]', SIZE.caption, { color: c.muted, name: 'list_item', gap: 0 });
+        c.header('AFTER ARRIVAL', '받으시면\n이렇게 해 주세요');
+        const steps = [
+          ['바로 열어 확인', '상자를 열어 눌리거나 무른 것이 없는지 봐 주세요.'],
+          ['물기 없이 정리', '씻지 말고 겹치지 않게 펼쳐 숨을 돌려 주세요.'],
+          ['[냉장 0~5℃] 보관', '[신문지·키친타월로 감싸 보관해 주세요.]'],
+          ['[0일 안에] 드세요', '[가장 맛있게 드실 수 있는 기간이에요.]'],
+        ];
+        const d = 64;
+        steps.forEach(([title, text], i) => {
+          const top = c.y;
+          disc(c, String(i + 1), X, top, d, 28);
+          const end = titledAt(c, title, text, X + d + 32, top + 6, CW - d - 32, { titleSize: SIZE.itemTitle, textSize: SIZE.small });
+          const next = Math.max(top + d, end) + 44;
+          if (i < steps.length - 1) c.box(X + d / 2 - 1, top + d + 12, 2, next - top - d - 24, c.line, { name: 'divider' });
+          c.y = next;
+        });
+        c.space(8);
+        cardRow(
+          c,
+          1,
+          (_, x, w, top) => {
+            const t = c.textAt('문제가 있다면', x, top, w, SIZE.caption, { weight: 700, ...c.accent(), align: 'left', name: 'label' });
+            return bottomOf(c.textAt('[받은 날 포함 0일 안에 사진과 함께 문의해 주세요]', x, bottomOf(t) + 10, w, SIZE.small, { weight: 700, align: 'left', lineHeight: 1.5, name: 'list_item' }));
+          },
+          { pad: 36, after: 0 },
+        );
         return 100;
       },
     },
