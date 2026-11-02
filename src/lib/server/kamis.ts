@@ -38,7 +38,7 @@ function toPrice(row: Record<string, unknown>): KamisPrice | null {
 }
 
 export async function getKamisPrices(): Promise<KamisResponse> {
-  if (!kamisConfigured()) return { items: [], updatedAt: "", error: "KAMIS_CERT_KEY / KAMIS_CERT_ID가 설정되지 않았습니다.", missingKey: true };
+  if (!kamisConfigured()) return { items: [], updatedAt: "", error: "시세 인증키가 설정되지 않았습니다.", missingKey: true };
   if (cache && Date.now() - cache.at < CACHE_MS) return cache.body;
 
   const url = new URL(ENDPOINT);
@@ -51,18 +51,18 @@ export async function getKamisPrices(): Promise<KamisResponse> {
 
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(10_000), cache: "no-store" });
-    if (!res.ok) return { items: [], updatedAt: "", error: `KAMIS 응답 오류(${res.status})` };
+    if (!res.ok) return { items: [], updatedAt: "", error: `시세 서버 응답 오류(${res.status})` };
     const json = (await res.json()) as { error_code?: string; price?: unknown };
-    if (json.error_code && json.error_code !== "000") return { items: [], updatedAt: "", error: `KAMIS 오류 코드 ${json.error_code} — 인증키·ID를 확인하세요.` };
+    if (json.error_code && json.error_code !== "000") return { items: [], updatedAt: "", error: `시세 서버 오류 코드 ${json.error_code} — 인증키·ID를 확인하세요.` };
     const rows = (Array.isArray(json.price) ? json.price : json.price && typeof json.price === "object" ? [json.price] : []) as Record<string, unknown>[];
-    if (rows[0]?.result_code === "900") return { items: [], updatedAt: "", error: "KAMIS 인증 실패 — 인증키·ID를 확인하세요." };
+    if (rows[0]?.result_code === "900") return { items: [], updatedAt: "", error: "시세 인증 실패 — 인증키·ID를 확인하세요." };
     const items = rows.map(toPrice).filter((x): x is KamisPrice => x !== null);
-    if (items.length === 0) return { items: [], updatedAt: "", error: "KAMIS에서 받은 시세가 없습니다. 잠시 후 다시 시도하세요." };
+    if (items.length === 0) return { items: [], updatedAt: "", error: "받은 시세가 없습니다. 잠시 후 다시 시도하세요." };
     const body: KamisResponse = { items, updatedAt: new Date().toISOString() };
     cache = { at: Date.now(), body };
     return body;
   } catch (err) {
     console.error("[kamis]", err);
-    return { items: [], updatedAt: "", error: "KAMIS 서버에 연결하지 못했습니다." };
+    return { items: [], updatedAt: "", error: "시세 서버에 연결하지 못했습니다." };
   }
 }

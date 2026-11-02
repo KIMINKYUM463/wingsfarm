@@ -209,10 +209,16 @@ export function StatusBadge({ status }: { status: MarginStatus }) {
   return <Badge tone={status}>{STATUS_LABEL[status]}</Badge>;
 }
 
-export function Table({ children }: { children: ReactNode }) {
+/** scrollClassName(예: max-h-[32rem])을 주면 그 높이 안에서 스크롤하고 제목 줄은 위에 고정된다 */
+export function Table({ children, scrollClassName }: { children: ReactNode; scrollClassName?: string }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm [&_td]:border-b [&_td]:border-stone-100 [&_td]:px-3 [&_td]:py-2 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-stone-200 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:text-xs [&_th]:font-medium [&_th]:text-stone-500">
+    <div className={cx("overflow-x-auto", scrollClassName && cx("overflow-y-auto", scrollClassName))}>
+      <table
+        className={cx(
+          "w-full text-sm [&_td]:border-b [&_td]:border-stone-100 [&_td]:px-3 [&_td]:py-2 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-stone-200 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:text-xs [&_th]:font-medium [&_th]:text-stone-500",
+          scrollClassName && "[&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-white",
+        )}
+      >
         {children}
       </table>
     </div>
