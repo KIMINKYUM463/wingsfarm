@@ -7,15 +7,99 @@ const {
   heroGifArgs,
   panClipArgs,
   parseVideoResponse,
-  stockClipArgs,
-  stockClipStart,
+  fallbackPlan,
+  frameGrabArgs,
+  montageArgs,
+  normalizePlan,
+  sampleTimes,
   stockOrientation,
+  totalSeconds,
   videoAspect,
   videoClipArgs,
   videoRequestBody,
 } = await import('./motion.ts');
-const { interleave, isStockSource, pexelsClipSource, pexelsToStock, pickVideoFile, pixabayClipSource, pixabayToStock, preferOrientation } =
+const { interleave, isStockSource, parseStockPicks, pexelsClipSource, pexelsToStock, pickVideoFile, pixabayClipSource, pixabayToStock, preferOrientation } =
   await import('./stockSources.ts');
+
+describe('무료 영상 컷 편집', () => {
+  const clips = [{ duration: 12 }, { duration: 8 }, { duration: 20 }];
+
+  it('AI가 볼 장면은 앞뒤 5%를 빼고 고르게 6장', () => {
+    const times = sampleTimes(10);
+    assert.equal(times.length, 6);
+    assert.ok(times[0] >= 0.5 && times.at(-1)! <= 9.5);
+    assert.deepEqual([...times].sort((a, b) => a - b), times);
+  });
+
+  it('기본 편집: 고른 영상을 번갈아 쓰고, 모든 컷이 영상 안에 들어간다', () => {
+    for (const n of [1, 2, 3]) {
+      const cuts = fallbackPlan(clips.slice(0, n));
+      assert.ok(cuts.length >= 4, `${n}개면 컷 4개 이상`);
+      assert.ok(totalSeconds(cuts) >= 4 && totalSeconds(cuts) <= 8);
+      for (let i = 0; i < n; i++) assert.ok(cuts.some((c) => c.clip === i), `${i + 1}번 영상 사용`);
+      for (const c of cuts) assert.ok(c.start >= 0 && c.start + c.duration <= clips[c.clip].duration - 0.1 + 1e-9);
+    }
+    assert.deepEqual(fallbackPlan([{ duration: 0.5 }]), []);
+  });
+
+  it('AI 답(1부터 번호)을 영상 길이·컷 길이·총 길이에 맞게 고친다', () => {
+    const cuts = normalizePlan(
+      { cuts: [{ clip: 1, start: 11.5, duration: 2 }, { clip: 2, start: 1, duration: 9 }, { clip: 3, start: -3, duration: 0.2 }, { clip: 9, start: 0, duration: 2 }] },
+      clips,
+    );
+    assert.deepEqual(cuts, [
+      { clip: 0, start: 9.9, duration: 2 },
+      { clip: 1, start: 1, duration: 2.5 },
+      { clip: 2, start: 0, duration: 0.8 },
+    ]);
+  });
+
+  it('규칙을 못 지킨 AI 답은 버린다 (영상 빠짐·너무 짧음·형식 오류)', () => {
+    assert.equal(normalizePlan({ cuts: [{ clip: 1, start: 0, duration: 2.5 }, { clip: 1, start: 3, duration: 2.5 }] }, clips.slice(0, 2)), null);
+    assert.equal(normalizePlan({ cuts: [{ clip: 1, start: 0, duration: 1 }] }, clips.slice(0, 1)), null);
+    assert.equal(normalizePlan('엉뚱한 답', clips), null);
+  });
+
+  it('총 길이가 넘치면 뒤 컷을 버린다', () => {
+    const cuts = normalizePlan({ cuts: Array.from({ length: 6 }, (_, i) => ({ clip: 1, start: i, duration: 2 })) }, [{ duration: 30 }]);
+    assert.equal(totalSeconds(cuts!), 8);
+  });
+
+  it('컷마다 영상 구간을 빠르게 찾아 사진 자리 크기로 맞춘 뒤 이어 붙인다', () => {
+    const args = montageArgs(
+      [
+        { path: 'a.mp4', start: 1.5, duration: 1.2 },
+        { path: 'b.mp4', start: 0, duration: 2 },
+      ],
+      'out.mp4',
+      860,
+      980,
+    );
+    assert.deepEqual(args.slice(1, 13), ['-ss', '1.5', '-t', '1.2', '-i', 'a.mp4', '-ss', '0', '-t', '2', '-i', 'b.mp4']);
+    const filter = args[args.indexOf('-filter_complex') + 1];
+    assert.match(filter, /\[0:v\]scale=860:980:force_original_aspect_ratio=increase,crop=860:980/);
+    assert.match(filter, /\[v0\]\[v1\]concat=n=2:v=1:a=0\[out\]$/);
+    assert.ok(args.includes('-an'));
+  });
+
+  it('장면 캡처는 한 번에 여러 시각을 작은 JPG로', () => {
+    const args = frameGrabArgs('a.mp4', [0.5, 2], ['f0.jpg', 'f1.jpg']);
+    assert.deepEqual(args.slice(0, 9), ['-y', '-ss', '0.5', '-i', 'a.mp4', '-ss', '2', '-i', 'a.mp4']);
+    assert.equal(args.at(-1), 'f1.jpg');
+    assert.ok(args.includes('1:v:0'));
+  });
+
+  it('고른 영상: 1~3개, 같은 영상은 하나로, 예전 형식도 받는다', () => {
+    assert.deepEqual(parseStockPicks({ source: 'pexels', videoId: 7 }), [{ source: 'pexels', videoId: 7 }]);
+    assert.deepEqual(
+      parseStockPicks({ videos: [{ source: 'pexels', videoId: 7 }, { source: 'pexels', videoId: 7 }, { source: 'pixabay', videoId: '9' }] }),
+      [{ source: 'pexels', videoId: 7 }, { source: 'pixabay', videoId: 9 }],
+    );
+    assert.equal(parseStockPicks({ videos: [1, 2, 3, 4].map((videoId) => ({ source: 'pexels', videoId })) }), null);
+    assert.equal(parseStockPicks({ videos: [{ source: 'youtube', videoId: 1 }] }), null);
+    assert.equal(parseStockPicks({ videos: [] }), null);
+  });
+});
 
 describe('AI 영상 요청·응답', () => {
   it('세로 사진 자리는 9:16, 가로는 16:9', () => {
@@ -93,16 +177,6 @@ describe('무료 영상 (Pexels·Pixabay)', () => {
     thumbnail: `https://cdn.pixabay.com/video/${width}.jpg`,
   });
   const pixabayVideo = (videos: Record<string, ReturnType<typeof rendition>>) => ({ id: 125, pageURL: 'https://pixabay.com/videos/id-125/', duration: 12, user: '', videos });
-
-  it('가운데 5초를 쓰고, 짧은 영상은 처음부터', () => {
-    assert.equal(stockClipStart(20), 7.5);
-    assert.equal(stockClipStart(3), 0);
-    const args = stockClipArgs('in.mp4', 'out.mp4', 860, 980, 20);
-    assert.equal(args[args.indexOf('-ss') + 1], '7.5');
-    assert.equal(args[args.indexOf('-t') + 1], '5');
-    assert.match(args[args.indexOf('-vf') + 1], /crop=860:980/);
-    assert.ok(args.includes('-an'));
-  });
 
   it('사진 자리를 흐리지 않게 덮는 가장 작은 MP4를 고르고, 4K·다른 형식은 뺀다', () => {
     const { files } = pexelsClipSource(pexelsVideo([file(3840, 2160), file(1920, 1080), file(1280, 720), file(640, 360), file(1920, 1080, 'video/webm')]));

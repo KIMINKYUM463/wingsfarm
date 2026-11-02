@@ -1,26 +1,37 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import clsx from 'clsx';
 import { useState, type FormEvent } from 'react';
 import { searchHeroStock } from '@/features/editor/api';
 import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { queryKeys } from '@/shared/constants/queryKeys';
 import { STOCK_SITES } from '@/shared/constants/stockSites';
 import { errorMessage } from '@/shared/lib/errorMessage';
-import type { StockVideo } from '@/shared/types/heroMotion';
+import { MAX_STOCK_PICKS, type StockVideo } from '@/shared/types/heroMotion';
+import { showToast } from '@/utils/toast';
 
 const formatSeconds = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
 const SITE_LINKS = Object.values(STOCK_SITES);
 
+const pickKey = (video: StockVideo) => `${video.source}-${video.id}`;
+
 /**
- * 무료 영상(Pexels·Pixabay) 검색 → 하나 고르면 서버가 가운데 5초를 사진 자리 크기로 잘라 움직이는 컷으로 만든다
- * 검색어 기본값은 상품명. 검색은 버튼을 눌렀을 때만 한다(사이트별 요청 한도).
+ * 무료 영상(Pexels·Pixabay) 검색 → 최대 3개를 순서대로 고르면 AI가 좋은 장면만 골라 컷 편집한다
+ * 검색어 기본값은 상품명. 검색은 버튼을 눌렀을 때만 한다(사이트별 요청 한도). 검색어를 바꿔도 고른 영상은 유지된다.
  */
-export function StockVideoPicker({ projectId, disabled, onPick }: { projectId: string; disabled: boolean; onPick: (video: StockVideo) => void }) {
+export function StockVideoPicker({ projectId, disabled, onSubmit }: { projectId: string; disabled: boolean; onSubmit: (videos: StockVideo[]) => void }) {
   const productName = useCanvasDataStore((state) => state.productName);
   const [input, setInput] = useState(productName ?? '');
   const [query, setQuery] = useState<string | null>(null);
+  const [picked, setPicked] = useState<StockVideo[]>([]);
+
+  const toggle = (video: StockVideo) => {
+    if (picked.some((v) => pickKey(v) === pickKey(video))) return setPicked(picked.filter((v) => pickKey(v) !== pickKey(video)));
+    if (picked.length >= MAX_STOCK_PICKS) return showToast.error(`영상은 최대 ${MAX_STOCK_PICKS}개까지 고를 수 있어요.`);
+    setPicked([...picked, video]);
+  };
 
   const search = useQuery({
     queryKey: queryKeys.EDITOR.heroStock(projectId, query ?? ''),
@@ -63,26 +74,40 @@ export function StockVideoPicker({ projectId, disabled, onPick }: { projectId: s
 
       {videos.length > 0 && (
         <div className="grid max-h-56 grid-cols-3 gap-2 overflow-y-auto">
-          {videos.map((video) => (
-            <button
-              key={`${video.source}-${video.id}`}
-              type="button"
-              disabled={disabled}
-              onClick={() => onPick(video)}
-              title={`${video.author} · ${STOCK_SITES[video.source].label} · 눌러서 맨 위 컷으로 쓰기`}
-              className="group relative aspect-video overflow-hidden rounded-lg bg-gray-100 disabled:opacity-50"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={video.thumbnail} alt={`${video.author}의 영상`} loading="lazy" className="size-full object-cover transition group-hover:scale-105" />
-              <span className="absolute top-1 left-1 rounded bg-black/60 px-1 text-[10px] text-white">{STOCK_SITES[video.source].label}</span>
-              <span className="absolute right-1 bottom-1 rounded bg-black/60 px-1 text-[10px] text-white">{formatSeconds(video.duration)}</span>
-            </button>
-          ))}
+          {videos.map((video) => {
+            const order = picked.findIndex((v) => pickKey(v) === pickKey(video)) + 1;
+            return (
+              <button
+                key={pickKey(video)}
+                type="button"
+                disabled={disabled}
+                aria-pressed={order > 0}
+                onClick={() => toggle(video)}
+                title={`${video.author} · ${STOCK_SITES[video.source].label} · ${order ? '눌러서 빼기' : '눌러서 고르기'}`}
+                className={clsx(
+                  'group relative aspect-video overflow-hidden rounded-lg bg-gray-100 disabled:opacity-50',
+                  order > 0 && 'ring-3 ring-(--color-point) ring-offset-1',
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={video.thumbnail} alt={`${video.author}의 영상`} loading="lazy" className="size-full object-cover transition group-hover:scale-105" />
+                <span className="absolute top-1 left-1 rounded bg-black/60 px-1 text-[10px] text-white">{STOCK_SITES[video.source].label}</span>
+                <span className="absolute right-1 bottom-1 rounded bg-black/60 px-1 text-[10px] text-white">{formatSeconds(video.duration)}</span>
+                {order > 0 && (
+                  <span className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-(--color-point) text-[11px] font-bold text-white">{order}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 
+      <button type="button" className="btn-primary text-sm" disabled={disabled || !picked.length} onClick={() => onSubmit(picked)}>
+        {picked.length ? `✦ 고른 영상 ${picked.length}개로 AI 컷 편집하기` : `영상을 1~${MAX_STOCK_PICKS}개 골라 주세요`}
+      </button>
+
       <p className="text-xs leading-5 text-gray-500">
-        고른 영상의 가운데 5초를 맨 위 사진 자리 크기로 잘라 써요. 실제 상품이 아닌 분위기 영상이니 상품과 어울리는지 확인해 주세요. 영상 제공{' '}
+        AI(Gemini)가 고른 영상의 장면을 보고 좋은 부분만 짧게 잘라 컷 편집해요(약 5~8초, Gemini 키로 아주 적은 비용). 다 되면 미리 보고 <b>적용</b>을 눌러야 맨 위에 들어가요. 실제 상품이 아닌 분위기 영상이니 상품과 어울리는지 확인해 주세요. 영상 제공{' '}
         {SITE_LINKS.map((site, i) => (
           <span key={site.url}>
             {i > 0 && ' · '}

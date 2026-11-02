@@ -252,7 +252,7 @@ async function runGenerate(draftId: string) {
     }));
     // 움직이는 컷은 페이지를 연 뒤에도 이어서 만든다 (AI 영상은 1~3분)
     const motion = effectiveHeroMotion(input.heroMotion, heroCutOf(built)?.source ?? null);
-    if (motion !== 'off') await startHeroMotion(ctx.projectId, motion).catch((err) => console.error('[lever] hero motion not started', err));
+    if (motion !== 'off') await startHeroMotion(ctx.projectId, motion, { autoApply: true }).catch((err) => console.error('[lever] hero motion not started', err));
   } catch (err) {
     console.error('[lever] draft generate failed', err);
     const message = err instanceof ApiError ? err.message : '상세페이지를 만들지 못했어요. 다시 시도해주세요.';

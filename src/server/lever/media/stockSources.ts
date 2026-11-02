@@ -1,4 +1,4 @@
-import type { HeroMotionCredit, StockSource, StockVideo } from '@/shared/types/heroMotion';
+import { MAX_STOCK_PICKS, type HeroMotionCredit, type StockPick, type StockSource, type StockVideo } from '@/shared/types/heroMotion';
 import { stockOrientation, type StockOrientation } from './motion';
 
 /**
@@ -132,3 +132,16 @@ export function interleave<T>(lists: T[][]): T[] {
 }
 
 export const isStockSource = (value: unknown): value is StockSource => value === 'pexels' || value === 'pixabay';
+
+/** 요청의 고른 영상 목록 검사 (1~3개, 같은 영상은 하나로) — 예전 형식 { source, videoId }도 받는다 */
+export function parseStockPicks(body: { videos?: unknown; source?: unknown; videoId?: unknown }): StockPick[] | null {
+  const items = (Array.isArray(body.videos) ? body.videos : [body]) as { source?: unknown; videoId?: unknown }[];
+  const picks = new Map<string, StockPick>();
+  for (const item of items) {
+    const source = item?.source;
+    const videoId = Number(item?.videoId);
+    if (!isStockSource(source) || !Number.isInteger(videoId) || videoId <= 0) return null;
+    picks.set(`${source}:${videoId}`, { source, videoId });
+  }
+  return picks.size >= 1 && picks.size <= MAX_STOCK_PICKS ? [...picks.values()] : null;
+}

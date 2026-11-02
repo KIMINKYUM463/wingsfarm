@@ -1,18 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { getHeroMotion, requestHeroGif, startHeroMotion, type HeroMotionRequest } from '@/features/editor/api';
+import { useEffect, useState } from 'react';
+import { applyHeroMotion, getHeroMotion, requestHeroGif, startHeroMotion, type HeroMotionRequest } from '@/features/editor/api';
 import { downloadBlob, exportHeroLayers } from '@/features/editor/hooks/useImageDownload';
 import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
+import { useHeroVideoStore } from '@/features/editor/store/useHeroVideoStore';
 import { useStageRefStore } from '@/features/editor/store/useStageRefStore';
 import { queryKeys } from '@/shared/constants/queryKeys';
 import { errorMessage } from '@/shared/lib/errorMessage';
+import { isMotionApplied, type HeroMotionInfo } from '@/shared/types/heroMotion';
 import { showToast } from '@/utils/toast';
 
 const POLL_MS = 4000;
 
 /**
- * 맨 위 움직이는 컷 — 상태 확인(만드는 중이면 4초마다) · 다시 만들기 · 무료 영상 가져오기 · GIF 받기
+ * 맨 위 움직이는 컷 — 상태 확인(만드는 중이면 4초마다) · 만들기 · 맨 위에 적용 · GIF 받기
  * stale: 사진으로 만든 컷인데 맨 위 사진을 바꿨거나 지웠으면 다시 만들어야 한다 (무료 영상은 사진과 무관)
+ * 적용된 컷은 캔버스 맨 위 사진 자리에서 재생된다 (useHeroVideoStore)
  */
 export function useHeroMotion(projectId: string) {
   const queryClient = useQueryClient();
@@ -30,10 +33,29 @@ export function useHeroMotion(projectId: string) {
     return element && 'assetId' in element ? (element.assetId as string | undefined) : undefined;
   });
   const stale = Boolean(motion && motion.kind !== 'stock' && motion.status === 'ready' && currentAssetId !== motion.assetId);
+  const ready = Boolean(motion?.status === 'ready' && motion.clipUrl && !stale);
+  const applied = ready && isMotionApplied(motion!);
+
+  const setHeroVideo = useHeroVideoStore((state) => state.setHeroVideo);
+  const playingUrl = applied ? motion!.clipUrl : null;
+  const playingElementId = applied ? motion!.elementId : null;
+  useEffect(() => {
+    if (!playingUrl || !playingElementId) return;
+    setHeroVideo({ elementId: playingElementId, url: playingUrl });
+    return () => setHeroVideo(null);
+  }, [playingUrl, playingElementId, setHeroVideo]);
+
+  const save = (next: HeroMotionInfo | null) => queryClient.setQueryData(key, next);
 
   const start = useMutation({
     mutationFn: (request: HeroMotionRequest) => startHeroMotion(projectId, request),
-    onSuccess: (next) => queryClient.setQueryData(key, next),
+    onSuccess: save,
+    onError: (err) => showToast.error(errorMessage(err)),
+  });
+
+  const apply = useMutation({
+    mutationFn: () => applyHeroMotion(projectId),
+    onSuccess: save,
     onError: (err) => showToast.error(errorMessage(err)),
   });
 
@@ -60,5 +82,5 @@ export function useHeroMotion(projectId: string) {
     }
   };
 
-  return { motion, stale, start, downloadGif, downloadingGif };
+  return { motion, stale, ready, applied, start, apply, downloadGif, downloadingGif };
 }

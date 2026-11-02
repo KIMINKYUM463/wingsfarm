@@ -21,7 +21,7 @@ npm run lint
 ### 배포할 때 (인터넷에 올리는 경우)
 - `APP_PASSWORD`를 설정하면 사이트 전체가 잠기고 비밀번호만 입력하는 로그인 화면(`/login`)이 뜹니다(`src/proxy.ts`). 비워 두면 잠금 없음.
 - AI 라우트는 IP별 호출 한도가 있습니다(기본 텍스트 10분 60회, 이미지 1시간 40회 · `AI_TEXT_LIMIT`, `AI_IMAGE_LIMIT`로 조정). 서버 메모리 기준이라 서버 1대 운영을 가정합니다.
-- **Vercel**은 서버에 파일을 저장할 수 없으므로 상세페이지에 `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`가 필수입니다(비공개 버킷 `detail-page` 자동 생성). 내 PC 데이터는 `.env.local`에 같은 키를 넣고 `npm run migrate:supabase`로 옮깁니다. 상세페이지 Gemini 키는 Vercel 환경변수 `GEMINI_API_KEY`로 넣습니다. 맨 위 움직이는 컷은 PC에 ffmpeg가 없으면 npm 패키지 `ffmpeg-static`의 ffmpeg를 씁니다(Vercel 포함). 무료 영상은 `PEXELS_API_KEY` / `PIXABAY_API_KEY`도 Vercel에 넣어야 합니다.
+- **Vercel**은 서버에 파일을 저장할 수 없으므로 상세페이지에 `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`가 필수입니다(비공개 버킷 `detail-page` 자동 생성). 내 PC 데이터는 `.env.local`에 같은 키를 넣고 `npm run migrate:supabase`로 옮깁니다. 상세페이지 Gemini 키는 Vercel 환경변수 `GEMINI_API_KEY`로 넣습니다. 맨 위 움직이는 컷은 PC에 ffmpeg가 없으면 npm 패키지 `ffmpeg-static`의 ffmpeg를 씁니다(Vercel 포함). 무료 영상은 `PEXELS_API_KEY` / `PIXABAY_API_KEY`도 Vercel에 넣어야 합니다(최대 3개를 골라 Gemini로 컷 편집, 키가 없으면 기본 편집).
 
 ## 기능
 

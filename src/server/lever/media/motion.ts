@@ -4,7 +4,7 @@
  * 흐름: 맨 위 사진 → 클립(사진 자리 크기, 무음 MP4) → 다운로드할 때 섹션 문구와 합성해 GIF
  * - pan: 사진을 천천히 확대하며 옆으로 이동 (ffmpeg, 무료)
  * - video: Gemini Omni 이미지→영상 (유료) 후 사진 자리 크기로 자르기
- * - stock: 무료 영상(Pexels·Pixabay)의 가운데 구간을 사진 자리 크기로 자르기
+ * - stock: 무료 영상(Pexels·Pixabay) 최대 3개를 AI가 고른 장면으로 컷 편집해 사진 자리 크기로
  */
 
 export const VIDEO_MODEL = 'gemini-omni-1.1-flash';
@@ -95,14 +95,114 @@ export function videoClipArgs(input: string, output: string, width: number, heig
   return ['-y', '-i', input, '-t', String(CLIP_SECONDS + 3), '-vf', fitFilter(width, height), ...encodeArgs, output];
 }
 
-// ===== 무료 영상 (Pexels·Pixabay) =====
+// ===== 무료 영상 (Pexels·Pixabay) — 최대 3개를 컷 편집 =====
 
-/** 앞뒤는 장면 전환·흔들림이 많아 가운데 구간을 쓴다 (0.1초 단위) */
-export const stockClipStart = (duration: number) => Math.max(0, Math.floor(((duration - CLIP_SECONDS) / 2) * 10) / 10);
+export const MONTAGE = {
+  cutMin: 0.8,
+  cutMax: 2.5,
+  totalMin: 4,
+  totalMax: 8,
+  maxCuts: 8,
+  /** AI가 보는 영상별 장면 수와 크기 */
+  framesPerClip: 6,
+  frameWidth: 320,
+} as const;
 
-/** 무료 영상 → 가운데 CLIP_SECONDS초를 사진 자리 크기로 자르고 소리 제거 */
-export function stockClipArgs(input: string, output: string, width: number, height: number, duration: number) {
-  return ['-y', '-ss', String(stockClipStart(duration)), '-i', input, '-t', String(CLIP_SECONDS), '-vf', fitFilter(width, height), ...encodeArgs, output];
+/** 고른 영상 하나 (index = 고른 순서) */
+export interface MontageClip {
+  duration: number;
+}
+
+/** 컷 하나 — clip은 0부터 */
+export interface MontageCut {
+  clip: number;
+  start: number;
+  duration: number;
+}
+
+const floor1 = (n: number) => Math.floor(n * 10) / 10;
+const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+
+/** 영상 끝에 걸리지 않게 0.1초 여유 */
+const usableLength = (clip: MontageClip) => Math.max(0, clip.duration - 0.1);
+
+/** AI에게 보여줄 장면 시각 — 앞뒤 5%는 화면 전환이 많아 빼고 고르게 */
+export const sampleTimes = (duration: number, count: number = MONTAGE.framesPerClip) =>
+  Array.from({ length: count }, (_, i) => floor1(duration * (0.05 + (0.9 * (i + 0.5)) / count)));
+
+/** 영상 안에 들어가게 맞춘 컷 (너무 짧은 영상이면 null) */
+function fitCut(clips: MontageClip[], clip: number, start: number, duration: number): MontageCut | null {
+  const length = clips[clip] && usableLength(clips[clip]);
+  if (!length || length < MONTAGE.cutMin || !Number.isFinite(start) || !Number.isFinite(duration)) return null;
+  const d = floor1(clamp(duration, MONTAGE.cutMin, Math.min(MONTAGE.cutMax, length)));
+  return { clip, start: floor1(clamp(start, 0, length - d)), duration: d };
+}
+
+/** 고른 개수별 컷 순서 — 영상을 번갈아 짧게 이어 붙인다 */
+const FALLBACK_ORDER: Record<number, number[]> = { 1: [0, 0, 0, 0], 2: [0, 1, 0, 1], 3: [0, 1, 2, 0, 1, 2] };
+
+/** AI 없이 만드는 기본 컷 편집: 각 영상을 고르게 나눈 지점에서 같은 길이로 */
+export function fallbackPlan(clips: MontageClip[]): MontageCut[] {
+  const order = FALLBACK_ORDER[clips.length] ?? clips.map((_, i) => i);
+  const cutLength = clamp(6 / order.length, MONTAGE.cutMin, MONTAGE.cutMax);
+  const uses = clips.map((_, i) => order.filter((c) => c === i).length);
+  const seen = clips.map(() => 0);
+  return order.flatMap((clip) => {
+    const position = ++seen[clip] / (uses[clip] + 1);
+    const cut = fitCut(clips, clip, clips[clip].duration * position - cutLength / 2, cutLength);
+    return cut ? [cut] : [];
+  });
+}
+
+/** AI 답(clip은 1부터) → 검사·보정한 컷 목록. 규칙을 못 지키면 null (기본 편집으로 대신) */
+export function normalizePlan(raw: unknown, clips: MontageClip[]): MontageCut[] | null {
+  const list = (raw as { cuts?: unknown })?.cuts;
+  if (!Array.isArray(list)) return null;
+  const cuts: MontageCut[] = [];
+  let total = 0;
+  for (const item of list.slice(0, MONTAGE.maxCuts) as { clip?: unknown; start?: unknown; duration?: unknown }[]) {
+    const cut = fitCut(clips, Number(item?.clip) - 1, Number(item?.start), Number(item?.duration));
+    if (!cut) continue;
+    if (total + cut.duration > MONTAGE.totalMax) break;
+    cuts.push(cut);
+    total += cut.duration;
+  }
+  const usesEveryClip = clips.every((clip, i) => usableLength(clip) < MONTAGE.cutMin || cuts.some((c) => c.clip === i));
+  return total >= MONTAGE.totalMin && usesEveryClip ? cuts : null;
+}
+
+export const totalSeconds = (cuts: MontageCut[]) => floor1(cuts.reduce((sum, c) => sum + c.duration, 0) + 1e-9);
+
+/** AI 편집 지시 — 이미지는 영상 순서·시각 순서로 함께 보낸다 */
+export function montagePrompt(productName: string, clips: MontageClip[], times: number[][]) {
+  const frames = times.flatMap((list, clip) => list.map((t) => `clip ${clip + 1} at ${t}s`));
+  return [
+    'You are a video editor making a short, punchy jump-cut montage for the top banner of a Korean online product detail page.',
+    `Product: ${productName || 'farm produce'}.`,
+    `There are ${clips.length} stock clip(s): ${clips.map((c, i) => `clip ${i + 1} is ${c.duration}s long`).join(', ')}.`,
+    `The attached images are frames in this order: ${frames.map((f, i) => `image ${i + 1} = ${f}`).join('; ')}.`,
+    'Pick the best moments: sharp, well lit, appetizing and related to the product. Avoid blurry frames, text, watermarks and close-up faces.',
+    'Open with the most eye-catching shot and alternate clips for a lively rhythm. Do not reuse the same moment twice.',
+    `Rules: 3-${MONTAGE.maxCuts} cuts, each ${MONTAGE.cutMin}-${MONTAGE.cutMax} seconds, total ${MONTAGE.totalMin + 1}-${MONTAGE.totalMax} seconds, use every clip at least once, start + duration must be within the clip.`,
+    'Answer JSON only: {"cuts":[{"clip":1,"start":1.5,"duration":1.2}],"summary":"편집 의도를 한국어 한 문장으로"}',
+  ].join('\n');
+}
+
+/** 영상 한 개에서 정해진 시각의 장면을 작은 JPG로 (한 번에) */
+export function frameGrabArgs(input: string, times: number[], outputs: string[]) {
+  return [
+    '-y',
+    ...times.flatMap((t) => ['-ss', String(t), '-i', input]),
+    ...times.flatMap((_, i) => ['-map', `${i}:v:0`, '-frames:v', '1', '-vf', `scale=${MONTAGE.frameWidth}:-2`, '-q:v', '5', outputs[i]]),
+  ];
+}
+
+/** 컷들을 사진 자리 크기로 맞춰 순서대로 이어 붙인다 (장면이 바로 바뀌는 컷 편집, 소리 없음) */
+export function montageArgs(cuts: { path: string; start: number; duration: number }[], output: string, width: number, height: number) {
+  const inputs = cuts.flatMap((c) => ['-ss', String(c.start), '-t', String(c.duration), '-i', c.path]);
+  const parts = cuts.map((_, i) => `[${i}:v]${fitFilter(width, height)},setsar=1,setpts=PTS-STARTPTS[v${i}]`);
+  const filter = `${parts.join(';')};${cuts.map((_, i) => `[v${i}]`).join('')}concat=n=${cuts.length}:v=1:a=0[out]`;
+  return ['-y', ...inputs, '-filter_complex', filter, '-map', '[out]', ...encodeArgs, output];
 }
 
 export type StockOrientation = 'landscape' | 'portrait' | 'square';

@@ -60,6 +60,7 @@ export const ENDPOINTS = {
     ESTIMATE: (projectId: string) => `/functions/v1/projects/${projectId}/estimate`,
     HERO_MOTION: (projectId: string) => `/functions/v1/projects/${projectId}/hero-motion`,
     HERO_MOTION_GIF: (projectId: string) => `/functions/v1/projects/${projectId}/hero-motion/gif`,
+    HERO_MOTION_APPLY: (projectId: string) => `/functions/v1/projects/${projectId}/hero-motion/apply`,
     HERO_MOTION_STOCK: (projectId: string, query: string) =>
       `/functions/v1/projects/${projectId}/hero-motion/stock?q=${encodeURIComponent(query)}`,
     GENERATE: (projectId: string) => `/functions/v1/projects/${projectId}/generate`,

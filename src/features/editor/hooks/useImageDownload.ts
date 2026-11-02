@@ -4,6 +4,7 @@ import JSZip from 'jszip';
 import { KonvaFrameElement } from '@/shared/types/konva';
 import { useActiveFrames, useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
 import { useStageRefStore } from '@/features/editor/store/useStageRefStore';
+import { HERO_VIDEO_NAME } from '@/features/editor/store/useHeroVideoStore';
 import { combineImagesClient, MIME_TYPES, type CombineFormat } from '@/features/editor/utils/combineImagesClient';
 import { CANVAS_WIDTH, qualityValue, type DownloadOptions } from '@/features/editor/lib/download-options';
 import { showToast } from '@/utils/toast';
@@ -112,7 +113,7 @@ export function withExportState<T>(stage: Konva.Stage, mainLayer: Konva.Layer, r
   }
 }
 
-const EXPORT_HIDDEN = ['._hover-overlay', '._hover-outline', '._selection-ui', '._group-overlay', '._frame-overlay', '._blank-guide'];
+const EXPORT_HIDDEN = ['._hover-overlay', '._hover-outline', '._selection-ui', '._group-overlay', '._frame-overlay', '._blank-guide', `.${HERO_VIDEO_NAME}`];
 
 /**
  * 움직이는 컷 GIF용 레이어 두 장 (원본 배율)

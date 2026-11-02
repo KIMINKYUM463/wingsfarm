@@ -5,7 +5,7 @@ import type { CreatePageFromFigmaOutput } from '@/shared/types/actions';
 import type { KonvaFrameElement } from '@/shared/types/konva';
 import type { ChatEditRequest, ChatEditResult } from '@/shared/types/chatEdit';
 import type { SectionReviewRequest, SectionReviewResult } from '@/shared/types/sectionReview';
-import type { HeroMotionInfo, HeroMotionKind, StockSource, StockVideo } from '@/shared/types/heroMotion';
+import type { HeroMotionInfo, HeroMotionKind, StockPick, StockVideo } from '@/shared/types/heroMotion';
 import type {
   ExternalApiResponse,
   ProjectDetailResponse,
@@ -343,7 +343,7 @@ type HeroMotionResponse = ExternalApiResponse<{ heroMotion: HeroMotionInfo | nul
 export const getHeroMotion = async (projectId: string) =>
   (await httpClient.get<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION(projectId), { withAuth: true })).data.heroMotion;
 
-export type HeroMotionRequest = { kind: Exclude<HeroMotionKind, 'stock'> } | { kind: 'stock'; source: StockSource; videoId: number };
+export type HeroMotionRequest = { kind: Exclude<HeroMotionKind, 'stock'> } | { kind: 'stock'; videos: StockPick[] };
 
 export interface HeroStockResult {
   query: string;
@@ -354,6 +354,10 @@ export interface HeroStockResult {
 
 export const startHeroMotion = async (projectId: string, request: HeroMotionRequest) =>
   (await httpClient.post<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION(projectId), request, { withAuth: true })).data.heroMotion;
+
+/** 미리 본 움직이는 컷을 상세페이지 맨 위에 넣기 */
+export const applyHeroMotion = async (projectId: string) =>
+  (await httpClient.post<HeroMotionResponse>(ENDPOINTS.PROJECTS.HERO_MOTION_APPLY(projectId), {}, { withAuth: true })).data.heroMotion;
 
 /** 무료 영상 검색 (검색어가 비면 서버가 상품명으로 찾는다) */
 export const searchHeroStock = async (projectId: string, query: string) =>
