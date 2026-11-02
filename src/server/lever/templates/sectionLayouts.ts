@@ -4,7 +4,7 @@ import type { FrameNode } from '../frames/tree';
 import type { SectionLayout, SectionType } from '../catalog/sections';
 import { Canvas, CW, SIZE, STAR, W, X, type Place } from './canvas';
 import { designTokens } from './designStyles';
-import { frameNode, imageNode, WHITE } from './nodes';
+import { frameNode, WHITE } from './nodes';
 
 /**
  * 초안 섹션 → Konva 프레임
@@ -69,7 +69,7 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
       const imageH = 1180;
       c.y = 0;
       c.image(sectionCut, 0, W, imageH, 0);
-      c.box(0, 0, W, imageH, 'rgba(0, 0, 0, 1)', { opacity: 0.42, name: 'image_dim' });
+      c.scrim(0, 0, W, imageH);
       const start = c.nodes.length;
       const wasDark = c.dark;
       c.dark = true;
@@ -106,7 +106,7 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
         const left = i % 2 === 0;
         const col: Place = { x: left ? X + imgW + 40 : X, width: CW - imgW - 40, align: 'left' };
         const top = c.y;
-        c.nodes.push(imageNode(c.id(), left ? X : W - X - imgW, top, imgW, imgH, c.t.radius.image, cut.id));
+        c.slot(left ? X : W - X - imgW, top, imgW, imgH, undefined, cut.id);
         c.y = top + 24;
         c.text(pointNo(s, i), SIZE.caption, { ...col, weight: 700, ...c.accent(), letterSpacing: 2, name: 'label', gap: 14 });
         c.heading(itemTitle(s, i), 38, { ...col, name: 'list_title', gap: 16 });
@@ -144,7 +144,7 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
         let y = c.y + 28;
         const cut = itemCut(i);
         if (cut) {
-          c.nodes.push(imageNode(c.id(), x, c.y, cardW, cardW, c.t.radius.card, cut.id));
+          c.slot(x, c.y, cardW, cardW, undefined, cut.id);
           y = c.y + cardW + 24;
         } else {
           c.badge(String(i + 1), x + 28, y, 56, 56, { radius: Math.min(28, c.t.radius.chip), size: SIZE.caption });
@@ -266,18 +266,19 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
   reviews: (ctx) => {
     const { c, s } = ctx;
     header(ctx);
+    const tail = { side: 'bottom' as const, at: 64, size: 20 };
     s.items.forEach((_, i) => {
       const start = c.nodes.length;
       const top = c.y;
       c.textAt('★★★★★', X + 40, top + 36, 300, 26, { color: STAR, align: 'left', name: 'badge' });
       const body = c.textAt(itemText(s, i), X + 40, top + 84, CW - 80, SIZE.small, { align: 'left', lineHeight: 1.6, name: 'list_item' });
-      const authorTop = top + 84 + Number(body.height) + 20;
-      c.textAt(itemTitle(s, i) || '구매 고객', X + 40, authorTop, CW - 80, SIZE.caption, { color: c.muted, align: 'left', name: 'label' });
-      const h = authorTop - top + 68;
-      c.card(start, X, top, CW, h);
-      c.space(h + 24);
+      const h = Number(body.height) + 84 + 40;
+      // 말풍선 꼬리 아래에 작성자
+      c.card(start, X, top, CW, h, 'card', tail);
+      const author = c.textAt(itemTitle(s, i) || '구매 고객', X + 40, top + h + tail.size + 14, CW - 80, SIZE.caption, { color: c.muted, align: 'left', name: 'label' });
+      c.y = Number(author.y) + Number(author.height) + 40;
     });
-    return { bottom: 86 };
+    return { bottom: 70 };
   },
 
   badges: (ctx) => {
@@ -292,7 +293,7 @@ const LAYOUTS: Record<SectionLayout, Builder> = {
         const i = row + col;
         const x = startX + col * (cardW + 20);
         const start = c.nodes.length;
-        c.badge('인증', x + (cardW - 120) / 2, c.y + 36, 120, 120, { radius: c.t.radius.chip ? 60 : 0, size: 28 });
+        c.stamp('인증', x + (cardW - 120) / 2, c.y + 36, 120, 28);
         const name = c.textAt(itemTitle(s, i) || itemText(s, i), x + 24, c.y + 184, cardW - 48, 30, { weight: 700, name: 'list_title' });
         let y = c.y + 184 + Number(name.height) + 10;
         if (itemTitle(s, i)) {
@@ -362,7 +363,7 @@ export function buildSectionFrame(section: DraftSection, type: LayoutSource, pal
 
   const { bottom = 110 } = LAYOUTS[type.layout]({ c, s: section, sectionCut, itemCut });
   const fill = surface === 'white' ? WHITE : palette[surface];
-  const frame = frameNode(`${section.id}-root`, type.name, Math.ceil(c.y + bottom), fill, c.nodes, surface === 'white' ? undefined : surface);
+  const frame = frameNode(`${section.id}-root`, type.name, c.frameHeight(bottom), fill, c.nodes, surface === 'white' ? undefined : surface);
   frame.sectionTypeId = type.id;
   return frame;
 }

@@ -57,28 +57,46 @@ export const TONE_PRESETS: { id: string; name: string; main: string }[] = [
 
 export const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
 
-/** 팔레트 역할(colorVar)이 달린 노드 — 섹션 레이아웃이 만든 바탕·배지·강조 문구 */
+/**
+ * 팔레트 역할이 달린 노드 — 섹션 레이아웃이 만든 바탕·배지·강조 문구·테두리·그림자
+ * colorVar → fill, strokeVar → stroke, shadowVar → shadowColor
+ */
 export interface PaletteNode {
   colorVar?: string;
+  strokeVar?: string;
+  shadowVar?: string;
   fill?: unknown;
+  stroke?: unknown;
+  shadowColor?: unknown;
   children?: PaletteNode[];
 }
+
+/** 역할 키 → 다시 칠할 속성 */
+const PALETTE_LINKS = [
+  ['colorVar', 'fill'],
+  ['strokeVar', 'stroke'],
+  ['shadowVar', 'shadowColor'],
+] as const;
 
 const isPaletteRole = (value: unknown): value is PaletteRole => PALETTE_ROLES.some((r) => r.role === value);
 
 /** 팔레트를 트리 전체에 적용한 새 트리 (바뀐 노드만 새 객체 → 에디터 자동 저장이 바뀐 섹션만 저장) */
 export function recolorTree<T extends PaletteNode>(node: T, palette: DraftPalette): T {
-  const color = isPaletteRole(node.colorVar) ? palette[node.colorVar] : null;
-  const recolored = color !== null && node.fill !== color;
+  const recolored: Partial<Record<'fill' | 'stroke' | 'shadowColor', string>> = {};
+  for (const [role, prop] of PALETTE_LINKS) {
+    const value = node[role];
+    if (isPaletteRole(value) && node[prop] !== palette[value]) recolored[prop] = palette[value];
+  }
   const children = node.children?.map((child) => recolorTree(child, palette));
   const childrenChanged = Boolean(children?.some((child, i) => child !== node.children![i]));
-  if (!recolored && !childrenChanged) return node;
-  return { ...node, ...(recolored && { fill: color }), ...(childrenChanged && { children }) };
+  if (!Object.keys(recolored).length && !childrenChanged) return node;
+  return { ...node, ...recolored, ...(childrenChanged && { children }) };
 }
 
 /** 팔레트에 연결된 노드 수 (0이면 색상 탭으로 바꿀 수 있는 요소가 없음) */
 export const countPaletteNodes = (node: PaletteNode): number =>
-  (isPaletteRole(node.colorVar) ? 1 : 0) + (node.children ?? []).reduce((sum, child) => sum + countPaletteNodes(child), 0);
+  (PALETTE_LINKS.some(([role]) => isPaletteRole(node[role])) ? 1 : 0) +
+  (node.children ?? []).reduce((sum, child) => sum + countPaletteNodes(child), 0);
 
 /** AI 응답이나 사용자 입력을 안전한 팔레트로 정리 (형식이 틀리면 대표색 기준으로 다시 계산) */
 export function normalizePalette(input: Partial<Record<PaletteRole, unknown>> | undefined, fallback: DraftPalette): DraftPalette {

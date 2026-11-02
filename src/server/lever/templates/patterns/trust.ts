@@ -93,7 +93,7 @@ export const TRUST: PatternGroup = {
           const top = c.y;
           const avatarX = i % 2 ? W - X - 64 : X;
           disc(c, '★', avatarX, top, 64, 26);
-          c.y = top + 80;
+          c.y = top + 84;
           cardRow(
             c,
             1,
@@ -101,7 +101,8 @@ export const TRUST: PatternGroup = {
               const body = c.textAt(REVIEW, ix, itop, iw, SIZE.small, { align: 'left', lineHeight: 1.55, name: 'list_item' });
               return bottomOf(c.textAt('[작성자]', ix, bottomOf(body) + 12, iw, SIZE.fine, { color: c.muted, align: 'left', name: 'label' }));
             },
-            { x, width: w, pad: 32, after: 32 },
+            // 꼬리가 위의 동그라미(작성자)를 가리킨다
+            { x, width: w, pad: 32, after: 32, tail: { side: 'top', at: avatarX + 32 - x, size: 18 } },
           );
         });
         return 70;

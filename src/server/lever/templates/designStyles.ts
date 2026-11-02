@@ -9,6 +9,22 @@ import type { SectionLayout } from '../catalog/sections';
  */
 export type Surface = 'white' | 'bgLight' | 'bgDark' | 'main';
 
+/** 도형 언어 — 같은 배치라도 스타일마다 카드·사진·배지·장식 모양이 달라진다 */
+export interface ShapeTokens {
+  /** 카드·배지 그림자: 없음 / 부드럽게 뜬 / 어긋나게 찍힌 스티커 */
+  shadow: 'none' | 'soft' | 'hard';
+  /** 큰 사진 모서리: 고르게 / 잎(대각선 두 모서리만 크게, 세로 사진은 아치) */
+  photo: 'even' | 'organic';
+  /** 큰 사진 액자: 없음 / 바깥 가는 선 / 뒤에 어긋난 색 면 */
+  frame: 'none' | 'line' | 'offset';
+  /** 섹션 장식: 없음 / 흐린 원 / 얼룩 / 반짝이 / 제목 선 가운데 마름모 */
+  ornament: 'none' | 'orb' | 'blob' | 'sparkle' | 'diamond';
+  /** 큰 원형 배지(인증·스탬프): 원 + 안쪽 테두리 / 톱니 스티커 */
+  stamp: 'seal' | 'burst';
+  /** 색 띠 윗변: 곧게 / 물결 */
+  edge: 'straight' | 'wave';
+}
+
 export interface DesignTokens {
   font: { heading: string; body: string };
   headingWeight: number;
@@ -21,8 +37,9 @@ export interface DesignTokens {
   /** 제목 아래 짧은 강조선 */
   titleRule: boolean;
   radius: { card: number; image: number; chip: number };
-  /** 카드: 채운 상자 / 테두리만 */
-  card: 'fill' | 'outline';
+  /** 카드: 채운 상자 / 테두리만 / 채운 상자 + 왼쪽 색 띠 */
+  card: 'fill' | 'outline' | 'stripe';
+  shape: ShapeTokens;
   /** 첫 화면: 문구 → 사진 / 사진 → 문구 / 사진 위에 문구 */
   hero: 'stack' | 'imageTop' | 'overlay';
   /** 포인트 나열: 위아래로 쌓기 / 사진·문구 좌우 번갈아 / 화면 끝까지 꽉 찬 사진 아래 문구 */
@@ -61,6 +78,7 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: false,
     radius: { card: 28, image: 24, chip: 32 },
     card: 'fill',
+    shape: { shadow: 'soft', photo: 'even', frame: 'none', ornament: 'orb', stamp: 'seal', edge: 'straight' },
     hero: 'stack',
     points: 'stack',
     surfaces: { ...BASE_SURFACES, hero: 'white', visual: 'white', points: 'white', size: 'white', steps: 'white', badges: 'white', story: 'bgLight', contact: 'bgLight' },
@@ -75,6 +93,7 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: false,
     radius: { card: 32, image: 40, chip: 32 },
     card: 'fill',
+    shape: { shadow: 'none', photo: 'organic', frame: 'none', ornament: 'blob', stamp: 'seal', edge: 'wave' },
     hero: 'imageTop',
     points: 'zigzag',
     surfaces: { ...BASE_SURFACES, table: 'bgLight', notice: 'bgLight' },
@@ -89,6 +108,7 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: true,
     radius: { card: 0, image: 0, chip: 0 },
     card: 'outline',
+    shape: { shadow: 'none', photo: 'even', frame: 'line', ornament: 'diamond', stamp: 'seal', edge: 'straight' },
     hero: 'overlay',
     points: 'zigzag',
     surfaces: { ...BASE_SURFACES, hero: 'main', story: 'main', reviews: 'main', points: 'white', grid: 'white', table: 'white', faq: 'white', contact: 'bgLight' },
@@ -103,6 +123,7 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     titleRule: false,
     radius: { card: 36, image: 36, chip: 40 },
     card: 'fill',
+    shape: { shadow: 'hard', photo: 'even', frame: 'offset', ornament: 'sparkle', stamp: 'burst', edge: 'wave' },
     hero: 'stack',
     points: 'stack',
     surfaces: { ...BASE_SURFACES, hero: 'bgDark', grid: 'bgDark', badges: 'bgDark', steps: 'bgDark', faq: 'bgDark' },
@@ -116,7 +137,8 @@ export const DESIGN_TOKENS: Record<DesignStyleId, DesignTokens> = {
     label: 'text',
     titleRule: false,
     radius: { card: 0, image: 0, chip: 0 },
-    card: 'fill',
+    card: 'stripe',
+    shape: { shadow: 'none', photo: 'even', frame: 'none', ornament: 'none', stamp: 'seal', edge: 'straight' },
     hero: 'overlay',
     points: 'bleed',
     surfaces: { ...BASE_SURFACES, visual: 'white', points: 'white', grid: 'white', size: 'white', steps: 'white', badges: 'white', faq: 'white', compare: 'bgLight' },

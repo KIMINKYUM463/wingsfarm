@@ -247,7 +247,7 @@ function toSeeds(templates: DesignTemplate[]): TemplateSeed[] {
 }
 
 /** 기본 템플릿 구성이 바뀌면 올려서 저장소에 다시 반영한다 */
-export const BUILTIN_VERSION = 5;
+export const BUILTIN_VERSION = 6;
 
 export function buildBuiltinTemplates(): TemplateSeed[] {
   seq = 0;

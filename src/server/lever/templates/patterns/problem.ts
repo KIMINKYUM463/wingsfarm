@@ -16,11 +16,14 @@ export const PROBLEM: PatternGroup = {
         c.header('WHY', '이런 고민,\n있으셨죠?');
         PAINS.forEach((value, i) => {
           const w = 560;
+          const right = i % 2 === 1;
           cardRow(c, 1, (_, x, iw, top) => bottomOf(c.textAt(value, x, top, iw, SIZE.body, { align: 'left', lineHeight: 1.5, name: 'list_item' })), {
-            x: i % 2 ? W - X - w : X,
+            x: right ? W - X - w : X,
             width: w,
             pad: 36,
-            after: 24,
+            after: 40,
+            // 지그재그로 놓인 말풍선 꼬리가 바깥쪽 아래를 가리킨다
+            tail: { side: 'bottom', at: right ? w - 56 : 56, size: 16 },
           });
         });
         return 90;
@@ -149,16 +152,18 @@ export const PROBLEM: PatternGroup = {
         const bubble = (value: string, who: string, mine: boolean) => {
           const w = 560;
           const x = mine ? W - X - w : X;
+          // 꼬리가 말한 사람 이름 쪽(왼쪽 위 / 오른쪽 위)을 가리킨다
+          const tail = { side: 'top' as const, at: mine ? w - 48 : 48, size: 16 };
           c.textAt(who, x, c.y, w, SIZE.caption, { color: c.muted, align: mine ? 'right' : 'left', name: 'label' });
-          c.space(40);
+          c.space(52);
           if (!mine) {
-            cardRow(c, 1, (_, ix, iw, top) => bottomOf(c.textAt(value, ix, top, iw, SIZE.body, { align: 'left', lineHeight: 1.5, name: 'list_item' })), { x, width: w, pad: 32, after: 32 });
+            cardRow(c, 1, (_, ix, iw, top) => bottomOf(c.textAt(value, ix, top, iw, SIZE.body, { align: 'left', lineHeight: 1.5, name: 'list_item' })), { x, width: w, pad: 32, after: 32, tail });
             return;
           }
           const start = c.nodes.length;
           const t = c.textAt(value, x + 32, c.y + 32, w - 64, SIZE.body, { weight: 700, align: 'left', lineHeight: 1.5, name: 'main_copy', ...onAccent(c) });
           const h = Number(t.height) + 64;
-          accentFill(c, start, x, c.y, w, h);
+          accentFill(c, start, x, c.y, w, h, c.t.radius.card, tail);
           c.space(h + 32);
         };
         bubble('과일은 사진이랑 다를까 봐\n온라인으로 사기 망설여져요', '고객', false);

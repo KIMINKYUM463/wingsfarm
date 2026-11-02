@@ -1,6 +1,7 @@
+import { trapezoidPath } from '@/shared/lib/shapePaths';
 import { CW, SIZE, W, X } from '../canvas';
 import { WHITE } from '../nodes';
-import { accentFill, bottomOf, cardRow, chips, columns, disc, divider, onAccent, softFill, titledAt, type PatternGroup } from './kit';
+import { accentFill, bottomOf, cardRow, chips, columns, disc, divider, onAccent, softPaint, titledAt, type PatternGroup } from './kit';
 
 export const FEATURES: PatternGroup = {
   key: 'features',
@@ -196,18 +197,21 @@ export const FEATURES: PatternGroup = {
       draw: (c) => {
         c.header('SELECT', '이렇게 골라서\n보내요');
         const steps = [['수확한 전체', '[수확 기준]'], ['1차 선별', '[크기·모양 기준]'], ['최종 출고', '[당도·상태 기준]']];
+        const step = 140;
         steps.forEach(([title, text], i) => {
-          const w = CW - i * 140;
+          const w = CW - i * step;
           const x = (W - w) / 2;
           const top = c.y;
           const start = c.nodes.length;
           const last = i === steps.length - 1;
           const color = last ? onAccent(c) : {};
-          const t = c.textAt(title, x, top + 28, w, 32, { weight: 700, name: 'list_title', ...color });
-          const b = c.textAt(text, x, bottomOf(t) + 8, w, SIZE.caption, { name: 'list_item', ...(last ? color : { color: c.muted }) });
+          // 아랫변이 다음 칸 폭만큼 좁아지는 사다리꼴 — 글자는 좁아진 폭 안에 둔다
+          const inner = { x: x + step / 2, w: w - step };
+          const t = c.textAt(title, inner.x, top + 28, inner.w, 32, { weight: 700, name: 'list_title', ...color });
+          const b = c.textAt(text, inner.x, bottomOf(t) + 8, inner.w, SIZE.caption, { name: 'list_item', ...(last ? color : { color: c.muted }) });
           const h = bottomOf(b) - top + 28;
-          if (last) accentFill(c, start, x, top, w, h);
-          else softFill(c, start, x, top, w, h, c.t.radius.card);
+          const paint = last ? c.accentPaint : softPaint(c);
+          c.path(trapezoidPath(w, h, step / 2), x, top, w, h, paint.fill, { colorVar: paint.colorVar, name: last ? 'accent_bg' : 'soft_bg' }, start);
           c.y = top + h;
           if (!last) c.text('▼', 28, { ...c.accent(), align: 'center', name: 'badge', gap: 8 });
         });

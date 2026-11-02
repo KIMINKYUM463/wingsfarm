@@ -37,10 +37,21 @@ export interface PreviewNode {
   letterSpacing?: number;
   align?: string;
   lineHeight?: number;
-  cornerRadius?: number;
+  cornerRadius?: number | number[];
   stroke?: string;
   strokeWidth?: number;
   opacity?: number;
+  /** path 도형 경로 (말풍선·쿠폰·스티커 등) */
+  data?: string;
+  fillPriority?: string;
+  fillLinearGradientEndPoint?: { x: number; y: number };
+  fillLinearGradientColorStops?: (number | string)[];
+  shadowEnabled?: boolean;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+  shadowOpacity?: number;
   cutId?: string;
   children?: PreviewNode[];
 }

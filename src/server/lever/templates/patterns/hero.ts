@@ -1,3 +1,4 @@
+import { wavePath } from '@/shared/lib/shapePaths';
 import { CW, SIZE, W, X } from '../canvas';
 import { WHITE } from '../nodes';
 import { bottomOf, cardRow, chips, columns, disc, outline, type PatternGroup } from './kit';
@@ -99,8 +100,12 @@ export const HERO: PatternGroup = {
         c.y = top + 90;
         c.header('BRAND NAME', '고객이 얻는 결과를\n한 줄로 보여 주세요', SUB, SIZE.heroTitle);
         const h = c.y - top + 26;
-        if (wasDark) c.boxBehind(start, 0, top, W, h, WHITE, { name: 'band' });
-        else c.boxBehind(start, 0, top, W, h, c.palette.main, { name: 'band', colorVar: 'main' });
+        const paint = wasDark ? { fill: WHITE } : { fill: c.palette.main, colorVar: 'main' as const };
+        if (c.t.shape.edge === 'wave') {
+          // 물결 윗변이 사진 아래를 살짝 덮는다
+          const amp = 28;
+          c.path(wavePath(W, h + amp, amp, 3), 0, top - amp, W, h + amp, paint.fill, { colorVar: paint.colorVar, name: 'band' }, start);
+        } else c.boxBehind(start, 0, top, W, h, paint.fill, { colorVar: paint.colorVar, name: 'band' });
         c.dark = wasDark;
         c.y = top + h + 64;
         chips(c, BENEFITS);

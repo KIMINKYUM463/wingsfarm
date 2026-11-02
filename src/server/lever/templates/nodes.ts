@@ -32,8 +32,8 @@ export interface TextOptions {
 const HANGUL_WIDTH: Record<string, number> = { Pretendard: 0.88, 'Nanum Myeongjo': 0.94, 'Noto Serif KR': 0.98 };
 const DEFAULT_HANGUL_WIDTH = 0.98;
 
-/** 글자 하나의 대략적인 폭 */
-const charWidth = (ch: string, fontSize: number, fontFamily = 'Pretendard') => {
+/** 글자 하나의 대략적인 폭 (레이아웃 높이 계산과 SVG 썸네일 줄바꿈이 같은 값을 써야 줄 수가 맞는다) */
+export const charWidth = (ch: string, fontSize: number, fontFamily = 'Pretendard') => {
   if (ch === ' ') return fontSize * 0.28;
   if (/[\u3131-\uD79D]/.test(ch)) return fontSize * (HANGUL_WIDTH[fontFamily] ?? DEFAULT_HANGUL_WIDTH);
   if (/[A-Z0-9%#@&]/.test(ch)) return fontSize * 0.66;
@@ -100,13 +100,60 @@ export function textNode(id: string, value: string, x: number, y: number, width:
   };
 }
 
+export interface Shadow {
+  color: string;
+  /** 팔레트 역할과 연결된 그림자 색 (색상 탭에서 함께 바뀐다) */
+  colorVar?: PaletteRole;
+  blur: number;
+  x: number;
+  y: number;
+  opacity: number;
+}
+
+/** 세로 그라데이션 (위 → 아래). stops = [위치 0~1, 색, 위치, 색, …] */
+export interface VerticalGradient {
+  stops: (number | string)[];
+}
+
 export interface BoxOptions {
-  cornerRadius?: number;
+  /** 숫자 하나 또는 [왼쪽 위, 오른쪽 위, 오른쪽 아래, 왼쪽 아래] */
+  cornerRadius?: number | number[];
   name?: string;
   colorVar?: PaletteRole;
   stroke?: string;
+  strokeVar?: PaletteRole;
   strokeWidth?: number;
   opacity?: number;
+  shadow?: Shadow;
+  gradient?: VerticalGradient;
+}
+
+/** 사각형·경로 노드가 함께 쓰는 칠·선·그림자 속성 */
+function paintProps(fill: string, height: number, o: BoxOptions): Partial<FrameNode> {
+  return {
+    fill,
+    ...(o.colorVar && { colorVar: o.colorVar }),
+    ...(o.stroke && { stroke: o.stroke, strokeWidth: o.strokeWidth ?? 2, ...(o.strokeVar && { strokeVar: o.strokeVar }) }),
+    ...(o.gradient
+      ? {
+          fillPriority: 'linear-gradient',
+          fillLinearGradientStartPoint: { x: 0, y: 0 },
+          fillLinearGradientEndPoint: { x: 0, y: height },
+          fillLinearGradientColorStops: o.gradient.stops,
+        }
+      : { fillPriority: 'color' }),
+    ...(o.shadow && {
+      shadowEnabled: true,
+      shadowColor: o.shadow.color,
+      shadowBlur: o.shadow.blur,
+      shadowOffsetX: o.shadow.x,
+      shadowOffsetY: o.shadow.y,
+      shadowOpacity: o.shadow.opacity,
+      ...(o.shadow.colorVar && { shadowVar: o.shadow.colorVar }),
+    }),
+    visible: true,
+    opacity: o.opacity ?? 1,
+  };
 }
 
 export const boxNode = (id: string, x: number, y: number, width: number, height: number, fill: string, o: BoxOptions = {}): FrameNode => ({
@@ -117,17 +164,28 @@ export const boxNode = (id: string, x: number, y: number, width: number, height:
   y,
   width,
   height,
-  fill,
-  ...(o.colorVar ? { colorVar: o.colorVar } : {}),
-  ...(o.stroke ? { stroke: o.stroke, strokeWidth: o.strokeWidth ?? 2 } : {}),
-  fillPriority: 'color',
   cornerRadius: o.cornerRadius ?? 0,
-  visible: true,
-  opacity: o.opacity ?? 1,
+  ...paintProps(fill, height, o),
+});
+
+/**
+ * 경로 도형 (말풍선·쿠폰·스티커·물결 등). data는 왼쪽 위 0,0 기준 좌표이고,
+ * width·height는 그 경로가 차지하는 상자 크기 (선택·겹침 계산·썸네일용)
+ */
+export const pathNode = (id: string, data: string, x: number, y: number, width: number, height: number, fill: string, o: BoxOptions = {}): FrameNode => ({
+  type: 'path',
+  id,
+  name: o.name ?? 'Shape',
+  x,
+  y,
+  width,
+  height,
+  data,
+  ...paintProps(fill, height, o),
 });
 
 /** 사진 자리 (`_image`) — cutId로 초안의 컷과 연결된다 */
-export const imageNode = (id: string, x: number, y: number, width: number, height: number, cornerRadius = 0, cutId?: string): FrameNode => ({
+export const imageNode = (id: string, x: number, y: number, width: number, height: number, cornerRadius: number | number[] = 0, cutId?: string): FrameNode => ({
   ...boxNode(id, x, y, width, height, 'rgba(51, 51, 51, 1)', { cornerRadius, name: '_image' }),
   ...(cutId ? { cutId } : {}),
 });

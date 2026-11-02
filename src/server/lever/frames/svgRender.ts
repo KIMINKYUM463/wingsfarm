@@ -1,4 +1,6 @@
+import { roundedRectPath } from '@/shared/lib/shapePaths';
 import { escapeXml } from '../catalog/svg';
+import { charWidth as estimateCharWidth } from '../templates/nodes';
 import type { FrameNode } from './tree';
 
 /**
@@ -53,11 +55,20 @@ const strokeAttrs = (node: FrameNode) =>
     ? ` stroke="${node.stroke}" stroke-width="${num(node.strokeWidth)}"`
     : '';
 
-const isWide = (ch: string) => /[\u1100-\u11ff\u3130-\u318f\uac00-\ud7a3\u3000-\u9fff\uff00-\uffef]/.test(ch);
+/** Konva 그림자 → SVG feDropShadow (Konva blur는 대략 표준편차의 2배) */
+function shadowOf(node: FrameNode): { attr: string; defs: string } {
+  if (!node.shadowEnabled || typeof node.shadowColor !== 'string') return { attr: '', defs: '' };
+  const id = `s${++gradientSeq}`;
+  const defs =
+    `<filter id="${id}" x="-20%" y="-20%" width="140%" height="140%">` +
+    `<feDropShadow dx="${num(node.shadowOffsetX)}" dy="${num(node.shadowOffsetY)}" stdDeviation="${num(node.shadowBlur) / 2}" ` +
+    `flood-color="${node.shadowColor}" flood-opacity="${num(node.shadowOpacity, 1)}"/></filter>`;
+  return { attr: ` filter="url(#${id})"`, defs };
+}
 
-/** 글자 폭 추정으로 줄바꿈 (한글·전각은 1em, 그 외 0.55em) */
-function wrapLines(text: string, width: number, fontSize: number, letterSpacing: number, wrap: unknown) {
-  const charWidth = (ch: string) => (isWide(ch) ? fontSize * 0.95 : fontSize * 0.55) + letterSpacing;
+/** 글자 폭 추정으로 줄바꿈 — 템플릿 레이아웃이 높이를 잡을 때와 같은 글꼴별 폭을 써서 줄 수를 맞춘다 */
+function wrapLines(text: string, width: number, fontSize: number, letterSpacing: number, wrap: unknown, fontFamily: string) {
+  const charWidth = (ch: string) => estimateCharWidth(ch, fontSize, fontFamily) + letterSpacing;
   const lines: string[] = [];
   for (const paragraph of text.split('\n')) {
     if (wrap === 'none' || width <= 0) {
@@ -111,7 +122,8 @@ function renderText(node: FrameNode) {
   const fontSize = num(node.fontSize, 16);
   const lineHeight = fontSize * num(node.lineHeight, 1.2);
   const width = num(node.width);
-  const lines = wrapLines(String(node.text ?? ''), width, fontSize, num(node.letterSpacing), node.wrap);
+  const family = typeof node.fontFamily === 'string' ? node.fontFamily : 'Pretendard';
+  const lines = wrapLines(String(node.text ?? ''), width, fontSize, num(node.letterSpacing), node.wrap, family);
   const align = node.align === 'center' ? 'middle' : node.align === 'right' ? 'end' : 'start';
   const x = align === 'middle' ? width / 2 : align === 'end' ? width : 0;
   const weight = num(node.fontWeight, String(node.fontStyle ?? '').includes('bold') ? 700 : 400);
@@ -143,12 +155,18 @@ function renderNode(node: FrameNode): string {
     }
     case 'rect': {
       const { fill, defs } = isImage ? { fill: PLACEHOLDER, defs: '' } : paint(node);
-      const radius = Array.isArray(node.cornerRadius) ? num(node.cornerRadius[0]) : num(node.cornerRadius);
-      return `${defs}<rect transform="${transformOf(node)}" width="${width}" height="${height}" rx="${radius}" fill="${fill}"${strokeAttrs(node)}${opacity}/>`;
+      const shadow = shadowOf(node);
+      const attrs = `transform="${transformOf(node)}" fill="${fill}"${strokeAttrs(node)}${opacity}${shadow.attr}`;
+      // 모서리마다 반지름이 다르면(잎·아치 모양) 경로로 그린다
+      if (Array.isArray(node.cornerRadius)) {
+        return `${defs}${shadow.defs}<path ${attrs} d="${roundedRectPath(width, height, node.cornerRadius as number[])}"/>`;
+      }
+      return `${defs}${shadow.defs}<rect ${attrs} width="${width}" height="${height}" rx="${num(node.cornerRadius)}"/>`;
     }
     case 'path': {
       const { fill, defs } = isImage ? { fill: PLACEHOLDER, defs: '' } : paint(node);
-      return `${defs}<path transform="${transformOf(node)}" d="${escapeXml(String(node.data ?? ''))}" fill="${fill}" fill-rule="${node.fillRule === 'evenodd' ? 'evenodd' : 'nonzero'}"${strokeAttrs(node)}${opacity}/>`;
+      const shadow = shadowOf(node);
+      return `${defs}${shadow.defs}<path transform="${transformOf(node)}" d="${escapeXml(String(node.data ?? ''))}" fill="${fill}" fill-rule="${node.fillRule === 'evenodd' ? 'evenodd' : 'nonzero'}"${strokeAttrs(node)}${opacity}${shadow.attr}/>`;
     }
     case 'circle':
       return `<circle transform="${transformOf(node)}" r="${num(node.radius)}" fill="${paint(node).fill}"${strokeAttrs(node)}${opacity}/>`;

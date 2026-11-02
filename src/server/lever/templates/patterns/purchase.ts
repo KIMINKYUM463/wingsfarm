@@ -1,5 +1,6 @@
+import { ticketPath } from '@/shared/lib/shapePaths';
 import { CW, SIZE, W, X } from '../canvas';
-import { accentFill, bottomOf, button, cardRow, columns, disc, divider, onAccent, outline, overlay, surfaceColor, type PatternGroup } from './kit';
+import { bottomOf, button, cardRow, columns, disc, divider, onAccent, outline, overlay, type PatternGroup } from './kit';
 
 const SELLER = '(판매 정보 그대로)';
 
@@ -206,9 +207,8 @@ export const PURCHASE: PatternGroup = {
         const big = c.textAt('[혜택]', X + 60, top + 70, CW - 120, 64, { weight: 900, name: 'list_title', fontFamily: c.t.font.heading, ...color });
         const sub = c.textAt('[혜택 설명 한 줄]', X + 60, bottomOf(big) + 12, CW - 120, SIZE.small, { name: 'list_item', ...color });
         const h = Math.max(300, bottomOf(sub) - top + 70);
-        accentFill(c, start, X, top, CW, h);
-        const notch = surfaceColor(c);
-        for (const nx of [X - 30, X + CW - 30]) c.box(nx, top + h / 2 - 30, 60, 60, notch.fill, { cornerRadius: 30, name: 'notch', ...(notch.colorVar && { colorVar: notch.colorVar }) });
+        const paint = c.accentPaint;
+        c.path(ticketPath(CW, h, c.t.radius.card, 30), X, top, CW, h, paint.fill, { colorVar: paint.colorVar, shadow: c.shadow('card'), name: 'ticket' }, start);
         c.y = top + h + 28;
         c.text('[기간·조건]', SIZE.caption, { color: c.muted, name: 'list_item', gap: 0 });
         return 100;

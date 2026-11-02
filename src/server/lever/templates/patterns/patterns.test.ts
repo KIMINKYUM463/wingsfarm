@@ -44,6 +44,24 @@ describe('패턴 템플릿', () => {
     }
   });
 
+  it('스킨(스타일)마다 도형 언어가 드러난다', () => {
+    const nodesOf = (skin: string) => templates.filter((t) => t.slug.endsWith(`-${skin}`)).flatMap((t) => visibleNodes(t.frame));
+    const has = (skin: string, test: (n: FrameNode) => boolean, what: string) => assert.ok(nodesOf(skin).some(test), what);
+    has('a', (n) => Boolean(n.shadowEnabled) && Number(n.shadowBlur) > 0, '모던: 부드럽게 뜬 카드');
+    has('b', (n) => n.type === 'path' && n.name === 'deco', '내추럴: 얼룩 장식');
+    has('b', (n) => n.name === '_image' && Array.isArray(n.cornerRadius), '내추럴: 잎·아치 사진');
+    has('c', (n) => n.name === 'photo_frame' || n.name === 'card_line', '프리미엄: 가는 선 액자');
+    has('d', (n) => Boolean(n.shadowEnabled) && n.shadowBlur === 0, '팝: 어긋난 스티커 그림자');
+    has('d', (n) => n.type === 'path' && n.name === 'badge_bg', '팝: 톱니 스탬프');
+    has('e', (n) => n.name === 'card_stripe', '다큐: 카드 왼쪽 색 띠');
+  });
+
+  it('경로 도형은 그릴 경로와 상자 크기를 가진다', () => {
+    const paths = templates.flatMap((t) => visibleNodes(t.frame)).filter((n) => n.type === 'path');
+    assert.ok(paths.length > 0);
+    for (const n of paths) assert.ok(typeof n.data === 'string' && n.data.length > 0 && Number(n.width) > 0 && Number(n.height) > 0, String(n.name));
+  });
+
   it('문구 가이드(prompt)와 사진 자리 규칙을 지킨다', () => {
     for (const { slug, frame } of templates) {
       const prompt = (frame.children ?? []).find((n) => n.name === 'prompt');

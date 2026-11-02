@@ -51,7 +51,7 @@ export function buildPatternTemplates(): DesignTemplate[] {
         const bottom = pattern.draw(c) ?? 110;
         const fill = skin.surface === 'white' ? WHITE : palette[skin.surface];
         const colorVar = skin.surface === 'white' ? undefined : skin.surface;
-        const frame = frameNode(`${slug}-root`, `${pattern.name} · ${style.name}`, Math.ceil(c.y + bottom), fill, c.nodes, colorVar);
+        const frame = frameNode(`${slug}-root`, `${pattern.name} · ${style.name}`, c.frameHeight(bottom), fill, c.nodes, colorVar);
         return { slug, part2: group.part2, frame: withGuide(frame, slug, pattern.guide) };
       }),
     ),

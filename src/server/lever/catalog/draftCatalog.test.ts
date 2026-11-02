@@ -54,6 +54,16 @@ describe('색 팔레트', () => {
     assert.equal(recolorTree(next, palette), next);
     assert.equal(countPaletteNodes(frame), 2);
   });
+
+  it('테두리(strokeVar)·그림자(shadowVar)도 팔레트를 따라 바뀐다', () => {
+    const palette = derivePalette('#1F5C99');
+    const frame = { fill: '#FFFFFF', children: [{ fill: '#FFFFFF', stroke: '#000000', strokeVar: 'point', shadowColor: '#000000', shadowVar: 'main' }] };
+    const [card] = recolorTree(frame, palette).children;
+    assert.equal(card.fill, '#FFFFFF');
+    assert.equal(card.stroke, palette.point);
+    assert.equal(card.shadowColor, palette.main);
+    assert.equal(countPaletteNodes(frame), 1);
+  });
 });
 
 describe('섹션 카탈로그', () => {

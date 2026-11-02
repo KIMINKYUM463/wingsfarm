@@ -1,7 +1,8 @@
 'use client';
 
-import { memo, useEffect } from 'react';
+import { memo, useEffect, type SVGProps } from 'react';
 import { loadFont } from '@/features/editor/lib/font-loader';
+import { roundedRectPath } from '@/shared/lib/shapePaths';
 import type { PreviewNode } from '../api';
 
 /**
@@ -76,37 +77,80 @@ function PreviewElement({ node, cutImage }: { node: PreviewNode; cutImage: (cutI
     return (
       <g>
         <clipPath id={clipId}>
-          <rect x={x} y={y} width={width} height={height} rx={node.cornerRadius} />
+          <Outline node={node} />
         </clipPath>
         {typeof view === 'object' ? (
           <image href={view.src} x={x} y={y} width={width} height={height} preserveAspectRatio="xMidYMid slice" clipPath={`url(#${clipId})`} />
         ) : view === 'blank' ? (
           <>
-            <rect x={x} y={y} width={width} height={height} rx={node.cornerRadius} fill="#F3F4F6" stroke="#9CA3AF" strokeWidth={6} strokeDasharray="24 16" />
+            <Outline node={node} fill="#F3F4F6" stroke="#9CA3AF" strokeWidth={6} strokeDasharray="24 16" />
             {label('사진 자리', '#9CA3AF')}
           </>
         ) : (
           <>
-            <rect x={x} y={y} width={width} height={height} rx={node.cornerRadius} fill="#D9DEE5" />
+            <Outline node={node} fill="#D9DEE5" />
             {label('✦ AI', '#8A94A3')}
           </>
         )}
       </g>
     );
   }
+  return <ShapeElement node={node} />;
+}
+
+/** 사각형·경로 도형 — 아래로 짙어지는 그라데이션과 그림자까지 */
+function ShapeElement({ node }: { node: PreviewNode }) {
+  const gradientId = `grad-${node.id}`;
+  const shadowId = `shadow-${node.id}`;
+  const stops = node.fillPriority === 'linear-gradient' ? (node.fillLinearGradientColorStops ?? []) : [];
+  const end = node.fillLinearGradientEndPoint ?? { x: 0, y: node.height ?? 0 };
+  const shadow = node.shadowEnabled && node.shadowColor;
   return (
-    <rect
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      rx={node.cornerRadius}
-      fill={node.fill}
-      stroke={node.stroke}
-      strokeWidth={node.stroke ? node.strokeWidth : undefined}
-      opacity={node.opacity}
-    />
+    <>
+      {(stops.length > 0 || shadow) && (
+        <defs>
+          {stops.length > 0 && (
+            <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1={0} y1={0} x2={end.x} y2={end.y}>
+              {Array.from({ length: Math.floor(stops.length / 2) }, (_, i) => (
+                <stop key={i} offset={Number(stops[i * 2])} stopColor={String(stops[i * 2 + 1])} />
+              ))}
+            </linearGradient>
+          )}
+          {shadow && (
+            <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow
+                dx={node.shadowOffsetX ?? 0}
+                dy={node.shadowOffsetY ?? 0}
+                stdDeviation={(node.shadowBlur ?? 0) / 2}
+                floodColor={node.shadowColor}
+                floodOpacity={node.shadowOpacity ?? 1}
+              />
+            </filter>
+          )}
+        </defs>
+      )}
+      <Outline
+        node={node}
+        fill={stops.length > 0 ? `url(#${gradientId})` : node.fill}
+        stroke={node.stroke}
+        strokeWidth={node.stroke ? node.strokeWidth : undefined}
+        opacity={node.opacity}
+        filter={shadow ? `url(#${shadowId})` : undefined}
+      />
+    </>
   );
+}
+
+/**
+ * 노드 모양 그대로의 윤곽: 경로 도형 / 모서리마다 다른 사각형(경로) / 보통 사각형
+ * 모두 translate로 옮겨 그려서 그라데이션 좌표를 도형 왼쪽 위 기준으로 쓸 수 있다
+ */
+function Outline({ node, ...paint }: { node: PreviewNode } & SVGProps<SVGPathElement & SVGRectElement>) {
+  const { x = 0, y = 0, width = 0, height = 0, cornerRadius } = node;
+  const transform = `translate(${x} ${y})`;
+  const d = node.type === 'path' ? node.data : Array.isArray(cornerRadius) ? roundedRectPath(width, height, cornerRadius) : null;
+  if (d != null) return <path d={d} transform={transform} {...paint} />;
+  return <rect width={width} height={height} rx={cornerRadius as number | undefined} transform={transform} {...paint} />;
 }
 
 export default memo(SectionPreview);

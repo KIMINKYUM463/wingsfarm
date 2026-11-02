@@ -1,6 +1,5 @@
 import type { FrameNode } from '../../frames/tree';
-import type { PaletteRole } from '../../catalog/palette';
-import { Canvas, CW, ON_DARK_CARD, SIZE, STAR, X } from '../canvas';
+import { Canvas, CW, ON_DARK_CARD, SIZE, STAR, X, type Paint, type Tail } from '../canvas';
 import { WHITE } from '../nodes';
 
 /**
@@ -44,6 +43,8 @@ interface RowOptions {
   after?: number;
   /** 카드 바탕 없이 칸만 나눈다 */
   bare?: boolean;
+  /** 말풍선 꼬리 (카드 하나짜리 줄에서만) */
+  tail?: Tail;
 }
 
 /**
@@ -62,33 +63,28 @@ export function cardRow(c: Canvas, n: number, draw: (i: number, x: number, w: nu
   });
   const h = bottom - top + pad;
   // 뒤에서부터 끼워 넣어야 앞 카드의 위치(starts)가 밀리지 않는다
-  if (!o.bare) for (let i = n - 1; i >= 0; i--) c.card(starts[i], cells[i].x, top, cells[i].w, h);
+  if (!o.bare) for (let i = n - 1; i >= 0; i--) c.card(starts[i], cells[i].x, top, cells[i].w, h, 'card', n === 1 ? o.tail : undefined);
   c.y = top + h + (o.after ?? 40);
   return h;
 }
 
 /** 강조색 면 위 글자색 */
-export const onAccent = (c: Canvas): { color: string; colorVar?: PaletteRole } =>
-  c.dark ? { color: c.palette.main, colorVar: 'main' } : { color: WHITE };
+export const onAccent = (c: Canvas) => c.onAccent;
 
-/** 강조색 면 (진한 바탕에서는 흰 면) — 내용보다 뒤(start)에 깐다 */
-export function accentFill(c: Canvas, start: number, x: number, y: number, w: number, h: number, radius = c.t.radius.card) {
-  return c.dark
-    ? c.boxBehind(start, x, y, w, h, WHITE, { cornerRadius: radius, name: 'accent_bg' })
-    : c.boxBehind(start, x, y, w, h, c.palette.main, { cornerRadius: radius, name: 'accent_bg', colorVar: 'main' });
+/** 강조색 면 (진한 바탕에서는 흰 면) — 내용보다 뒤(start)에 깐다. tail을 주면 말풍선 */
+export function accentFill(c: Canvas, start: number, x: number, y: number, w: number, h: number, radius = c.t.radius.card, tail?: Tail) {
+  return c.surfaceBehind(start, x, y, w, h, c.accentPaint, { cornerRadius: radius, name: 'accent_bg', shadow: c.shadow('card') }, tail);
+}
+
+/** 연한 면 색 (표 줄무늬·빈 칸) */
+export function softPaint(c: Canvas): Paint {
+  if (c.dark) return { fill: ON_DARK_CARD };
+  return c.surface === 'white' ? { fill: c.palette.bgLight, colorVar: 'bgLight' } : { fill: WHITE };
 }
 
 /** 연한 면 (표 줄무늬·빈 칸) */
-export function softFill(c: Canvas, start: number, x: number, y: number, w: number, h: number, radius = 0) {
-  if (c.dark) return c.boxBehind(start, x, y, w, h, ON_DARK_CARD, { cornerRadius: radius, name: 'soft_bg' });
-  if (c.surface === 'white') return c.boxBehind(start, x, y, w, h, c.palette.bgLight, { cornerRadius: radius, name: 'soft_bg', colorVar: 'bgLight' });
-  return c.boxBehind(start, x, y, w, h, WHITE, { cornerRadius: radius, name: 'soft_bg' });
-}
-
-/** 섹션 바탕과 같은 색 (쿠폰 홈처럼 바탕을 파낸 듯 보이게) */
-export function surfaceColor(c: Canvas): { fill: string; colorVar?: PaletteRole } {
-  return c.surface === 'white' ? { fill: WHITE } : { fill: c.palette[c.surface], colorVar: c.surface };
-}
+export const softFill = (c: Canvas, start: number, x: number, y: number, w: number, h: number, radius = 0) =>
+  c.surfaceBehind(start, x, y, w, h, softPaint(c), { cornerRadius: radius, name: 'soft_bg' });
 
 /** 테두리만 있는 칸 */
 export const outline = (c: Canvas, x: number, y: number, w: number, h: number, radius = c.t.radius.chip, accent = false) =>
@@ -99,9 +95,14 @@ export const outline = (c: Canvas, x: number, y: number, w: number, h: number, r
     name: 'outline',
   });
 
-/** 동그란 번호·아이콘 (각진 스타일은 네모) */
-export const disc = (c: Canvas, value: string, x: number, y: number, d: number, size = Math.round(d * 0.4)) =>
+/** 큰 배지로 보이는 지름 — 이보다 크면 인증·스탬프 모양(안쪽 테두리 / 톱니)으로 그린다 */
+const STAMP_SIZE = 120;
+
+/** 동그란 번호·아이콘 (각진 스타일은 네모). 큰 것은 스탬프 */
+export function disc(c: Canvas, value: string, x: number, y: number, d: number, size = Math.round(d * 0.4)) {
+  if (d >= STAMP_SIZE) return c.stamp(value, x, y, d, size);
   c.badge(value, x, y, d, d, { radius: c.t.radius.chip ? d / 2 : 0, size });
+}
 
 export const stars = (c: Canvas, x: number, y: number, width = 300, align: 'left' | 'center' = 'left', size = 26) =>
   c.textAt('★★★★★', x, y, width, size, { color: STAR, align, name: 'badge' });
@@ -124,10 +125,10 @@ export function chips(c: Canvas, values: string[], o: { width?: number; height?:
   c.space(rowH);
 }
 
-/** 사진 위 글자: 사진과 어둡게 깐 막을 그리고, draw 안에서는 글자를 밝게 쓴다 */
-export function overlay(c: Canvas, x: number, y: number, w: number, h: number, draw: () => void, dim = 0.42) {
+/** 사진 위 글자: 사진과 아래로 짙어지는 막을 그리고, draw 안에서는 글자를 밝게 쓴다 */
+export function overlay(c: Canvas, x: number, y: number, w: number, h: number, draw: () => void) {
   const photo = c.slot(x, y, w, h);
-  c.box(x, y, w, h, 'rgba(0, 0, 0, 1)', { opacity: dim, name: 'image_dim', cornerRadius: Number(photo.cornerRadius) });
+  c.scrim(x, y, w, h, photo.cornerRadius as number | number[]);
   const wasDark = c.dark;
   c.dark = true;
   draw();
