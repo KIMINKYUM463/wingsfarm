@@ -5,7 +5,6 @@ import type { SeasonCategory } from "@/types";
 import { AreaChart, Sparkline } from "@/components/charts";
 import { KeywordDetail } from "@/components/KeywordDetail";
 import { AiTeam } from "@/components/dashboard/AiTeam";
-import { TodayOps } from "@/components/dashboard/TodayOps";
 import { CountUp, stagger } from "@/components/motion";
 import type { Product } from "@/lib/aiTeam";
 import { growthText } from "@/lib/format";
@@ -176,8 +175,6 @@ export default function DashboardPage() {
       </section>
 
       <AiTeam products={teamProducts} minScore={MIN_SCORE} />
-
-      <TodayOps />
 
       {!live &&
         (data.warning ? (

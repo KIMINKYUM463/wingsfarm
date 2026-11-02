@@ -63,11 +63,3 @@ export function periodKeyFor(cadence: OpsCadence, d = new Date()) {
   if (cadence === "daily") return toDateKey(d);
   return cadence === "weekly" ? `w:${weekKey(d)}` : `m:${monthKey(d)}`;
 }
-
-/** 주기별 완료 개수·전체 개수 */
-export function opsProgress(checks: Record<string, boolean>, cadence: OpsCadence, d = new Date()) {
-  const items = OPS_ITEMS.filter((i) => i.cadence === cadence);
-  const periodKey = periodKeyFor(cadence, d);
-  const done = items.filter((i) => checks[opsKey(periodKey, i.id)]).length;
-  return { done, total: items.length, pending: items.filter((i) => !checks[opsKey(periodKey, i.id)]) };
-}

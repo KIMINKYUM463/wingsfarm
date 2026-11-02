@@ -72,7 +72,6 @@ src/
   components/
     marketing/         studioUi(공통 입력·모달) · results(형식별 결과) · StudioShell
     margin/MarginBoard 전체 상품 마진표
-    dashboard/TodayOps 오늘의 운영 카드
     cs/DelayNotice     출고 지연 안내
   lib/
     idb.ts             IndexedDB 공용 연결 (보관함)
