@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { HeroMotionState } from '@/features/editor/hooks/useHeroMotion';
 import { useScrollToElement } from '@/features/editor/hooks/useScrollToElement';
 import { elementTopInFrame, findBlankImageSlots, findPlaceholderTexts, isImageElement } from '@/features/editor/lib/element-finder';
@@ -9,10 +9,11 @@ import { useActiveFrames } from '@/features/editor/store/useCanvasDataStore';
 import { useSelectionStore } from '@/features/editor/store/useSelectionStore';
 import { PLATFORMS } from '@/features/editor/lib/download-options';
 import { formatCost, HERO_VIDEO_USD, MEDIA_COST } from '@/shared/lib/draftMedia';
+import { ProgressDialog, ProgressStep } from '@/features/draft/components/ProgressDialog';
 import { Modal } from '@/shared/ui/SimpleModal';
 import { STOCK_SITES } from '@/shared/constants/stockSites';
 import { StockVideoPicker } from './StockVideoPicker';
-import { MAX_STOCK_PICKS, motionCredits, type HeroMotionInfo } from '@/shared/types/heroMotion';
+import { MAX_STOCK_PICKS, motionCredits, type HeroMotionInfo, type HeroMotionKind } from '@/shared/types/heroMotion';
 import { showToast } from '@/utils/toast';
 import type { KonvaElement, KonvaFrameElement } from '@/shared/types/konva';
 
@@ -54,7 +55,14 @@ export function EditorMediaBar({
   onMotionOpenChange: (open: boolean) => void;
 }) {
   const frames = useActiveFrames();
+  const makingKind: HeroMotionKind | null =
+    hero.motion?.status === 'pending' ? hero.motion.kind : hero.start.isPending ? (hero.start.variables?.kind ?? 'pan') : null;
+  // 이번 만들기 식별. 버튼을 누른 뒤에는 그 시각, 새로고침으로 이어서 만드는 중이면 서버 기록 시각
+  const runId = hero.start.submittedAt ? String(hero.start.submittedAt) : hero.motion?.status === 'pending' ? hero.motion.updatedAt : null;
+  const [hiddenRun, setHiddenRun] = useState<string | null>(null);
+
   return (
+    <>
     <div className="pointer-events-none fixed top-[calc(var(--header-h)+0.75rem)] left-1/2 z-30 flex -translate-x-1/2 gap-2">
       <TodoChip frames={frames} find={findBlankImageSlots} label="빈 사진 자리" />
       <TodoChip frames={frames} find={findPlaceholderTexts} label="채울 문구" />
@@ -63,6 +71,8 @@ export function EditorMediaBar({
       </button>
       <HeroMotionModal open={motionOpen} onClose={() => onMotionOpenChange(false)} projectId={projectId} hero={hero} canCreate={hasHeroPhoto(frames)} />
     </div>
+    {makingKind && runId !== hiddenRun && <MotionProgress kind={makingKind} onClose={() => setHiddenRun(runId)} />}
+    </>
   );
 }
 
@@ -105,6 +115,88 @@ function MotionChipLabel({ motion, stale, applied }: { motion: HeroMotionInfo | 
   return <>▶ 움직이는 컷 바꾸기 · GIF 받기</>;
 }
 
+/** 종류별 안내. 막대는 이 시간까지 92%에서 멈추고, 끝나면 창이 닫힌다 */
+const MOTION_STEPS: Record<HeroMotionKind, string[]> = {
+  stock: ['무료 영상을 받고 있어요', 'AI가 좋은 장면을 고르고 있어요', '컷을 이어 붙이고 있어요', '자막·줌·전환을 넣고 있어요'],
+  video: ['맨 위 사진으로 AI 영상을 만들고 있어요', '화면 크기에 맞춰 다듬고 있어요'],
+  pan: ['맨 위 사진을 천천히 움직이고 있어요', '상세페이지 크기로 맞추고 있어요'],
+};
+const MOTION_SECONDS: Record<HeroMotionKind, number> = { stock: 70, video: 150, pan: 18 };
+
+/** 경과 초로 지금 단계·막대 위치를 가늠한다 (서버는 중간 진행률을 주지 않는다) */
+function useMotionProgress(kind: HeroMotionKind) {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const started = Date.now();
+    const timer = window.setInterval(() => setSeconds(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => window.clearInterval(timer);
+  }, [kind]);
+  const steps = MOTION_STEPS[kind];
+  const ratio = Math.min(1, seconds / MOTION_SECONDS[kind]);
+  const index = Math.min(steps.length - 1, Math.floor(ratio * steps.length));
+  return {
+    steps,
+    index,
+    percent: Math.min(92, 6 + ratio * 86),
+    clock: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`,
+    label: steps[index],
+  };
+}
+
+const FILM_TONES = ['bg-emerald-200', 'bg-lime-100', 'bg-amber-100', 'bg-sky-100'];
+
+/** 필름 칸이 왼쪽으로 흐른다. 같은 칸을 두 번 이어 붙여 끊김 없이 반복한다 */
+function FilmStrip() {
+  const cells = [...FILM_TONES, ...FILM_TONES];
+  return (
+    <div className="w-52 overflow-hidden rounded-lg bg-gray-900 px-2 py-1.5" aria-hidden>
+      <div className="mb-1 flex justify-between px-0.5">
+        {cells.map((_, i) => (
+          <span key={i} className="size-1.5 rounded-full bg-white/35" />
+        ))}
+      </div>
+      <div className="flex w-[200%] animate-film gap-1 motion-reduce:animate-none">
+        {cells.map((tone, i) => (
+          <span key={i} className={clsx('h-11 flex-1 rounded-sm', tone)} />
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between px-0.5">
+        {cells.map((_, i) => (
+          <span key={i} className="size-1.5 rounded-full bg-white/35" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** 모달 안 미리보기 자리 — 창을 닫은 뒤에도 만드는 중임을 보여 준다 */
+function FilmLoading({ kind }: { kind: HeroMotionKind }) {
+  const { label } = useMotionProgress(kind);
+  return (
+    <div className="flex h-56 flex-col items-center justify-center gap-4 rounded-lg bg-gray-950 px-6 text-center">
+      <FilmStrip />
+      <p key={label} className="animate-rise-in text-sm font-medium text-white">
+        {label}
+      </p>
+      <p className="text-xs text-white/50">창을 닫아도 계속 만들어요</p>
+    </div>
+  );
+}
+
+/** 영상 생성이 시작되면 화면 한가운데에 뜨는 로딩 창 */
+function MotionProgress({ kind, onClose }: { kind: HeroMotionKind; onClose: () => void }) {
+  const { steps, index, percent, clock } = useMotionProgress(kind);
+  return (
+    <ProgressDialog title="움직이는 컷을 만들고 있어요" meta={clock} percent={percent} onClose={onClose} footer="이 창을 닫아도 만들기는 계속돼요.">
+      <ol className="flex flex-col gap-2">
+        {steps.map((label, i) => (
+          <ProgressStep key={label} state={i < index ? 'done' : i === index ? 'active' : 'todo'} label={label} />
+        ))}
+      </ol>
+    </ProgressDialog>
+  );
+}
+
 function MotionCredits({ motion }: { motion: HeroMotionInfo }) {
   const credits = motionCredits(motion);
   if (motion.kind !== 'stock' || !credits.length) return null;
@@ -140,6 +232,7 @@ function HeroMotionModal({
 }) {
   const { motion, stale, ready, applied, start, apply, downloadGif, downloadingGif } = hero;
   const busy = motion?.status === 'pending' || start.isPending;
+  const makingKind: HeroMotionKind | null = motion?.status === 'pending' ? motion.kind : start.isPending ? (start.variables?.kind ?? 'pan') : null;
 
   const applyToTop = () =>
     apply.mutate(true, {
@@ -155,15 +248,11 @@ function HeroMotionModal({
       <div className="flex flex-col gap-4">
         {ready && motion ? (
           <video src={motion.clipUrl!} className="max-h-[50vh] w-full rounded-lg bg-gray-900 object-contain" autoPlay loop muted playsInline />
+        ) : makingKind ? (
+          <FilmLoading kind={makingKind} />
         ) : (
           <div className="flex h-48 items-center justify-center rounded-lg bg-gray-50 px-6 text-center text-sm text-gray-500">
-            {busy
-              ? motion?.kind === 'stock'
-                ? 'AI가 고른 영상에서 좋은 장면을 찾아 컷 편집하고 있어요 (1분 안팎). 창을 닫아도 계속 만들어요.'
-                : '만드는 중이에요. 창을 닫아도 계속 만들어요.'
-              : stale
-                ? '맨 위 사진이 바뀌어서 다시 만들어야 해요.'
-                : '맨 위 사진을 움직이는 컷으로 만들거나, 무료 영상을 골라 AI 컷 편집으로 만들어요.'}
+            {stale ? '맨 위 사진이 바뀌어서 다시 만들어야 해요.' : '맨 위 사진을 움직이는 컷으로 만들거나, 무료 영상을 골라 AI 컷 편집으로 만들어요.'}
           </div>
         )}
         {ready && motion?.summary && <p className="-mt-2 text-sm text-gray-700">✦ {motion.summary}</p>}

@@ -32,6 +32,7 @@ export function ProgressDialog({
   failed,
   children,
   footer,
+  onClose,
 }: {
   title: ReactNode;
   meta?: ReactNode;
@@ -40,12 +41,19 @@ export function ProgressDialog({
   failed?: boolean;
   children: ReactNode;
   footer?: ReactNode;
+  /** 있으면 오른쪽 위에 닫기. 작업은 부모가 계속 돌린다 */
+  onClose?: () => void;
 }) {
   const isClient = useSyncExternalStore(noopSubscribe, () => true, () => false);
   if (!isClient) return null;
   return createPortal(
-    <div className="fixed inset-0 z-[10000] flex animate-overlay-in items-center justify-center bg-gray-900/30 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-live="polite">
-      <div className="flex w-full max-w-md animate-dialog-in flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+    <div className="fixed inset-0 z-[10001] flex animate-overlay-in items-center justify-center bg-gray-900/30 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-live="polite">
+      <div className="relative flex w-full max-w-md animate-dialog-in flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+        {onClose && (
+          <button type="button" aria-label="닫기" onClick={onClose} className="absolute top-3 right-3 z-10 flex size-8 items-center justify-center rounded-full bg-white/90 text-sm text-gray-700 shadow">
+            ✕
+          </button>
+        )}
         {failed ? (
           <div className="flex h-28 items-center justify-center bg-red-50 text-4xl">⚠️</div>
         ) : (

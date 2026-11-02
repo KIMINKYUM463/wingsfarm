@@ -19,6 +19,8 @@
   --animate-rise-in: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-check-pop: check-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   --animate-bar-stripe: bar-stripe 1s linear infinite;
+  /* 움직이는 컷 로딩 — 필름 칸이 왼쪽으로 계속 흐른다 */
+  --animate-film: film 2.8s linear infinite;
   /* AI 도우미 로봇이 둥둥 떠 있는 움직임 */
   --animate-bob: bob 3s ease-in-out infinite;
 
@@ -54,6 +56,11 @@
   @keyframes bar-stripe {
     to {
       background-position: 24px 0;
+    }
+  }
+  @keyframes film {
+    to {
+      transform: translateX(-50%);
     }
   }
 }
