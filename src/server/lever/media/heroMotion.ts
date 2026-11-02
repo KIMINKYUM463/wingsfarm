@@ -8,6 +8,7 @@ import { requireGemini } from '../gemini';
 import { ApiError, badRequest } from '../http';
 import { getProject, isMotionRunning, sortFrames, toHeroMotionInfo, updateProject, type HeroMotionRecord, type ProjectRecord } from '../projects';
 import { loadFile, mimeFromPath, saveFile } from '../storage';
+import { runInBackground } from '../background';
 import { nowIso } from '../store';
 import { ffmpeg, withTempDir } from './ffmpeg';
 import {
@@ -134,11 +135,12 @@ export async function startHeroMotion(projectId: string, kind: HeroMotionKind, o
   if (kind === 'stock') {
     const target = findHeroTarget(project, true);
     if (!target) throw badRequest(NO_HERO_SLOT);
+    const { source } = options;
     const videoId = Number(options.videoId);
-    if (!isStockSource(options.source) || !Number.isInteger(videoId) || videoId <= 0) throw badRequest('가져올 영상을 골라 주세요.');
-    const video = await getStockClipSource(options.source, videoId);
+    if (!isStockSource(source) || !Number.isInteger(videoId) || videoId <= 0) throw badRequest('가져올 영상을 골라 주세요.');
+    const video = await getStockClipSource(source, videoId);
     const pending = await setMotion(projectId, { ...target, kind, credit: video.credit, status: 'pending', clipPath: null, notice: null, updatedAt: nowIso() });
-    void runStockMotion(projectId, options.source, video, target);
+    runInBackground('stock motion', () => runStockMotion(projectId, source, video, target));
     return { heroMotion: toHeroMotionInfo(pending.heroMotion) };
   }
 
@@ -146,7 +148,7 @@ export async function startHeroMotion(projectId: string, kind: HeroMotionKind, o
   if (!target) throw badRequest('맨 위 사진 자리에 사진을 먼저 넣어 주세요.');
   if (kind === 'video') await requireGemini();
   const pending = await setMotion(projectId, { ...target, kind, status: 'pending', clipPath: null, notice: null, updatedAt: nowIso() });
-  void runHeroMotion(projectId, kind, target, project.productName);
+  runInBackground('hero motion', () => runHeroMotion(projectId, kind, target, project.productName));
   return { heroMotion: toHeroMotionInfo(pending.heroMotion) };
 }
 

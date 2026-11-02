@@ -9,6 +9,7 @@ export type HealthResponse = {
   pexels: boolean;
   pixabay: boolean;
   coupangWing: boolean;
+  supabase: boolean;
   passwordLock: boolean;
   textModel: string;
   imageModel: string;
@@ -26,6 +27,7 @@ export function GET() {
     pexels: has("PEXELS_API_KEY"),
     pixabay: has("PIXABAY_API_KEY"),
     coupangWing: has("COUPANG_VENDOR_ID", "COUPANG_ACCESS_KEY", "COUPANG_SECRET_KEY"),
+    supabase: has("SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"),
     passwordLock: has("APP_PASSWORD"),
     textModel: OPENAI_MODEL,
     imageModel: OPENAI_IMAGE_MODEL,

@@ -11,6 +11,7 @@ import { distinctFrom, productPhotoPrompt } from '../photoPrompt';
 import { ApiError, badRequest } from '../http';
 import { saveNewProject } from '../projects';
 import { loadFile, mimeFromPath } from '../storage';
+import { runInBackground } from '../background';
 import { newId, nowIso } from '../store';
 import { startHeroMotion } from '../media/heroMotion';
 import { getDraft, heroCutOf, sectionFrames, updateDraft } from './repo';
@@ -271,6 +272,6 @@ export async function startGenerate(draftId: string) {
     errorMessage: null,
     generateProgress: { current: 0, total: d.plan!.sections.length, message: '첫 섹션을 준비하고 있어요' },
   }));
-  void runGenerate(draftId);
+  runInBackground('draft generate', () => runGenerate(draftId));
   return updated;
 }

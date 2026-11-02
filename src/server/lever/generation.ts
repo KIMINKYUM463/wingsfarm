@@ -10,6 +10,7 @@ import { loadInlineImages, requireGemini, type GeminiClient } from './gemini';
 import { ApiError, badRequest, notFound } from './http';
 import { getProject, saveNewProject, sortFrames, updateProject, type ProductContext, type ProjectRecord } from './projects';
 import { toStoragePath } from './storage';
+import { runInBackground } from './background';
 import { newId, nowIso, readJson, updateJson, writeJson } from './store';
 
 /**
@@ -166,7 +167,7 @@ export async function startGeneration(projectId: string, body: unknown) {
   await writeJson(jobPath(job.id), job);
   await updateProject(projectId, (p) => ({ ...p, generationJobId: job.id }));
 
-  void runGeneration(job.id).catch((err) => console.error('[lever] generation crashed', err));
+  runInBackground('generation', () => runGeneration(job.id));
   return { id: job.id, status: job.status, message: '상세페이지 생성을 시작했습니다.' };
 }
 
@@ -241,6 +242,6 @@ export async function confirmGeneration(jobId: string, body: { mode?: string }) 
   const job = await getGenerationJob(jobId);
   if (job.status !== 'ai_completed') throw badRequest('확정할 수 있는 상태가 아닙니다.');
   await patchJob(jobId, { status: 'saving_pending' });
-  void saveResult(jobId, mode).catch((err) => console.error('[lever] saving crashed', err));
+  runInBackground('saving', () => saveResult(jobId, mode));
   return { message: '저장을 시작했습니다.', status: 'saving_pending' as const };
 }

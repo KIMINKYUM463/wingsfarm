@@ -20,6 +20,7 @@ import {
 import { loadInlineImages, requireGemini, type GeminiClient } from '../gemini';
 import { ApiError, badRequest } from '../http';
 import { getProject } from '../projects';
+import { runInBackground } from '../background';
 import { newId } from '../store';
 import { expectedCutCount } from '../templates/sectionLayouts';
 import {
@@ -465,7 +466,7 @@ export async function startPlan(draftId: string) {
       outline: [],
     },
   }));
-  void runPlan(draftId);
+  runInBackground('draft plan', () => runPlan(draftId));
   return updated;
 }
 

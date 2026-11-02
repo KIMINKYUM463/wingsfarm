@@ -14,6 +14,7 @@ import { closestAspectRatio, loadInlineImage, loadInlineImages, requireGemini, t
 import { badRequest, notFound } from './http';
 import { getProject, updateProject } from './projects';
 import { extFromMime } from './storage';
+import { runInBackground } from './background';
 import { newId, nowIso, readJson, updateJson, writeJson } from './store';
 
 const saveGeneratedImage = async (
@@ -146,7 +147,7 @@ export async function startStyledImage(projectId: string, body: GenerateAIImageV
     updatedAt: now,
   };
   await writeJson(imageJobPath(job.id), job);
-  void runImageJob(job, body, style.scene, style.name);
+  runInBackground('image job', () => runImageJob(job, body, style.scene, style.name));
   return { jobId: job.id, assetId: job.assetId };
 }
 

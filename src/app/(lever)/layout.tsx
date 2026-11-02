@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: { default: `${BRAND} 상세페이지`, template: `%s · ${BRAND} 상세페이지` },
 };
 
+/** 서버 액션(AI 생성 시작 등)도 응답 뒤 after()로 이어서 돌기 때문에 Vercel 함수 시간을 넉넉히 준다 */
+export const maxDuration = 300;
+
 export default function LeverRootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html

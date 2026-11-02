@@ -21,6 +21,7 @@ npm run lint
 ### 배포할 때 (인터넷에 올리는 경우)
 - `APP_PASSWORD`를 설정하면 사이트 전체가 잠기고 비밀번호만 입력하는 로그인 화면(`/login`)이 뜹니다(`src/proxy.ts`). 비워 두면 잠금 없음.
 - AI 라우트는 IP별 호출 한도가 있습니다(기본 텍스트 10분 60회, 이미지 1시간 40회 · `AI_TEXT_LIMIT`, `AI_IMAGE_LIMIT`로 조정). 서버 메모리 기준이라 서버 1대 운영을 가정합니다.
+- **Vercel**은 서버에 파일을 저장할 수 없으므로 상세페이지에 `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`가 필수입니다(비공개 버킷 `detail-page` 자동 생성). 내 PC 데이터는 `.env.local`에 같은 키를 넣고 `npm run migrate:supabase`로 옮깁니다. 상세페이지 Gemini 키는 Vercel 환경변수 `GEMINI_API_KEY`로 넣습니다. 맨 위 움직이는 컷(ffmpeg)은 Vercel에서 동작하지 않습니다.
 
 ## 기능
 
@@ -45,7 +46,7 @@ npm run lint
 ## 저장 위치
 - 설정·상품·체크리스트: 브라우저 localStorage (설정에서 JSON 백업)
 - AI 결과 보관함: 브라우저 IndexedDB (최근 200건 유지, JSON 백업에는 포함되지 않음)
-- 상세페이지 프로젝트·템플릿·업로드 사진·Gemini 키·Figma 토큰: 서버 폴더 `.data/detail-page` (git 제외, `LEVER_DATA_DIR`로 변경)
+- 상세페이지 프로젝트·템플릿·업로드 사진·Gemini 키·Figma 토큰: 서버 폴더 `.data/detail-page` (git 제외, `LEVER_DATA_DIR`로 변경) — Supabase 키가 있으면 Supabase Storage 버킷
 
 ## 상세페이지 Figma 템플릿 불러오기
 1. Figma → Settings → Security → Personal access tokens 에서 토큰 발급 (File content: Read)

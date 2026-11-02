@@ -3,14 +3,14 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import path from 'node:path';
 import { ApiError } from './http';
 import { getSecret } from './settings';
-import { readBinary, writeData } from './store';
+import { readBinary, remoteUploadUrl, writeData } from './store';
 
 /**
- * 파일 저장소 (Supabase Storage 대체)
+ * 파일 저장소
  *
- * - 파일은 `.data/detail-page/files/{path}` 에 저장
- * - 브라우저는 `/api/lever/storage/{path}` 로 읽고,
- *   서명된 `/api/lever/storage/upload/{path}?token=` 으로 PUT 업로드한다.
+ * - 파일은 저장소의 `files/{path}` 에 저장 (로컬 `.data/detail-page/files` 또는 Supabase 버킷)
+ * - 브라우저는 `/api/lever/storage/{path}` 로 읽는다.
+ * - 업로드는 로컬이면 서명된 `/api/lever/storage/upload/{path}?token=`, Supabase면 Supabase 업로드 주소로 PUT 한다.
  */
 export const API_PREFIX = '/api/lever';
 const FILES_DIR = 'files';
@@ -24,6 +24,8 @@ const sign = async (storagePath: string) =>
   createHmac('sha256', await getSecret()).update(storagePath).digest('hex');
 
 export async function signedUploadUrl(storagePath: string) {
+  const remote = remoteUploadUrl(filePath(storagePath));
+  if (remote) return remote;
   const token = await sign(storagePath);
   return { token, signedUrl: `${API_PREFIX}/storage/upload/${encodePath(storagePath)}?token=${token}` };
 }
