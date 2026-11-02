@@ -73,7 +73,7 @@ export function StockVideoPicker({ projectId, disabled, onSubmit }: { projectId:
       )}
 
       {videos.length > 0 && (
-        <div className="grid max-h-56 grid-cols-3 gap-2 overflow-y-auto">
+        <div className="grid max-h-[45vh] auto-rows-max grid-cols-2 gap-3 overflow-y-auto p-1">
           {videos.map((video) => {
             const order = picked.findIndex((v) => pickKey(v) === pickKey(video)) + 1;
             return (
@@ -91,10 +91,10 @@ export function StockVideoPicker({ projectId, disabled, onSubmit }: { projectId:
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={video.thumbnail} alt={`${video.author}의 영상`} loading="lazy" className="size-full object-cover transition group-hover:scale-105" />
-                <span className="absolute top-1 left-1 rounded bg-black/60 px-1 text-[10px] text-white">{STOCK_SITES[video.source].label}</span>
-                <span className="absolute right-1 bottom-1 rounded bg-black/60 px-1 text-[10px] text-white">{formatSeconds(video.duration)}</span>
+                <span className="absolute top-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[11px] text-white">{STOCK_SITES[video.source].label}</span>
+                <span className="absolute right-1.5 bottom-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[11px] text-white">{formatSeconds(video.duration)}</span>
                 {order > 0 && (
-                  <span className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-(--color-point) text-[11px] font-bold text-white">{order}</span>
+                  <span className="absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-(--color-point) text-xs font-bold text-white shadow">{order}</span>
                 )}
               </button>
             );
