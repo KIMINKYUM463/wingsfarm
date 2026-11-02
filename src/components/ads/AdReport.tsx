@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Tabs } from "@/components/ui";
+import { productCoach } from "@/lib/adCoach";
 import { createFollowup, evaluateFollowup, reportSnapshot, samePeriod } from "@/lib/adFollowup";
 import { analyzeAdReport, type AdAction, type ReportPeriod } from "@/lib/adInsights";
 import { groupRows, type AdField, type AdRow, type BreakEvenOf } from "@/lib/coupangAds";
@@ -14,6 +15,7 @@ import { FollowupPanel } from "./FollowupPanel";
 import { KeywordPanel } from "./KeywordPanel";
 import { Panel, SectionHeader, profitText, rateText, roasText } from "./parts";
 import { PlacementPanel } from "./PlacementPanel";
+import { ProductCoachPanel } from "./ProductCoachPanel";
 import { ProductMatrix } from "./ProductMatrix";
 
 /** 주문 없이 이만큼 클릭되면 제외 후보 */
@@ -34,6 +36,7 @@ interface Props {
 /** 광고 보고서 정밀 분석: 등급·돈 → (지난 조치 결과) → 할 일 → 지면·고객 → 상품 → 키워드 → 기간·캠페인 */
 export function AdReport({ rows, fields, fileName, window, period, breakEvenOf, costMultiplier, settings }: Props) {
   const analysis = useMemo(() => analyzeAdReport(rows, fields, { breakEvenOf, costMultiplier, minClicks: MIN_CLICKS }), [rows, fields, breakEvenOf, costMultiplier]);
+  const coaches = useMemo(() => productCoach(rows, { breakEvenOf, costMultiplier, minClicks: MIN_CLICKS }), [rows, breakEvenOf, costMultiplier]);
   const followups = useAppStore((s) => s.adFollowups);
   const reports = useAppStore((s) => s.adReports);
   const addAdFollowup = useAppStore((s) => s.addAdFollowup);
@@ -67,6 +70,7 @@ export function AdReport({ rows, fields, fileName, window, period, breakEvenOf, 
       {settings}
       {hasResults && followupPanel}
       <ActionPlan actions={analysis.actions} period={period} recorded={recorded} onRecord={record} onUndo={removeAdFollowup} />
+      <ProductCoachPanel coaches={coaches} />
       {!hasResults && followupPanel}
       <PlacementPanel placements={analysis.placements} />
       <BehaviorPanel overview={analysis.overview} timing={analysis.timing} cross={analysis.cross} />
