@@ -77,19 +77,14 @@ const ProjectsPage = ({ userName }: ProjectsPageProps) => {
               <h1 className="mb-[0.075rem]">
                 <span className="text-(--color-point)">{userName}</span>님,
               </h1>
-              <h1 className="tablet:hidden block">
-                멋진 아이디어가 떠올랐나요?
-                <br />
-                PC에서 바로 제작해보세요!
-              </h1>
-              <h1 className="tablet:block hidden">{greetingFor(hour)}</h1>
+              <h1>{greetingFor(hour)}</h1>
             </div>
-            <div className="desktop:flex hidden items-end gap-2">
-              <button type="button" className="btn-outline title-1-medium" onClick={handleTemplateStartClick}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+              <button type="button" className="btn-outline title-1-medium w-full justify-center sm:w-auto" onClick={handleTemplateStartClick}>
                 템플릿으로 빠르게 시작
               </button>
               <IconButton
-                className="btn-primary"
+                className="btn-primary w-full justify-center sm:w-auto"
                 customIcon={
                   <CustomIcon name="ai-star-24" className="text-white" width={24} height={24} />
                 }
@@ -102,7 +97,7 @@ const ProjectsPage = ({ userName }: ProjectsPageProps) => {
 
           {/* 검색/정렬 섹션 */}
           <div className={clsx('mb-6 flex justify-between gap-4', 'flex-col', 'desktop:flex-row')}>
-            <div className="flex items-center gap-5">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-5">
               <h3 className="h3-bold">내 프로젝트</h3>
               <div className="flex rounded-lg bg-white p-1" role="tablist">
                 {FILTER_TABS.map((tab) => (

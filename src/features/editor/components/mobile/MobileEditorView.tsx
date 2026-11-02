@@ -1,17 +1,17 @@
 'use client';
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import Icon from '@/shared/ui/Icon';
 import IconButton from '@/shared/ui/Button/IconButton';
 import { ROUTES } from '@/shared/constants/routes';
 import { getProjectDetail } from '@/features/editor/api';
 import { queryKeys } from '@/shared/constants/queryKeys';
 import { useCanvasDataStore } from '@/features/editor/store/useCanvasDataStore';
+import { useHeroMotion } from '@/features/editor/hooks/useHeroMotion';
 import { useTemplateInitialization } from '@/features/editor/hooks/useTemplateInitialization';
+import { useHeroVideoStore } from '@/features/editor/store/useHeroVideoStore';
 import useWindowSize from '@/shared/hooks/useWindowSize';
-import { useDialog } from '@/shared/ui/Dialog/useDialog';
 import MobileCanvasFrame from './MobileCanvasFrame';
 import { FrameLoadingPlaceholder } from '@/features/editor/components/FrameLoadingPlaceholder';
 import type { KonvaFrameElement } from '@/shared/types/konva';
@@ -23,52 +23,18 @@ interface MobileEditorViewProps {
   projectId: string;
 }
 
-/** 태블릿 브레이크포인트 (useIsMobile과 동일) */
-const TABLET_BREAKPOINT = 758;
-
-/** 알럿 아이콘 (정적 컴포넌트) */
-const AlertIcon = (
-  <div className="size-12 rounded-full bg-(--color-bg-point) p-3">
-    <Icon name="edit_off" className="p-0.5 text-(--color-point)" />
-  </div>
-);
-
 /**
  * 모바일 에디터 뷰 (읽기 전용)
  * - 단순 헤더 (뒤로가기만)
- * - 프레임 세로 스크롤 표시
- * - 에디터 기능 없음 (사이드바, 푸터, 인터랙션 없음)
+ * - 맨 위 움직이는 컷 + 프레임을 화면 너비에 맞춰 세로로 보여 준다
+ * - 글자·사진 수정은 PC 에디터에서 한다
  */
 
 export function MobileEditorView({ projectId }: MobileEditorViewProps) {
   const storeFrames = useCanvasDataStore((state) => state.frames);
   const { width: viewportWidth } = useWindowSize(100);
-  const openAlert = useDialog((state) => state.openAlert);
-  const resolveAlert = useDialog((state) => state.resolveAlert);
-  const hasShownAlert = useRef(false);
-
-  // 데스크톱으로 전환 시 (언마운트) 알럿 자동 닫기
-  useEffect(() => {
-    return () => {
-      if (window.innerWidth >= TABLET_BREAKPOINT) {
-        resolveAlert();
-      }
-    };
-  }, [resolveAlert]);
-
-  // 모바일 진입 시 미리보기 안내 알럿 표시 (컴포넌트 마운트 시 1회)
-  useEffect(() => {
-    if (!hasShownAlert.current) {
-      hasShownAlert.current = true;
-      openAlert({
-        title: '지금은 미리보기만 가능합니다.',
-        description:
-          '모바일 환경에서는 편집 기능을 지원하지 않습니다.\n전체 기능은 PC 웹에서 이용해주세요.',
-        confirmText: '확인했어요',
-        icon: AlertIcon,
-      });
-    }
-  }, [openAlert]);
+  useHeroMotion(projectId);
+  const heroVideo = useHeroVideoStore((state) => state.video);
 
   // 캔버스 사용 가능 너비 계산 (좌우 패딩 18px씩 = 36px)
   const availableWidth = useMemo(() => viewportWidth - MOBILE_CONTENT_PADDING * 2, [viewportWidth]);
@@ -108,6 +74,20 @@ export function MobileEditorView({ projectId }: MobileEditorViewProps) {
       {/* 프레임 리스트 */}
       <main className="flex-1 bg-gray-50">
         <div className="mx-auto pb-6" style={{ width: availableWidth }}>
+          <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+            미리보기예요. 글자와 사진을 고치려면 PC에서 열어 주세요.
+          </p>
+          {heroVideo && (
+            <video
+              src={heroVideo.url}
+              className="mt-4 block w-full bg-gray-900"
+              style={{ height: Math.round((availableWidth * heroVideo.height) / heroVideo.width) }}
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+          )}
           {isLoading ? (
             <FrameLoadingPlaceholder width={availableWidth} />
           ) : (

@@ -66,12 +66,12 @@ const ProjectSetupModal = ({ data, onClose }: ModalComponentProps) => {
   const hasCategories = categories.length > 0;
 
   return (
-    <ModalContent onClose={onClose} className="bg-white p-9 rounded-xl" maxW="lg">
+    <ModalContent onClose={onClose} className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl bg-white p-5 sm:p-9" maxW="lg">
       <form
         onSubmit={handleSubmit}
         className={clsx(
           'flex flex-col items-end',
-          hasCategories || isMatchingCategory ? 'h-180' : 'h-60',
+          hasCategories || isMatchingCategory ? 'sm:h-180' : 'sm:h-60',
         )}
       >
         <div className="flex flex-col gap-9 w-full flex-1">
@@ -107,7 +107,7 @@ const ProjectSetupModal = ({ data, onClose }: ModalComponentProps) => {
 
           {/* Step 3: 카테고리 선택 */}
           {hasCategories && !isMatchingCategory && (
-            <div className="grid grid-cols-5 gap-x-[1.4063rem] gap-y-6 mt-4">
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-5 sm:gap-x-[1.4063rem] sm:gap-y-6">
               {categories.map((category) => (
                 <CategoryCard
                   key={category.id}

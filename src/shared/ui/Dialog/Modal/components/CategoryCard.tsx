@@ -22,14 +22,14 @@ const CategoryCard = ({ name, imageUrl, selected = false, onClick }: CategoryCar
       type="button"
       onClick={onClick}
       className={clsx(
-        'flex flex-col items-center gap-3.25 group transition-all duration-300',
+        'group flex w-full min-w-0 flex-col items-center gap-3.25 transition-all duration-300',
         selected && '-translate-y-4',
       )}
     >
       {/* 카테고리 박스 */}
       <div
         className={clsx(
-          'w-25 h-25 rounded-xl bg-(color-bg-point) relative flex-center transition-all',
+          'relative aspect-square w-full max-w-25 rounded-xl bg-(color-bg-point) flex-center transition-all',
           'hover-border-point cursor-pointer',
           selected && 'border-transparent outline-2 outline-(--color-point) -outline-offset-2',
         )}
@@ -48,7 +48,7 @@ const CategoryCard = ({ name, imageUrl, selected = false, onClick }: CategoryCar
       </div>
 
       {/* 카테고리 이름 */}
-      <span className="title-1 text-center whitespace-nowrap">{name}</span>
+      <span className="title-1 text-center leading-snug break-keep">{name}</span>
     </Button>
   );
 };

@@ -84,9 +84,11 @@ const ProjectList = ({
         showToast.info('휴지통의 프로젝트는 복원한 뒤 열 수 있어요.');
         return;
       }
-      window.open(ROUTES.PROJECT(item.id), '_blank');
+      // 휴대폰은 새 창이 막히는 경우가 많아 이 화면에서 미리보기로 연다
+      if (window.matchMedia('(max-width: 757px)').matches) router.push(ROUTES.PROJECT(item.id));
+      else window.open(ROUTES.PROJECT(item.id), '_blank');
     },
-    [filter],
+    [filter, router],
   );
 
   const handleMenu = async (project: Project, id: MenuId) => {
@@ -123,23 +125,7 @@ const ProjectList = ({
 
   return (
     <>
-      <Empty
-        texts={[
-          '모바일에서는 프로젝트를 생성 할 수 없습니다.',
-          '데스크톱 웹으로 접속해 시작해보세요.',
-        ]}
-        textClassName="h3"
-        className="tablet:hidden block min-h-58"
-      />
-      <div
-        className={clsx(
-          'tablet:grid gap-x-6 gap-y-9',
-          'hidden',
-          'tablet:grid-cols-2',
-          'desktop:grid-cols-3',
-          'wide:grid-cols-5',
-        )}
-      >
+      <div className="grid grid-cols-2 gap-x-4 gap-y-6 tablet:gap-x-6 tablet:gap-y-9 desktop:grid-cols-3 wide:grid-cols-5">
         {items.map(({ project, item }, index) => (
           <div key={item.id} className={clsx('relative', filter === 'trash' && 'opacity-70')}>
             <ProductImageCard
