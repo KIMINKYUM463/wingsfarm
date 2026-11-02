@@ -19,7 +19,7 @@ npm run lint
 - `NAVER_AD_API_KEY` / `NAVER_AD_SECRET_KEY` / `NAVER_AD_CUSTOMER_ID`: 키워드 분석의 월간 검색수·연관 키워드 (네이버 검색광고 API)
 
 ### 배포할 때 (인터넷에 올리는 경우)
-- `APP_PASSWORD`를 설정하면 사이트 전체에 비밀번호 창이 뜹니다(`src/proxy.ts`). 비워 두면 잠금 없음.
+- `APP_PASSWORD`를 설정하면 사이트 전체가 잠기고 비밀번호만 입력하는 로그인 화면(`/login`)이 뜹니다(`src/proxy.ts`). 비워 두면 잠금 없음.
 - AI 라우트는 IP별 호출 한도가 있습니다(기본 텍스트 10분 60회, 이미지 1시간 40회 · `AI_TEXT_LIMIT`, `AI_IMAGE_LIMIT`로 조정). 서버 메모리 기준이라 서버 1대 운영을 가정합니다.
 
 ## 기능
