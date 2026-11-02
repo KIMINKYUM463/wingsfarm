@@ -159,7 +159,7 @@ async function runStockMotion(projectId: string, inputs: StockInput[], target: T
     await setMotion(projectId, { ...base, status: 'ready', clipPath, summary, captions, notice, updatedAt: nowIso() });
   } catch (err) {
     console.error('[lever] stock motion failed', err);
-    const notice = err instanceof ApiError ? err.message : '무료 영상으로 컷을 만들지 못했어요. 다른 영상을 골라 주세요.';
+    const notice = err instanceof ApiError ? err.message : '무료 영상으로 컷을 만들지 못했어요. 잠시 뒤 다시 만들어 보고, 계속 안 되면 다른 영상을 골라 주세요.';
     await setMotion(projectId, { ...base, status: 'failed', clipPath: null, notice, updatedAt: nowIso() }).catch(() => null);
   }
 }

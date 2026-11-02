@@ -54,10 +54,20 @@ export async function downloadStockFile(source: StockSource, link: string) {
   const url = new URL(link);
   const allowed = url.protocol === 'https:' && PROVIDERS[source].hosts.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`));
   if (!allowed) throw new ApiError(502, '영상 파일 주소가 올바르지 않아요.');
-  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(120_000) });
-  if (!res.ok) throw new ApiError(502, `영상 파일을 받지 못했어요. (${res.status})`);
-  if (Number(res.headers.get('content-length')) > MAX_VIDEO_BYTES) throw new ApiError(413, TOO_BIG);
-  const data = Buffer.from(await res.arrayBuffer());
+  const data = await fetchVideo(url);
   if (data.length > MAX_VIDEO_BYTES) throw new ApiError(413, TOO_BIG);
   return data;
+}
+
+async function fetchVideo(url: URL) {
+  try {
+    const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(120_000) });
+    if (!res.ok) throw new ApiError(502, `영상 파일을 받지 못했어요. (${res.status})`);
+    if (Number(res.headers.get('content-length')) > MAX_VIDEO_BYTES) throw new ApiError(413, TOO_BIG);
+    return Buffer.from(await res.arrayBuffer());
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    console.error('[lever] stock download failed', err);
+    throw new ApiError(504, '영상 파일을 받는 중 연결이 끊기거나 너무 오래 걸렸어요. 잠시 뒤 다시 시도하거나 다른 영상을 골라 주세요.');
+  }
 }

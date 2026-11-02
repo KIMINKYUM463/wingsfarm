@@ -30,6 +30,23 @@ function findFfmpeg() {
   return found;
 }
 
+interface ExecFailure {
+  killed?: boolean;
+  signal?: string | null;
+}
+
+/**
+ * ffmpeg가 죽은 이유를 사용자 안내로 바꾼다 (모르는 이유면 null — 원래 오류를 그대로 던진다)
+ * - 시간 초과: execFile이 SIGTERM으로 끄고 killed=true
+ * - 메모리 부족: 서버(OS)가 SIGKILL로 끈다
+ */
+export function ffmpegFailure(err: unknown): ApiError | null {
+  const { killed, signal } = (err ?? {}) as ExecFailure;
+  if (killed) return new ApiError(504, '영상 편집이 너무 오래 걸려 멈췄어요. 영상 수를 줄이거나 더 짧은 영상을 골라 주세요.');
+  if (signal === 'SIGKILL') return new ApiError(507, '서버 메모리가 부족해 영상 편집이 멈췄어요. 영상을 1~2개만 골라 다시 만들어 주세요.');
+  return null;
+}
+
 /** cwd: 필터 안의 파일 이름(글꼴·자막)을 상대 경로로 쓰려면 그 폴더에서 실행한다 */
 export async function ffmpeg(args: string[], timeoutMs = 180_000, cwd?: string) {
   const bin = await findFfmpeg();
@@ -41,6 +58,9 @@ export async function ffmpeg(args: string[], timeoutMs = 180_000, cwd?: string) 
     timeout: timeoutMs,
     maxBuffer: 16 * 1024 * 1024,
     windowsHide: true,
+  }).catch((err: unknown) => {
+    console.error('[lever] ffmpeg failed', (err as { stderr?: string }).stderr?.slice(-1500));
+    throw ffmpegFailure(err) ?? err;
   });
 }
 

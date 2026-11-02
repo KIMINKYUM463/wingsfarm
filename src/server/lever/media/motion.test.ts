@@ -93,8 +93,8 @@ describe('무료 영상 컷 편집', () => {
 
     it('컷마다 구간을 빠르게 찾고(끝 0.1초 여유) 완성 길이로 자른다', () => {
       const args = montageArgs(render);
-      assert.deepEqual(args.slice(1, 7), ['-ss', '1.5', '-t', '1.3', '-i', 'a.mp4']);
-      assert.equal(args[args.indexOf('-t', 18) + 1], String(totalSeconds(cuts)));
+      assert.deepEqual(args.slice(1, 9), ['-threads', '2', '-ss', '1.5', '-t', '1.3', '-i', 'a.mp4']);
+      assert.equal(args[args.indexOf('-t', args.indexOf('-filter_complex')) + 1], String(totalSeconds(cuts)));
       assert.ok(args.includes('-an'));
     });
 

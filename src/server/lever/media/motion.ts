@@ -231,6 +231,12 @@ export const MONTAGE_FILES = {
   caption: (i: number) => `caption-${i}.txt`,
 } as const;
 
+/**
+ * 컷마다 1080p 디코더가 따로 뜨고, 디코더는 기본으로 CPU 코어 수만큼 프레임을 쌓는다.
+ * 2개로 묶으면 컷 6개 편집 메모리가 약 1.1GB → 0.6GB (Vercel 함수 메모리 안에 들도록)
+ */
+const DECODE_THREADS = ['-threads', '2'];
+
 /** 브랜드 포인트 색 (--color-point) */
 const POINT_COLOR = '0x5DADEC';
 
@@ -289,7 +295,15 @@ export function montageArgs({ cuts, output, width, height, withText, tag }: Mont
   const h = even(height);
   const total = totalSeconds(cuts);
   // 컷 끝 0.1초 여유를 더 읽어 trim 길이를 확실히 채운다
-  const inputs = cuts.flatMap((c) => ['-ss', String(c.start), '-t', String(floor1(c.duration + 0.1 + 1e-9)), '-i', c.path]);
+  const inputs = cuts.flatMap((c) => [
+    ...DECODE_THREADS,
+    '-ss',
+    String(c.start),
+    '-t',
+    String(floor1(c.duration + 0.1 + 1e-9)),
+    '-i',
+    c.path,
+  ]);
   const chains = cuts.map((cut, i) => `[${i}:v]${cutFilter(cut, i, w, h, withText)},format=yuv420p[v${i}]`);
 
   let joined = 'v0';
