@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useDeferredValue, useEffect, useState } from "react";
-import { Button, Card, Notice, PageHeader, Tabs, TextInput, Toggle } from "@/components/ui";
+import { Button, Card, Notice, PageHeader, Tabs, TextInput } from "@/components/ui";
 import { RegionDetail, RegionRanking } from "@/components/farmMap/FarmPanels";
 import type { HeightMetric } from "@/components/farmMap/FarmMap3D";
-import { FARM_SOURCES, filterParams, type FarmFilter, type FarmMapResponse, type FarmSource } from "@/lib/farmMap";
+import { FARM_SOURCES, filterParams, type FarmFilter, type FarmMapResponse } from "@/lib/farmMap";
 import { num } from "@/lib/format";
 import { errorMessage } from "@/lib/http";
 
@@ -54,8 +54,9 @@ function SetupGuide({ sources }: { sources: FarmMapResponse["sources"] }) {
   );
 }
 
+const ALL_SOURCES = FARM_SOURCES.map((s) => s.id);
+
 export default function FarmMapPage() {
-  const [sources, setSources] = useState<FarmSource[]>(FARM_SOURCES.map((s) => s.id));
   const [item, setItem] = useState("");
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
@@ -66,7 +67,7 @@ export default function FarmMapPage() {
   const [failed, setFailed] = useState("");
   const [tick, setTick] = useState(0);
 
-  const filter: FarmFilter = { sources, item, query: deferredQuery.trim() };
+  const filter: FarmFilter = { sources: ALL_SOURCES, item, query: deferredQuery.trim() };
   const params = filterParams(filter).toString();
 
   useEffect(() => {
@@ -103,14 +104,12 @@ export default function FarmMapPage() {
     if (fly) setFocus({ code, at: Date.now() });
   };
 
-  const toggleSource = (id: FarmSource, on: boolean) => setSources((prev) => (on ? [...prev, id] : prev.filter((s) => s !== id)));
   const sourceErrors = data?.sources.filter((s) => s.error) ?? [];
 
   return (
     <>
       <PageHeader
         title="전국 산지 지도"
-        description="GAP·친환경 인증 생산자와 산지유통센터(APC)를 3D 지도로 보고, 품목별로 어디서 소싱할 수 있는지 찾으세요. 시군구를 누르면 생산자 목록과 공개 연락처가 나와요."
         actions={
           data?.phase === "ready" && (
             <Button variant="secondary" onClick={() => void refresh()}>
@@ -146,9 +145,6 @@ export default function FarmMapPage() {
         ))}
 
       <div className="mt-4 mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        {FARM_SOURCES.map((s) => (
-          <Toggle key={s.id} checked={sources.includes(s.id)} onChange={(on) => toggleSource(s.id, on)} label={s.label} />
-        ))}
         <TextInput className="w-56!" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="생산자·지역·품목 검색" aria-label="산지 검색" />
         <Tabs tabs={METRICS} value={metric} onChange={setMetric} />
         {data?.updatedAt && <span className="text-xs text-stone-400">기준 {data.updatedAt.slice(0, 10)}</span>}
