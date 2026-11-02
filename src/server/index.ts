@@ -7,8 +7,7 @@
  * ## 서버 액션
  * 서버 액션은 `@/app/actions`에서 관리됩니다.
  * ```typescript
- * import { logoutAction } from '@/app/actions/auth';
- * import { getBillingKeys } from '@/app/actions/payment';
+ * import { generateProject } from '@/app/actions/detail-page';
  * ```
  *
  * ## 사용 예시

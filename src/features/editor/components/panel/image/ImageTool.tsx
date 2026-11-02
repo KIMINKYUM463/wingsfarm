@@ -188,7 +188,6 @@ const ImageTool = () => {
         title="AI 이미지"
         footer={
           <ToolFixedButtonSection
-            showCreditInfo
             buttonText="생성하기"
             formId={formId}
             isLoading={isPending}

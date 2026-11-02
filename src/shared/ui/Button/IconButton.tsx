@@ -66,7 +66,7 @@ type IconButtonProps = Omit<ButtonProps, 'children'> & {
  * <IconButton icon="credit_card" iconWidth={28} iconHeight={28} iconColor="red" />
  *
  * // 커스텀 아이콘 사용
- * <IconButton customIcon={<CustomIcon name="credit" />} text="크레딧" />
+ * <IconButton customIcon={<CustomIcon name="profile" />} text="프로필" />
  * ```
  */
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(

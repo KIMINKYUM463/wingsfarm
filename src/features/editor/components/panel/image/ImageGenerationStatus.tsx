@@ -28,7 +28,6 @@ import { useClearSelection } from '@/features/editor/store/useSelectionStore';
 import { showToast } from '@/utils/toast';
 import { markAIImageReady } from '@/features/detail-page/api';
 import { queryKeys } from '@/shared/constants/queryKeys';
-import { useInvalidateCredits } from '@/features/payments';
 
 /** 다시 생성하기 요청 정보 */
 export interface RegenerateRequest {
@@ -98,7 +97,6 @@ const ImageGenerationStatus = ({
   const setAssetUrl = useCanvasDataStore((state) => state.setAssetUrl);
   const setImageLoading = useImageGenerationStore((state) => state.setImageLoading);
   const clearSelection = useClearSelection();
-  const invalidateCredits = useInvalidateCredits();
 
   // 선택된 요소가 이미지인지 확인
   const isSelectedImageElement = selectedElement && isImageElement(selectedElement);
@@ -130,9 +128,6 @@ const ImageGenerationStatus = ({
       }
       clearSelection();
 
-      // 크레딧 캐시 무효화 (소모된 크레딧 반영)
-      invalidateCredits();
-
       // imageId로 직접 요소 조회하여 이미지 요소면 자동 적용
       // (backup 버튼 클릭으로 시작된 생성이면 해당 요소에 바로 반영)
       const targetElement = flatElements.get(imageId);
@@ -151,7 +146,6 @@ const ImageGenerationStatus = ({
       imageId,
       setImageLoading,
       clearSelection,
-      invalidateCredits,
       flatElements,
       markReady,
       setAssetUrl,
@@ -277,7 +271,7 @@ const ImageGenerationStatus = ({
         title="AI 이미지"
         footer={
           <ToolFixedButtonSection
-            descriptionText="취소 시 사용한 크레딧은 복구되지 않습니다."
+            descriptionText="취소해도 이미 보낸 요청의 Gemini 사용량은 돌아오지 않아요."
             descriptionClassName="text-(--color-gray-300)"
             buttonText="취소"
             buttonClassName="btn-ghost"
@@ -327,7 +321,6 @@ const ImageGenerationStatus = ({
         title="AI 이미지"
         footer={
           <ToolFixedButtonSection
-            showCreditInfo
             secondaryButtonText="돌아가기"
             secondaryButtonClassName="btn-neutral"
             onSecondaryButtonClick={handleCancel}

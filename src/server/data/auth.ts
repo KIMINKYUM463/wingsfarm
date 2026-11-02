@@ -14,7 +14,6 @@ import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { createServerSupabaseClient } from '@/shared/lib/supabase/server';
 import { ROUTES } from '@/shared/constants/routes';
-import { getMySubscription } from './subscription';
 import type { User } from '@supabase/supabase-js';
 
 /**
@@ -66,45 +65,6 @@ export async function requireAuth(): Promise<User> {
 
   if (!user) {
     redirect(ROUTES.LOGIN);
-  }
-
-  return user;
-}
-
-/**
- * 서버 컴포넌트에서 구독 필요한 페이지 보호
- * - 인증 체크 (requireAuth 포함)
- * - 구독이 없는 경우: /pricing으로 리다이렉트
- *
- * @returns 인증된 사용자 정보
- *
- * @example
- * ```typescript
- * // 인증 + 구독 필요한 페이지
- * export default async function Page() {
- *   const user = await requireSubscription();
- *   // user를 사용한 로직...
- * }
- * ```
- */
-export async function requireSubscription(): Promise<User> {
-  const user = await requireAuth();
-
-  // 구독 상태 조회 (try-catch 밖에서 redirect 호출하여 에러 혼동 방지)
-  let hasSubscription = false;
-
-  try {
-    const subscriptionData = await getMySubscription();
-    hasSubscription = subscriptionData.hasSubscription;
-  } catch (error) {
-    // API 에러 시 로깅 후 구독 없음으로 처리
-    console.error('[requireSubscription] 구독 조회 실패:', error);
-    hasSubscription = false;
-  }
-
-  // 구독 없으면 pricing 페이지로 리다이렉트
-  if (!hasSubscription) {
-    redirect(ROUTES.PRICING);
   }
 
   return user;

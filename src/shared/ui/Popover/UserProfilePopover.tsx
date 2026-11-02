@@ -2,8 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
-// TODO: 플랜 뱃지 임시 숨김
-// import { useMySubscription } from '@/features/payments/hooks/useMySubscription';
 import { ROUTES } from '@/shared/constants/routes';
 import PopoverMenuList, { PopoverMenuItem } from './PopoverMenuList';
 import CustomIcon from '@/shared/ui/CustomIcon';
@@ -11,8 +9,6 @@ import CustomIcon from '@/shared/ui/CustomIcon';
 export default function UserProfilePopover() {
   const router = useRouter();
   const { user } = useAuthStore();
-  // TODO: 플랜 뱃지 임시 숨김
-  // const { plan, isPending } = useMySubscription();
 
   const handleProjects = () => {
     router.push(ROUTES.PROJECTS);
@@ -50,22 +46,14 @@ export default function UserProfilePopover() {
   return (
     <PopoverMenuList menuItems={menuItems}>
       {/* 사용자 정보 */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="p-1.25">
-            <CustomIcon name="profile" width={32} height={32} />
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <p>{user?.user_metadata.full_name || '사용자'}</p>
-            <span className="description text-gray-200">{user?.email || 'email@example.com'}</span>
-          </div>
+      <div className="flex items-center gap-2">
+        <div className="p-1.25">
+          <CustomIcon name="profile" width={32} height={32} />
         </div>
-        {/* TODO: 플랜 뱃지 임시 숨김 */}
-        {/* {isPending ? (
-          <span className="h-5 w-14 animate-pulse rounded bg-gray-100" />
-        ) : (
-          <Badge type={plan} />
-        )} */}
+        <div className="flex flex-col gap-0.5">
+          <p>{user?.user_metadata.full_name || '사용자'}</p>
+          <span className="description text-gray-200">{user?.email || 'email@example.com'}</span>
+        </div>
       </div>
     </PopoverMenuList>
   );

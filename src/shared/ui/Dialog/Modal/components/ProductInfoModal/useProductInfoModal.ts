@@ -9,8 +9,6 @@ import { useImageUpload, UploadedImageInfo } from '@/features/detail-page/hooks/
 import { CreateDetailPageRequest } from '@/shared/types/detail-page';
 import { ROUTES } from '@/shared/constants/routes';
 import { useDialog } from '@/shared/ui/Dialog/useDialog';
-import { useProjectEstimate } from '@/features/editor/hooks/useProjectEstimate';
-import { useInvalidateCredits } from '@/features/payments';
 import type { ProductInfoStep } from './types';
 
 interface UseProductInfoModalParams {
@@ -21,10 +19,6 @@ interface UseProductInfoModalParams {
 export const useProductInfoModal = ({ currentStep, projectId }: UseProductInfoModalParams) => {
   const router = useRouter();
   const { openConfirm } = useDialog();
-  const invalidateCredits = useInvalidateCredits();
-
-  // 프로젝트 견적 조회 (크레딧 정보)
-  const { data: estimateData } = useProjectEstimate(projectId);
 
   // 이미지 프리뷰 상태
   const [productImagePreviews, setProductImagePreviews] = useState<UploadedImageInfo[]>([]);
@@ -123,8 +117,6 @@ export const useProductInfoModal = ({ currentStep, projectId }: UseProductInfoMo
       return response.data;
     },
     onSuccess: (jobData) => {
-      // 크레딧 캐시 무효화 (소모된 크레딧 반영)
-      invalidateCredits();
       // 모달은 GeneratingContent에서 마운트 시 자동 닫힘
       // sourceProjectId 전달하여 새 프로젝트 생성 시 기존 프로젝트로 복귀 가능하게 함
       router.replace(ROUTES.PROJECT_GENERATING(jobData.id, { source: projectId }));
@@ -249,16 +241,6 @@ export const useProductInfoModal = ({ currentStep, projectId }: UseProductInfoMo
     const isValid = await trigger();
     if (!isValid) return;
 
-    // TODO: 크레딧 기능 복구 시 아래 주석 해제
-    // const totalCredit = estimateData?.totalCredit ?? 0;
-    // const confirmed = await openConfirm({
-    //   icon: { name: 'credit', width: 24, height: 26.512 },
-    //   title: '크레딧 사용',
-    //   description: `AI로 상세페이지가 내용과 사진을 채우시려면\n${totalCredit} 크레딧이 사용됩니다. 계속 진행하시겠습니까?`,
-    //   confirmText: '사용하기',
-    //   cancelText: '취소',
-    // });
-
     const confirmed = await openConfirm({
       title: '상세페이지 생성',
       description: '상세페이지를 생성하시겠습니까?',
@@ -269,7 +251,7 @@ export const useProductInfoModal = ({ currentStep, projectId }: UseProductInfoMo
     if (!confirmed) return;
 
     submitForm(getValues());
-  }, [trigger, getValues, submitForm, isPending, estimateData?.totalCredit, openConfirm]);
+  }, [trigger, getValues, submitForm, isPending, openConfirm]);
 
   // 참조 이미지 프리뷰 초기화 (방식 변경 시 호출)
   const resetReferenceImagePreviews = useCallback(() => {

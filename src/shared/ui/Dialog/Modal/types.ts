@@ -9,10 +9,7 @@ export type ModalType =
   | 'projectSetup'
   | 'editWarning'
   | 'aiDetailPage'
-  | 'productInfo'
-  | 'subscriptionPayment'
-  | 'paymentComplete'
-  | 'paymentReceipt';
+  | 'productInfo';
 
 // ===== 모달 데이터 (자유로운 형태) =====
 export type ModalData = Record<string, unknown> | null | undefined;
@@ -45,7 +42,4 @@ export const MODAL_TYPES = {
   EDIT_WARNING: 'editWarning',
   AI_DETAIL_PAGE: 'aiDetailPage',
   PRODUCT_INFO: 'productInfo',
-  SUBSCRIPTION_PAYMENT: 'subscriptionPayment',
-  PAYMENT_COMPLETE: 'paymentComplete',
-  PAYMENT_RECEIPT: 'paymentReceipt',
 } as const;

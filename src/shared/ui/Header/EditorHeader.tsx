@@ -8,7 +8,6 @@ import Popover from '@/shared/ui/Popover/Popover';
 import CustomIcon from '@/shared/ui/CustomIcon';
 import Input from '@/shared/ui/Input/Input';
 import VerticalDivider from '@/shared/ui/Divider/VerticalDivider';
-import CreditButton from '@/shared/ui/Button/CreditButton';
 import ActionTooltip from '@/shared/ui/Tooltip/ActionTooltip';
 import { useManualSave } from '@/features/editor/hooks/useManualSave';
 import { useAutoSaveStore } from '@/features/editor/store/useAutoSaveStore';
@@ -163,9 +162,6 @@ export function EditorHeader({ productName = '' }: EditorHeaderProps) {
             />
           }
         />
-        {/* TODO: 크레딧 잔액 버튼 임시 숨김 */}
-        {/* <CreditButton /> */}
-
         <PagePreviewButton />
         <Popover
           contentType="download"

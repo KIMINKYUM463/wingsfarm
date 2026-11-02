@@ -20,9 +20,6 @@ import ProjectSetupModal from './components/ProjectSetupModal';
 import EditWarningModal from './components/EditWarningModal';
 import AiDetailPageModal from './components/AiDetailPageModal';
 import ProductInfoModal from './components/ProductInfoModal';
-import SubscriptionPaymentModal from './components/SubscriptionPaymentModal';
-import PaymentCompleteModal from './components/PaymentCompleteModal';
-import PaymentReceiptModal from './components/PaymentReceiptModal';
 // 모달 레지스트리 초기화
 // 기본값: closeOnBackdrop = false (대부분의 모달은 실수로 닫히면 안 됨)
 // 닫혀도 되는 모달만 closeOnBackdrop: true 설정
@@ -35,6 +32,3 @@ registerModal('projectSetup', ProjectSetupModal);
 registerModal('editWarning', EditWarningModal);
 registerModal('aiDetailPage', AiDetailPageModal);
 registerModal('productInfo', ProductInfoModal);
-registerModal('subscriptionPayment', SubscriptionPaymentModal, { closeOnBackdrop: true });
-registerModal('paymentComplete', PaymentCompleteModal, { closeOnBackdrop: true });
-registerModal('paymentReceipt', PaymentReceiptModal, { closeOnBackdrop: true });

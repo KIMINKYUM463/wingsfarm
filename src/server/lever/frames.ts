@@ -225,25 +225,14 @@ export async function regenerateFrames(projectId: string) {
   };
 }
 
-const CREDIT_PER_IMAGE = 1;
-
 /** GET /projects/{id}/estimate — 프레임별 AI 이미지 자리 수 */
 export async function estimateProject(projectId: string) {
   const items = sortFrames((await getProject(projectId)).frames)
     .filter((f) => f.status === 'active')
-    .map((f) => {
-      const imageCount = countImageSlots(asNode(f.frameData));
-      return {
-        frameName: f.frameName ?? f.part2,
-        part2: f.part2,
-        imageCount,
-        creditPerImage: CREDIT_PER_IMAGE,
-        totalCredit: imageCount * CREDIT_PER_IMAGE,
-      };
-    });
-  return {
-    items,
-    totalImageCount: items.reduce((sum, i) => sum + i.imageCount, 0),
-    totalCredit: items.reduce((sum, i) => sum + i.totalCredit, 0),
-  };
+    .map((f) => ({
+      frameName: f.frameName ?? f.part2,
+      part2: f.part2,
+      imageCount: countImageSlots(asNode(f.frameData)),
+    }));
+  return { items, totalImageCount: items.reduce((sum, i) => sum + i.imageCount, 0) };
 }

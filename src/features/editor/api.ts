@@ -255,10 +255,10 @@ export const applyTemplateToFrame = async (
 /**
  * 프로젝트 견적 조회
  *
- * 프로젝트의 프레임별 이미지 개수와 크레딧 견적을 조회합니다.
+ * 프로젝트의 프레임별 AI 이미지 자리 수를 조회합니다.
  *
  * @param projectId - 프로젝트 ID
- * @returns 프레임별 견적 항목, 전체 이미지 개수, 전체 크레딧 합계
+ * @returns 프레임별 견적 항목, 전체 이미지 개수
  */
 export const getProjectEstimate = async (projectId: string): Promise<ProjectEstimateResponse> => {
   if (!projectId) {

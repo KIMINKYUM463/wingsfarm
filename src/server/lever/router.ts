@@ -44,7 +44,6 @@ import { isValidGeminiKey } from './gemini';
 import { applyHeroMotion, buildHeroGif, getHeroMotion, searchHeroStock, startHeroMotion } from './media/heroMotion';
 import { confirmGeneration, getGenerationJob, getGenerationJobStatus, startGeneration } from './generation';
 import { ApiError, badRequest, createContext, fail, noContent, notFound, ok, toResponse, type RouteHandler } from './http';
-import { MY_SUBSCRIPTION, PAYMENT_LISTS, creditBalance, paymentNotSupported } from './payments';
 import {
   createProject,
   deleteProject,
@@ -168,13 +167,6 @@ const ROUTES: [Method, string, RouteHandler][] = [
     return noContent();
   }],
 
-  // ===== 결제 (로컬 버전: 제한 없음) =====
-  ['GET', 'payments/credits/me', async () => creditBalance()],
-  ['GET', 'payments/subscriptions/me', async () => MY_SUBSCRIPTION],
-  ...Object.entries(PAYMENT_LISTS).map(
-    ([path, data]): [Method, string, RouteHandler] => ['GET', `payments/${path}`, async () => data],
-  ),
-
   // ===== 템플릿 관리 (관리 화면 + Figma 동기화) =====
   ['GET', 'template-admin/categories', async () => adminCategories()],
   ['GET', 'template-admin/templates', ({ query }) => adminListTemplates(query)],
@@ -290,8 +282,6 @@ export async function handleLeverRequest(req: Request, segments: string[]) {
     if (path.startsWith('realtime/') && method === 'GET') {
       return ok({ record: await realtimeRecord(decodeURIComponent(path.slice('realtime/'.length))) });
     }
-    if (path.startsWith(`${FUNCTIONS_PREFIX}payments/`) && method !== 'GET') return paymentNotSupported();
-
     const route = path.startsWith(FUNCTIONS_PREFIX) ? matchRoute(method, path.slice(FUNCTIONS_PREFIX.length)) : null;
     if (!route) return fail(404, `지원하지 않는 API입니다: ${method} /${path}`);
     return toResponse(await route.handler(createContext(req, route.params, url.searchParams)));

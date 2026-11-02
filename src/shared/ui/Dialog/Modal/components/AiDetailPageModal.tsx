@@ -11,13 +11,11 @@ import Skeleton from '@/shared/ui/Skeleton/Skeleton';
 import { useProjectEstimate } from '@/features/editor/hooks/useProjectEstimate';
 import { usePrefetchKeywords } from '@/features/detail-page/hooks';
 import { useDialog } from '@/shared/ui/Dialog/useDialog';
-// TODO: 크레딧 기능 임시 비활성화
-// import { useCreditCheck } from '@/features/payments';
 
 /**
  * AiDetailPageModal - AI 상세페이지 생성 모달
  *
- * 프로젝트의 프레임별 이미지 개수와 크레딧 견적을 조회하여 표시합니다.
+ * 프로젝트의 프레임별 AI 이미지 자리 수를 조회하여 표시합니다.
  */
 const AiDetailPageModal = ({ onClose }: ModalComponentProps) => {
   const params = useParams();
@@ -26,14 +24,8 @@ const AiDetailPageModal = ({ onClose }: ModalComponentProps) => {
   const { data, isLoading } = useProjectEstimate(projectId);
   const { mutate: prefetchKeywords } = usePrefetchKeywords();
   const { openModal } = useDialog();
-  // TODO: 크레딧 기능 임시 비활성화
-  // const { checkCredits } = useCreditCheck();
 
   const handleStart = () => {
-    // TODO: 크레딧 체크 임시 비활성화
-    // const hasEnough = await checkCredits(data?.totalCredit ?? 0);
-    // if (!hasEnough) return;
-
     openModal('productInfo', { projectId });
     prefetchKeywords(projectId);
   };
@@ -114,11 +106,6 @@ const AiDetailPageModal = ({ onClose }: ModalComponentProps) => {
               disabled={!data}
             >
               <span className="p-bold">시작하기</span>
-              {/* TODO: 크레딧 표시 임시 숨김 */}
-              {/* <div className="flex items-center">
-                <CustomIcon name="credit" className="p-[0.2813rem]" width={24} height={24} />
-                <span className="description text-[#FFCE48]">{data?.totalCredit ?? 0}</span>
-              </div> */}
             </Button>
           )}
         </div>

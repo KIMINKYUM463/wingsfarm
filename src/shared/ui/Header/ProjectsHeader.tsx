@@ -4,8 +4,6 @@ import Popover from '@/shared/ui/Popover/Popover';
 import IconButton from '@/shared/ui/Button/IconButton';
 import HomeButton from '@/shared/ui/Button/HomeButton';
 import CustomIcon from '@/shared/ui/CustomIcon';
-import CreditButton from '@/shared/ui/Button/CreditButton';
-
 const ProjectsHeader = () => {
   return (
     <header className="flex-center-between px-content fixed top-0 right-0 left-0 z-50 h-(--header-h) bg-white">
@@ -23,8 +21,6 @@ const ProjectsHeader = () => {
             />
           }
         />
-        {/* TODO: 크레딧 잔액 버튼 임시 숨김 */}
-        {/* <CreditButton className="tablet:flex hidden" /> */}
         <a
           href="https://adaptive-bucket-63a.notion.site/LeverPage-2ef3d7ccabd980789146d8889a005f51"
           target="_blank"

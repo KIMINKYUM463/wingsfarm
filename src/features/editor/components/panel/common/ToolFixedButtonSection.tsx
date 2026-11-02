@@ -3,16 +3,10 @@
 import React from 'react';
 import clsx from 'clsx';
 import Button from '@/shared/ui/Button/Button';
-import CustomIcon from '@/shared/ui/CustomIcon';
-import { AI_IMAGE_CREDIT_COST } from '@/features/payments';
 
 interface ToolFixedButtonSectionProps {
   /**
-   * 크레딧 소모 정보 표시 여부 (true면 "20 크레딧 소모" 표시)
-   */
-  showCreditInfo?: boolean;
-  /**
-   * 설명 텍스트 (일반 설명용, showCreditInfo와 함께 사용 불가)
+   * 설명 텍스트
    */
   descriptionText?: string;
   /**
@@ -69,16 +63,9 @@ interface ToolFixedButtonSectionProps {
  *
  * @example
  * ```tsx
- * // 크레딧 소모 정보 표시
+ * // 설명 텍스트
  * <ToolFixedButtonSection
- *   showCreditInfo
- *   buttonText="생성하기"
- *   formId={formId}
- * />
- *
- * // 일반 텍스트
- * <ToolFixedButtonSection
- *   descriptionText="취소 시 사용한 크레딧은 복구되지 않습니다."
+ *   descriptionText="취소하면 지금까지 만든 내용이 사라집니다."
  *   descriptionClassName="text-(--color-gray-300)"
  *   buttonText="취소"
  * />
@@ -88,7 +75,6 @@ interface ToolFixedButtonSectionProps {
  *
  * // 2버튼 레이아웃
  * <ToolFixedButtonSection
- *   showCreditInfo
  *   secondaryButtonText="돌아가기"
  *   onSecondaryButtonClick={handleBack}
  *   buttonText="다시 생성하기"
@@ -97,7 +83,6 @@ interface ToolFixedButtonSectionProps {
  * ```
  */
 const ToolFixedButtonSection: React.FC<ToolFixedButtonSectionProps> = ({
-  showCreditInfo = false,
   descriptionText,
   descriptionClassName,
   buttonText = '생성하기',
@@ -115,16 +100,7 @@ const ToolFixedButtonSection: React.FC<ToolFixedButtonSectionProps> = ({
 
   return (
     <div className={clsx('z-50 space-y-3 bg-white px-6 pt-3 pb-6', className)}>
-      {/* TODO: 크레딧 소모 정보 임시 숨김 */}
-      {/* {showCreditInfo && (
-        <div className="flex items-center justify-center gap-1 text-(--color-credit-text)">
-          <CustomIcon name="credit" width={12} height={12} />
-          <span className="description">{AI_IMAGE_CREDIT_COST} 크레딧 소모</span>
-        </div>
-      )} */}
-
-      {/* 일반 설명 텍스트 */}
-      {!showCreditInfo && descriptionText && (
+      {descriptionText && (
         <div className={clsx('flex items-center justify-center gap-1', descriptionClassName)}>
           <span className="description">{descriptionText}</span>
         </div>

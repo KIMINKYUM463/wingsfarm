@@ -22,11 +22,6 @@ export const ROUTES = {
   // 프로젝트
   PROJECTS: BASE as Route,
 
-  // 마이페이지 (요금제/결제) — 윙스팜AI에는 결제가 없어 목록으로 보낸다
-  PRICING: BASE as Route,
-  PRICING_CREDITS: BASE as Route,
-  PRICING_HISTORY: BASE as Route,
-  PRICING_METHODS: BASE as Route,
   PROJECT: (id: string) => `${BASE}/${id}` as Route,
   // 후커블식 생성 흐름: 입력 폼 → 기획 초안(섹션 카드) → 생성
   DRAFT_CREATE: `${BASE}/create` as Route,

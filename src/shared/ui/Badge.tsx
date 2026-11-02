@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { ReactNode } from 'react';
 
-type BadgeType = 'free' | 'pro' | 'ai' | 'credit' | 'required';
+type BadgeType = 'ai' | 'required';
 
 interface BadgeProps {
   type: BadgeType;
@@ -10,20 +10,12 @@ interface BadgeProps {
 }
 
 const badgeStyles: Record<BadgeType, string> = {
-  // Plan badges
-  free: 'border border-gray-900/20 bg-gray-50 text-gray-400',
-  pro: 'border border-[rgba(230,80,80,0.2)] bg-[#fff2f2] text-[#e65050]',
-  // Feature badges
   ai: 'bg-(--color-primary-100) text-(--color-point) border border-[rgba(93,173,236,0.2)]',
-  credit: 'bg-(--color-credit-bg) text-(--color-credit-text)',
   required: 'bg-[#fff2f2] text-[#e65050] border border-[rgba(230,80,80,0.2)]',
 };
 
 const defaultLabels: Record<BadgeType, string> = {
-  free: 'Free 플랜',
-  pro: 'Pro 플랜',
   ai: 'AI',
-  credit: 'Credit',
   required: '필수',
 };
 

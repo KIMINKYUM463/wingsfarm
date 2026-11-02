@@ -187,12 +187,6 @@
   .btn-dark:disabled {
     @apply bg-gray-200;
   }
-  .btn-credit {
-    @apply h-(--btn-h) min-w-20 rounded-lg bg-(--color-credit-bg) px-(--control-x) hover:bg-[#FFF4D8] active:bg-[#FFEEC2];
-  }
-  .btn-credit:disabled {
-    @apply bg-gray-100 text-gray-300;
-  }
   .btn-dropdown {
     @apply relative h-(--btn-h) rounded-lg border border-gray-100 bg-white px-3 hover:border-[#81C7FF];
   }

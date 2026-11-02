@@ -262,10 +262,6 @@ export interface ProjectEstimateItem {
   part2: string;
   /** 이미지 개수 */
   imageCount: number;
-  /** 이미지당 크레딧 */
-  creditPerImage: number;
-  /** 프레임 총 크레딧 */
-  totalCredit: number;
 }
 
 /**
@@ -276,8 +272,6 @@ export interface ProjectEstimateData {
   items: ProjectEstimateItem[];
   /** 전체 이미지 개수 합계 */
   totalImageCount: number;
-  /** 전체 크레딧 가격 합계 */
-  totalCredit: number;
 }
 
 /**

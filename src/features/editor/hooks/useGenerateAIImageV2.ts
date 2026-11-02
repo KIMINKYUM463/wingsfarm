@@ -19,8 +19,6 @@ import { showToast } from '@/utils/toast';
 import { confirmAiImages } from '@/shared/ui/Dialog';
 import { mutationKeys } from '@/shared/constants/mutationKeys';
 import { aiImageFormSchema, type AIImageFormData } from '@/validation/aiImageForm.schema';
-// TODO: 크레딧 체크 기능 활성화 시 주석 해제
-// import { useCreditCheck, AI_IMAGE_CREDIT_COST } from '@/features/payments';
 
 /** 선택된 스타일 표시 정보 */
 export interface SelectedStyleDisplay {
@@ -60,8 +58,6 @@ export const useGenerateAIImageV2 = (imageId: string) => {
   const majors = useImageGenerationMajors();
   const pushMoreView = usePushMoreView();
   const clearMoreView = useClearMoreView();
-  // TODO: 크레딧 체크 기능 활성화 시 주석 해제
-  // const { checkCredits } = useCreditCheck();
 
   // Store 셀렉터 통합 (구독 최적화)
   const {
@@ -302,10 +298,6 @@ export const useGenerateAIImageV2 = (imageId: string) => {
 
   // 폼 제출 핸들러
   const onSubmit = handleSubmit(async (data) => {
-    // TODO: 크레딧 체크 기능 활성화 시 주석 해제
-    // const hasEnough = await checkCredits(AI_IMAGE_CREDIT_COST);
-    // if (!hasEnough) return;
-
     if (!(await confirmAiImages({ count: 1 }))) return;
     mutate(data);
   });

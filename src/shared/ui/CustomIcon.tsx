@@ -4,7 +4,6 @@
 import React from 'react';
 import KeywordBtnBg from '@/assets/icons/keyword-btn-bg.svg';
 import SelectTemplate from '@/assets/icons/select-template.svg';
-import Credit from '@/assets/icons/credit.svg';
 import TextUnderLine from '@/assets/icons/text_under_line.svg';
 import Front from '@/assets/icons/front.svg';
 import First from '@/assets/icons/first.svg';
@@ -27,7 +26,6 @@ import Ungroup from '@/assets/icons/ungroup.svg';
 const customIconMap = {
   'keyword-btn-bg': KeywordBtnBg,
   'select-template': SelectTemplate,
-  credit: Credit,
   'text-under-line': TextUnderLine,
   front: Front,
   first: First,

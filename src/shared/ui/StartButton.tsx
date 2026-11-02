@@ -11,12 +11,7 @@ interface StartButtonProps {
 /**
  * 랜딩 페이지 "시작하기" 버튼
  *
- * ## 클릭 시 흐름
- * 1. /projects로 이동
- * 2. projects/layout.tsx → requireSubscription() 실행
- *    - 인증 안됨 → /login 리다이렉트
- *    - 구독 안됨 → /pricing 리다이렉트
- *    - 인증 + 구독 있음 → /projects 페이지 렌더링
+ * 클릭하면 상세페이지 프로젝트 목록으로 이동한다.
  */
 const StartButton = ({ variant = 'cta' }: StartButtonProps) => {
   const router = useRouter();

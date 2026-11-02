@@ -82,21 +82,6 @@ export const ENDPOINTS = {
   POLICIES: {
     GET: (type: 'privacy' | 'refund' | 'terms') => `/functions/v1/public/policies/${type}`,
   },
-  PAYMENTS: {
-    SUBSCRIPTIONS_ME: '/functions/v1/payments/subscriptions/me',
-    SUBSCRIPTIONS_REACTIVATE: '/functions/v1/payments/subscriptions/me/reactivate',
-    SUBSCRIPTIONS_PLANS: '/functions/v1/payments/subscriptions/plans',
-    SUBSCRIPTIONS_CREATE: '/functions/v1/payments/subscriptions',
-    CREDITS_ME: '/functions/v1/payments/credits/me',
-    CREDITS_HISTORY: '/functions/v1/payments/credits/me/history',
-    CREDITS_PRODUCTS: '/functions/v1/payments/credits/products',
-    CREDITS_PURCHASE_PREPARE: '/functions/v1/payments/credits/purchase/prepare',
-    CREDITS_PURCHASE_COMPLETE: '/functions/v1/payments/credits/purchase/complete',
-    BILLING_KEYS: '/functions/v1/payments/billing-keys',
-    BILLING_KEY_DELETE: (billingKeyId: string) =>
-      `/functions/v1/payments/billing-keys/${billingKeyId}`,
-    HISTORY: '/functions/v1/payments/history',
-  },
   SETTINGS: {
     API_KEY: '/functions/v1/settings/api-keys',
   },

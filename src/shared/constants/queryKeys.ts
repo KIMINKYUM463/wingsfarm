@@ -49,18 +49,6 @@ export const queryKeys = {
     all: ['imageGenerationStyles'] as const,
     list: () => [...queryKeys.IMAGE_GENERATION_STYLES.all, 'list'] as const,
   },
-  CREDITS: {
-    all: ['credits'] as const,
-    me: () => [...queryKeys.CREDITS.all, 'me'] as const,
-  },
-  PAYMENTS: {
-    all: ['payments'] as const,
-    history: () => [...queryKeys.PAYMENTS.all, 'history'] as const,
-  },
-  SUBSCRIPTION: {
-    all: ['subscription'] as const,
-    me: () => [...queryKeys.SUBSCRIPTION.all, 'me'] as const,
-  },
   SETTINGS: {
     all: ['settings'] as const,
     apiKey: () => [...queryKeys.SETTINGS.all, 'apiKey'] as const,
