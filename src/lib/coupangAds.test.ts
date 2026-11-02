@@ -15,8 +15,8 @@ const REPORT = [
 ];
 
 const row = (patch: Partial<AdRow>): AdRow => ({
-  date: "", campaign: "", adGroup: "", product: "", keyword: "", placement: "",
-  impressions: 0, clicks: 0, cost: 0, orders: 0, revenue: 0, ...patch,
+  date: "", campaign: "", adGroup: "", adType: "", product: "", optionId: "", convProduct: "", keyword: "", placement: "",
+  impressions: 0, clicks: 0, cost: 0, orders: 0, revenue: 0, units: 0, directRevenue: 0, revenue1d: 0, ...patch,
 });
 
 describe("쿠팡 광고 보고서 읽기", () => {
@@ -25,8 +25,21 @@ describe("쿠팡 광고 보고서 읽기", () => {
     assert.deepEqual(missing, []);
     assert.equal(window, "14일");
     assert.equal(rows.length, 3, "합계 줄은 빼야 한다");
-    assert.deepEqual(rows[0], row({ date: "20261001", campaign: "홍게 캠페인", adGroup: "기본", product: "박달홍게 2kg", keyword: "홍게", impressions: 10000, clicks: 200, cost: 40000, orders: 5, revenue: 150000 }));
+    assert.deepEqual(rows[0], row({ date: "20261001", campaign: "홍게 캠페인", adGroup: "기본", product: "박달홍게 2kg", keyword: "홍게", impressions: 10000, clicks: 200, cost: 40000, orders: 5, revenue: 150000, revenue1d: 90000 }));
     assert.equal(rows[2].keyword, "", "'-' 키워드는 비검색 영역");
+  });
+
+  it("기간 합계 보고서: 광고 상품·실제 팔린 상품·옵션ID·판매수량·직접 매출을 14일 기준으로 읽는다", () => {
+    const { rows, fields } = parseAdReport([
+      ["광고유형", "캠페인명", "광고집행 상품명", "광고집행 옵션ID", "광고전환매출발생 상품명", "광고 노출 지면", "키워드", "노출수", "클릭수", "광고비",
+        "총 주문수(1일)", "총 판매수량(1일)", "총 전환매출액(1일)", "직접 전환매출액(1일)", "총 주문수(14일)", "총 판매수량(14일)", "총 전환매출액(14일)", "직접 전환매출액(14일)"],
+      ["매출 최적화", "가을", "무,10kg", "9.6009151726E10", "무,20kg", "검색 영역", "무", "100", "10", "1000", "1", "2", "30000", "0", "1", "3", "40000", "0"],
+    ]);
+    assert.deepEqual(rows[0], row({
+      adType: "매출 최적화", campaign: "가을", product: "무,10kg", optionId: "96009151726", convProduct: "무,20kg", placement: "검색 영역", keyword: "무",
+      impressions: 100, clicks: 10, cost: 1000, orders: 1, units: 3, revenue: 40000, directRevenue: 0, revenue1d: 30000,
+    }));
+    assert.ok(fields.includes("revenue1d") && fields.includes("convProduct"));
   });
 
   it("필수 열이 없으면 무엇이 빠졌는지 알려 준다", () => {

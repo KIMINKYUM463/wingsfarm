@@ -12,7 +12,10 @@ export const AD_FIELDS = [
   { field: "date", label: "날짜", synonyms: ["날짜", "일자", "기간"] },
   { field: "campaign", label: "캠페인", synonyms: ["캠페인명", "캠페인"] },
   { field: "adGroup", label: "광고그룹", synonyms: ["광고그룹명", "광고그룹"] },
-  { field: "product", label: "광고 상품", synonyms: ["광고집행상품명", "광고전환매출발생상품명", "상품명"] },
+  { field: "adType", label: "광고 유형", synonyms: ["광고유형"] },
+  { field: "product", label: "광고 상품", synonyms: ["광고집행상품명", "상품명"] },
+  { field: "optionId", label: "옵션ID", synonyms: ["광고집행옵션ID", "옵션ID"] },
+  { field: "convProduct", label: "실제 팔린 상품", synonyms: ["광고전환매출발생상품명"] },
   { field: "keyword", label: "키워드", synonyms: ["키워드", "검색키워드", "검색어"] },
   { field: "placement", label: "노출 지면", synonyms: ["광고노출지면", "노출지면", "지면"] },
   { field: "impressions", label: "노출수", required: true, synonyms: ["노출수"] },
@@ -20,6 +23,10 @@ export const AD_FIELDS = [
   { field: "cost", label: "광고비", required: true, synonyms: ["광고비", "집행광고비", "광고비용"] },
   { field: "orders", label: "주문수", synonyms: ["총주문수14일", "총주문수1일", "총주문수", "주문수"] },
   { field: "revenue", label: "전환매출", required: true, synonyms: ["총전환매출액14일", "총전환매출액1일", "총전환매출액", "전환매출액", "광고전환매출", "매출액"] },
+  // 아래 셋은 전환매출과 같은 기준(14일 → 1일)으로 잡힌다. 1일 매출은 14일 기준 보고서에서만 따로 잡힌다
+  { field: "units", label: "판매수량", synonyms: ["총판매수량14일", "총판매수량1일", "총판매수량", "판매수량"] },
+  { field: "directRevenue", label: "직접 전환매출", synonyms: ["직접전환매출액14일", "직접전환매출액1일", "직접전환매출액"] },
+  { field: "revenue1d", label: "1일 전환매출", synonyms: ["총전환매출액1일"] },
 ] as const satisfies readonly { field: string; label: string; required?: boolean; synonyms: string[] }[];
 
 export type AdField = (typeof AD_FIELDS)[number]["field"];
@@ -29,7 +36,12 @@ export interface AdRow {
   date: string;
   campaign: string;
   adGroup: string;
+  adType: string;
+  /** 광고한 상품(옵션까지 쉼표로 이어진 이름) */
   product: string;
+  optionId: string;
+  /** 광고를 보고 실제로 산 상품 — 광고 상품과 다를 수 있다 */
+  convProduct: string;
   keyword: string;
   placement: string;
   impressions: number;
@@ -37,6 +49,11 @@ export interface AdRow {
   cost: number;
   orders: number;
   revenue: number;
+  units: number;
+  /** 다른 상품을 산 매출을 뺀, 광고 상품 자체의 매출 */
+  directRevenue: number;
+  /** 클릭 후 1일 안에 난 매출 (14일 기준 보고서에서만) */
+  revenue1d: number;
 }
 
 export interface AdMetrics {
@@ -62,6 +79,9 @@ const toNum = (value: string | undefined) => {
   const n = Number(String(value ?? "").replace(/[,원%\s]/g, ""));
   return Number.isFinite(n) ? n : 0;
 };
+
+/** 엑셀이 숫자로 저장한 긴 ID는 "9.6009151726E10"처럼 읽힌다 */
+const idText = (value: string) => (/^\d+(\.\d+)?e\+?\d+$/i.test(value) ? String(Math.round(Number(value))) : value);
 
 const SUMMARY_ROW = /^(합계|총계|전체|total)$/i;
 
@@ -92,7 +112,10 @@ export function parseAdReport(table: string[][]) {
           date: text(row, "date"),
           campaign: text(row, "campaign"),
           adGroup: text(row, "adGroup"),
+          adType: text(row, "adType"),
           product: text(row, "product"),
+          optionId: idText(text(row, "optionId")),
+          convProduct: text(row, "convProduct"),
           keyword: text(row, "keyword").replace(/^-$/, ""),
           placement: text(row, "placement"),
           impressions: value(row, "impressions"),
@@ -100,11 +123,14 @@ export function parseAdReport(table: string[][]) {
           cost: value(row, "cost"),
           orders: value(row, "orders"),
           revenue: value(row, "revenue"),
+          units: value(row, "units"),
+          directRevenue: value(row, "directRevenue"),
+          revenue1d: value(row, "revenue1d"),
         }))
         .filter((r) => ![r.date, r.campaign, r.product].some((t) => SUMMARY_ROW.test(t)))
         .filter((r) => r.impressions || r.clicks || r.cost || r.revenue);
 
-  return { rows, mapping, missing, window: attributionWindow(headers, mapping) };
+  return { rows, mapping, missing, window: attributionWindow(headers, mapping), fields: Object.keys(mapping) as AdField[] };
 }
 
 const ratio = (a: number, b: number) => (b > 0 ? a / b : null);
@@ -126,10 +152,49 @@ export function summarize(rows: AdRow[], costMultiplier = 1): AdMetrics {
 
 export interface AdGroup {
   key: string;
+  rows: AdRow[];
   metrics: AdMetrics;
   /** 이 묶음에 적용한 손익분기 ROAS (%) */
   breakEven: number | null;
+  /** 광고로 남긴 돈(추정) = 광고 매출 × 광고 전 이익률 − 광고비 */
+  profit: number | null;
   verdict: Verdict;
+}
+
+export type BreakEvenOf = (r: AdRow) => number | null;
+
+/**
+ * 묶음의 손익분기 ROAS — 줄마다 다른 손익분기를 매출로 가중한다(매출이 없으면 광고비로).
+ * 묶음 ROAS가 이 값 이상이면 adProfit도 0 이상이 된다.
+ */
+export function effectiveBreakEven(rows: AdRow[], breakEvenOf: BreakEvenOf): number | null {
+  let revenue = 0;
+  let gross = 0;
+  let cost = 0;
+  let weighted = 0;
+  for (const r of rows) {
+    const be = breakEvenOf(r);
+    if (!be || be <= 0) continue;
+    revenue += r.revenue;
+    gross += (r.revenue * 100) / be;
+    cost += r.cost;
+    weighted += r.cost * be;
+  }
+  if (gross > 0) return (revenue / gross) * 100;
+  return cost > 0 ? weighted / cost : null;
+}
+
+/** 광고로 남긴 돈(추정) — 손익분기 ROAS의 역수가 광고 전 이익률 (300% → 33%) */
+export function adProfit(rows: AdRow[], breakEvenOf: BreakEvenOf, costMultiplier = 1): number | null {
+  let profit = 0;
+  let known = false;
+  for (const r of rows) {
+    const be = breakEvenOf(r);
+    if (!be || be <= 0) continue;
+    known = true;
+    profit += (r.revenue * 100) / be - r.cost * costMultiplier;
+  }
+  return known ? profit : null;
 }
 
 /**
@@ -159,22 +224,20 @@ export function verdictOf(m: AdMetrics, breakEven: number | null, minClicks = 10
   return "ok";
 }
 
-/**
- * 묶어서 지표·진단 (광고비 많은 순)
- * @param breakEvenOf 줄마다의 손익분기 ROAS — 묶음에는 광고비를 가장 많이 쓴 줄의 값을 쓴다
- */
-export function groupRows(rows: AdRow[], keyOf: (r: AdRow) => string, breakEvenOf: (r: AdRow) => number | null, costMultiplier = 1, minClicks = 10): AdGroup[] {
+/** 묶어서 지표·손익분기·추정 이익·진단 (광고비 많은 순) */
+export function groupRows(rows: AdRow[], keyOf: (r: AdRow) => string, breakEvenOf: BreakEvenOf, costMultiplier = 1, minClicks = 10): AdGroup[] {
   const groups = new Map<string, AdRow[]>();
   for (const r of rows) {
     const key = keyOf(r);
-    groups.set(key, [...(groups.get(key) ?? []), r]);
+    const list = groups.get(key);
+    if (list) list.push(r);
+    else groups.set(key, [r]);
   }
   return [...groups]
     .map(([key, list]) => {
       const metrics = summarize(list, costMultiplier);
-      const top = list.reduce((a, b) => (b.cost > a.cost ? b : a));
-      const breakEven = breakEvenOf(top);
-      return { key, metrics, breakEven, verdict: verdictOf(metrics, breakEven, minClicks) };
+      const breakEven = effectiveBreakEven(list, breakEvenOf);
+      return { key, rows: list, metrics, breakEven, profit: adProfit(list, breakEvenOf, costMultiplier), verdict: verdictOf(metrics, breakEven, minClicks) };
     })
     .sort((a, b) => b.metrics.cost - a.metrics.cost);
 }

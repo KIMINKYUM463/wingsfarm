@@ -4,6 +4,13 @@ export const won = (value: number) => `${wonFormatter.format(Math.round(value))}
 
 export const num = (value: number) => wonFormatter.format(Math.round(value));
 
+/** 큰 금액 요약: 2,173만원 · 40.1만원 (1만 원 미만은 원 단위 그대로) */
+export const wonShort = (value: number) => {
+  const man = value / 10_000;
+  if (Math.abs(man) < 1) return won(value);
+  return Math.abs(man) < 100 ? `${man.toFixed(1)}만원` : `${wonFormatter.format(Math.round(man))}만원`;
+};
+
 export const percent = (ratio: number, digits = 1) => `${(ratio * 100).toFixed(digits)}%`;
 
 /** 0.234 → "+23%", -0.1 → "-10%" */

@@ -11,6 +11,8 @@ const TOP_PRODUCTS = 5;
 
 interface Props {
   rows: AdRow[];
+  /** 보고서 기간 (날짜 열이 없는 기간 합계 보고서는 파일 이름에서) */
+  period: { from: string; to: string } | null;
   costMultiplier: number;
   breakEven: number;
 }
@@ -18,7 +20,7 @@ interface Props {
 const rate = (value: number | null) => (value === null ? "-" : percent(value, 1));
 
 /** 광고 기간의 실제 쿠팡 매출(윙 Open API)과 광고비를 비교 — 광고 ROAS가 놓치는 "광고 덕에 늘어난 전체 매출"을 본다 */
-export function WingSales({ rows, costMultiplier, breakEven }: Props) {
+export function WingSales({ rows, period, costMultiplier, breakEven }: Props) {
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [sales, setSales] = useState<Sales | null>(null);
   const [error, setError] = useState("");
@@ -39,8 +41,6 @@ export function WingSales({ rows, costMultiplier, breakEven }: Props) {
     }
     return map;
   }, [rows]);
-  const dates = [...adByDate.keys()].sort();
-  const period = dates.length ? { from: dates[0], to: dates.at(-1)! } : null;
 
   const load = async () => {
     if (!period) return;
@@ -73,7 +73,7 @@ export function WingSales({ rows, costMultiplier, breakEven }: Props) {
         )
       }
     >
-      {!period && <Notice tone="warn">보고서에 날짜 열이 없어 기간을 알 수 없어요. 기간 구분을 &quot;일별&quot;로 만든 보고서를 올려 주세요.</Notice>}
+      {!period && <Notice tone="warn">보고서 기간을 알 수 없어요. 기간 구분을 &quot;일별&quot;로 만들거나, 파일 이름을 광고센터에서 받은 그대로(…_20261012_20261102.xlsx) 올려 주세요.</Notice>}
       {period && !sales && !error && (
         <p className="text-sm text-stone-500">
           광고 보고서 기간({period.from} ~ {period.to})의 쿠팡 주문을 윙 Open API로 불러와, 광고를 거치지 않은 주문까지 합친 <b>전체 매출 대비 광고비</b>를 계산해요.
@@ -90,6 +90,7 @@ function Comparison({ sales, adByDate, rows, costMultiplier, breakEven }: { sale
   const view = totalSalesView(ad.cost, ad.revenue, sales.total.sales, breakEven);
   const salesByDate = new Map(sales.days.map((d) => [d.date, d]));
   const days = [...new Set([...adByDate.keys(), ...salesByDate.keys()])].sort();
+  const daily = adByDate.size > 0;
 
   return (
     <div className="space-y-4">
@@ -118,10 +119,10 @@ function Comparison({ sales, adByDate, rows, costMultiplier, breakEven }: { sale
           <thead>
             <tr>
               <th>날짜</th>
-              <th className="text-right">광고비</th>
-              <th className="text-right">광고 매출</th>
+              {daily && <th className="text-right">광고비</th>}
+              {daily && <th className="text-right">광고 매출</th>}
               <th className="text-right">전체 매출</th>
-              <th className="text-right">전체 대비 광고비</th>
+              {daily && <th className="text-right">전체 대비 광고비</th>}
             </tr>
           </thead>
           <tbody>
@@ -132,10 +133,12 @@ function Comparison({ sales, adByDate, rows, costMultiplier, breakEven }: { sale
               return (
                 <tr key={date}>
                   <td className="tabular-nums">{date}</td>
-                  <td className="text-right tabular-nums">{won(dayAd.cost)}</td>
-                  <td className="text-right tabular-nums">{won(dayAd.revenue)}</td>
+                  {daily && <td className="text-right tabular-nums">{won(dayAd.cost)}</td>}
+                  {daily && <td className="text-right tabular-nums">{won(dayAd.revenue)}</td>}
                   <td className="text-right tabular-nums">{won(total)}</td>
-                  <td className={`text-right font-semibold tabular-nums ${tacos !== null && view.limit !== null ? (tacos <= view.limit ? "text-emerald-600" : "text-rose-600") : ""}`}>{rate(tacos)}</td>
+                  {daily && (
+                    <td className={`text-right font-semibold tabular-nums ${tacos !== null && view.limit !== null ? (tacos <= view.limit ? "text-emerald-600" : "text-rose-600") : ""}`}>{rate(tacos)}</td>
+                  )}
                 </tr>
               );
             })}
