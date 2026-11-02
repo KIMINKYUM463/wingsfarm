@@ -40,14 +40,6 @@ export const STUDIO_TONE: Record<
     pillOn: "bg-emerald-600 text-white",
     surface: "bg-linear-to-b from-emerald-50/70 to-white",
   },
-  detail: {
-    selected: "border-transparent bg-linear-to-br from-amber-500 to-lime-500 text-white shadow-md shadow-amber-200/70",
-    generate: "bg-linear-to-r from-amber-600 via-yellow-500 to-lime-500 text-white shadow-lg shadow-amber-200/70 hover:brightness-105",
-    empty: "from-amber-50 via-yellow-50 to-lime-50",
-    spin: "border-amber-200 border-t-amber-600",
-    pillOn: "bg-amber-600 text-white",
-    surface: "bg-linear-to-b from-amber-50/70 to-white",
-  },
   review: {
     selected: "border-transparent bg-linear-to-br from-sky-500 to-indigo-500 text-white shadow-md shadow-sky-200/70",
     generate: "bg-linear-to-r from-sky-600 via-blue-500 to-indigo-500 text-white shadow-lg shadow-sky-200/70 hover:brightness-105",

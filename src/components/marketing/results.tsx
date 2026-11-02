@@ -29,8 +29,6 @@ export function MarketingResultView({ result, media }: { result: MarketingResult
       return <CarouselStudio data={result} media={media} />;
     case "blog":
       return <BlogStudio data={result} media={media} />;
-    case "detail":
-      return <DetailStudio data={result} />;
     case "review":
       return <ReviewStudio data={result} />;
     case "chat":
@@ -337,47 +335,6 @@ function BlogStudio({ data, media }: { data: Of<"blog">; media: ContentImages })
           <Hashtags tags={data.tags} />
         </div>
       </div>
-      <TipList tips={data.tips} />
-    </div>
-  );
-}
-
-function DetailStudio({ data }: { data: Of<"detail"> }) {
-  return (
-    <div className="space-y-4">
-      <div className="rounded-2xl bg-linear-to-r from-amber-600 to-lime-500 p-5 text-white">
-        <p className="text-[11px] tracking-[0.3em] text-white/70 uppercase">Detail</p>
-        <h3 className="mt-1 text-2xl font-black leading-snug">{data.headline}</h3>
-        <p className="mt-2 text-sm text-white/85">{data.subhead}</p>
-      </div>
-      <ul className="space-y-2 rounded-2xl border border-amber-100 bg-amber-50/60 p-4">
-        {data.bullets.map((b) => (
-          <li key={b} className="flex gap-2 text-sm text-stone-800">
-            <span className="font-bold text-amber-600">•</span>
-            {b}
-          </li>
-        ))}
-      </ul>
-      <div className="whitespace-pre-wrap rounded-2xl border border-stone-200 bg-white p-4 text-sm leading-relaxed text-stone-700">{data.story}</div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl bg-stone-50 p-4">
-          <p className="text-xs font-bold text-stone-500 uppercase">고르는 법</p>
-          <p className="mt-2 whitespace-pre-wrap text-sm text-stone-700">{data.howToChoose}</p>
-        </div>
-        <div className="rounded-2xl bg-stone-50 p-4">
-          <p className="text-xs font-bold text-stone-500 uppercase">보관·손질</p>
-          <p className="mt-2 whitespace-pre-wrap text-sm text-stone-700">{data.storage}</p>
-        </div>
-      </div>
-      <div className="rounded-2xl bg-stone-900 p-4 text-white">
-        <p className="text-xs text-amber-300/80">CTA</p>
-        <p className="mt-1 text-sm font-medium">{data.cta}</p>
-      </div>
-      <ul className="space-y-1 text-xs text-stone-500">
-        {data.notices.map((n) => (
-          <li key={n}>- {n}</li>
-        ))}
-      </ul>
       <TipList tips={data.tips} />
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { MARKETING_FORMAT_META, type MarketingFormat } from "@/lib/marketingAi";
+import { STUDIO_TONE } from "./studioUi";
 
 const LOADING_COPY: Record<MarketingFormat, { title: string; beats: string[] }> = {
   shorts: {
@@ -19,10 +20,6 @@ const LOADING_COPY: Record<MarketingFormat, { title: string; beats: string[] }> 
   blog: {
     title: "소제목과 문단 호흡을 맞추는 중…",
     beats: ["검색 제목 다듬기", "소제목 뼈대 잡기", "본문·사진 자리 배치"],
-  },
-  detail: {
-    title: "상단 카피와 불릿을 다듬는 중…",
-    beats: ["히어로 카피 압축", "특장점 불릿 정렬", "CTA·고지 문구 정리"],
   },
   review: {
     title: "상황에 맞는 답글을 고르는 중…",
@@ -179,31 +176,6 @@ function BlogScene() {
   );
 }
 
-function DetailScene() {
-  return (
-    <div className="relative mx-auto w-56 space-y-2">
-      <div className="overflow-hidden rounded-2xl bg-linear-to-r from-amber-500 to-lime-500 p-4 text-white shadow-md animate-mk-rise">
-        <div className="h-2.5 w-3/4 rounded-full bg-white/70" />
-        <div className="mt-2 h-2 w-1/2 rounded-full bg-white/40" />
-      </div>
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className="flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50/80 px-3 py-2 animate-mk-rise"
-          style={{ animationDelay: `${0.25 + i * 0.22}s` }}
-        >
-          <span className="size-2 rounded-full bg-amber-500" />
-          <span
-            className="h-2 rounded-full bg-amber-200/90 animate-mk-type"
-            style={{ width: `${70 - i * 10}%`, animationDelay: `${i * 0.1}s` }}
-          />
-        </div>
-      ))}
-      <div className="absolute -left-2 top-10 text-2xl animate-bob">📄</div>
-    </div>
-  );
-}
-
 function ReviewScene() {
   return (
     <div className="relative mx-auto flex w-56 flex-col gap-3">
@@ -336,23 +308,10 @@ const SCENES: Record<MarketingFormat, () => ReactNode> = {
   threads: ThreadsScene,
   carousel: CarouselScene,
   blog: BlogScene,
-  detail: DetailScene,
   review: ReviewScene,
   chat: ChatScene,
   live: LiveScene,
   ads: AdsScene,
-};
-
-const EMPTY_BG: Record<MarketingFormat, string> = {
-  shorts: "from-rose-50 via-orange-50/80 to-amber-50",
-  threads: "from-stone-100 via-emerald-50 to-stone-50",
-  carousel: "from-violet-50 via-fuchsia-50 to-rose-50",
-  blog: "from-emerald-50 via-teal-50 to-sky-50",
-  detail: "from-amber-50 via-yellow-50 to-lime-50",
-  review: "from-sky-50 via-blue-50 to-indigo-50",
-  chat: "from-cyan-50 via-teal-50 to-emerald-50",
-  live: "from-red-50 via-rose-50 to-pink-50",
-  ads: "from-blue-50 via-indigo-50 to-violet-50",
 };
 
 export function StudioLoading({ format }: { format: MarketingFormat }) {
@@ -370,7 +329,7 @@ export function StudioLoading({ format }: { format: MarketingFormat }) {
 
   return (
     <div
-      className={`flex min-h-[28rem] flex-col items-center justify-center gap-6 overflow-hidden rounded-3xl bg-linear-to-br ${EMPTY_BG[format]} px-6 py-10 text-center`}
+      className={`flex min-h-[28rem] flex-col items-center justify-center gap-6 overflow-hidden rounded-3xl bg-linear-to-br ${STUDIO_TONE[format].empty} px-6 py-10 text-center`}
       role="status"
       aria-live="polite"
       aria-label={copy.title}

@@ -88,7 +88,7 @@ export const ROADMAP: RoadmapStage[] = [
     steps: [
       { id: "list-keyword", title: "키워드·상품명·태그", detail: "검색량 있는 키워드로 상품명을 만들고 태그를 채웁니다.", href: "/titles" },
       { id: "list-visual", title: "썸네일·상세페이지", detail: "실제 사진을 기준으로, 크기·당도·중량을 수치로 보여 주세요.", href: "/detail-page" },
-      { id: "list-check", title: "등록 전 검수 + 상품정보고시·원산지", detail: "효능·과장 표현, 원산지 불일치, 고시 누락을 등록 전에 잡습니다.", href: "/listing-check" },
+      { id: "list-check", title: "상품정보고시·원산지 확인", detail: "효능·과장 표현(면역력·다이어트 등), 상품명과 원산지의 산지 불일치, 고시 누락이 없는지 등록 전에 직접 확인하세요." },
     ],
   },
   {

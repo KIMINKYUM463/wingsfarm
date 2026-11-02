@@ -1,7 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { checkListing, highlightParts, listingScore } from "./listingCheck.ts";
-import { buildOriginLabel, buildQualityLine, missingNoticeFields } from "./productNotice.ts";
+import { checkListing } from "./listingCheck.ts";
 
 const ids = (title: string, body = "", origin = "국내산(경북 청송군)") => checkListing({ title, body, origin }).map((f) => f.id);
 
@@ -43,34 +42,5 @@ describe("checkListing", () => {
   it("깨끗한 상품명은 100점", () => {
     const findings = checkListing({ title: "청송 부사 사과 5kg 16~18과 13Brix 선별", body: "", origin: "국내산(경북 청송군)" });
     assert.deepEqual(findings, []);
-    assert.equal(listingScore(findings), 100);
-  });
-});
-
-describe("highlightParts", () => {
-  it("문제 구간만 잘라 표시하고 나머지는 그대로 이어 붙인다", () => {
-    const title = "사과 무료배송 특가";
-    const parts = highlightParts(title, checkListing({ title, body: "", origin: "국내산" }), "title");
-    assert.equal(parts.map((p) => p.text).join(""), title);
-    assert.deepEqual(
-      parts.filter((p) => p.severity).map((p) => p.text),
-      ["무료배송", "특가"],
-    );
-  });
-});
-
-describe("productNotice", () => {
-  it("원산지 표기", () => {
-    assert.equal(buildOriginLabel({ domestic: true, region: "경북 성주군" }), "원산지: 국내산(경북 성주군)");
-    assert.equal(buildOriginLabel({ domestic: false, region: "칠레산" }), "원산지: 칠레산");
-    assert.equal(buildOriginLabel({ domestic: false, region: "" }), "");
-  });
-
-  it("크기·당도·등급 한 줄 (과수는 개당 중량 범위로 계산)", () => {
-    assert.equal(buildQualityLine({ totalKg: 5, minGram: 250, maxGram: 300, brix: 13, grade: "특" }), "총 5kg (16~20과 내외) · 개당 250~300g · 당도 13Brix 이상 선별 · 등급 특 (농산물 표준규격)");
-  });
-
-  it("필수 고시 항목 누락", () => {
-    assert.ok(missingNoticeFields("fresh", { name: "참외" }).some((f) => f.key === "origin"));
   });
 });

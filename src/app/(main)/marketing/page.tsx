@@ -1,12 +1,10 @@
 "use client";
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import { PageHeader } from "@/components/ui";
-import { MoleculeHub } from "@/components/marketing/MoleculeHub";
+import { MarketingHub } from "@/components/marketing/MarketingHub";
 import { StudioShell, type ImagePlan } from "@/components/marketing/StudioShell";
 import type { ImageStatus } from "@/components/marketing/results";
 import { ChipGroup, MemoField, ProductField, ProductImageUpload, STUDIO_TONE, Segmented, StudioModal } from "@/components/marketing/studioUi";
-import { BRAND } from "@/lib/brand";
 import { SEASON_ITEMS } from "@/lib/data/season";
 import { toResizedDataUrl } from "@/lib/image";
 import { tryPatchArchiveImage, trySaveArchive } from "@/lib/archive";
@@ -18,7 +16,6 @@ import {
   CAROUSEL_COUNTS,
   CAROUSEL_MOODS,
   CHAT_PURPOSES,
-  DETAIL_FOCUSES,
   LIVE_DURATIONS,
   LIVE_DURATION_MAX,
   LIVE_DURATION_MIN,
@@ -90,7 +87,6 @@ export default function MarketingPage() {
   const [audience, setAudience] = useState<(typeof CAROUSEL_AUDIENCES)[number]["id"]>("home");
   const [blogLength, setBlogLength] = useState<(typeof BLOG_LENGTHS)[number]>(1500);
   const [blogTone, setBlogTone] = useState<(typeof BLOG_TONES)[number]["id"]>("guide");
-  const [detailFocus, setDetailFocus] = useState<(typeof DETAIL_FOCUSES)[number]["id"]>("fresh");
   const [reviewType, setReviewType] = useState<(typeof REVIEW_TYPES)[number]["id"]>("praise");
   const [chatPurpose, setChatPurpose] = useState<(typeof CHAT_PURPOSES)[number]["id"]>("ship");
   const [liveDuration, setLiveDuration] = useState(30);
@@ -186,7 +182,6 @@ export default function MarketingPage() {
     threads: { threads: { style: threadStyle, length: threadLength } },
     carousel: { carousel: { slides: slideCount, mood, audience } },
     blog: { blog: { length: blogLength, tone: blogTone } },
-    detail: { detail: { focus: detailFocus } },
     review: { review: { type: reviewType } },
     chat: { chat: { purpose: chatPurpose } },
     live: { live: { duration: clampLiveDuration(liveDuration), style: liveStyle } },
@@ -274,13 +269,6 @@ export default function MarketingPage() {
         {memo("반드시 넣을 키워드, 산지 이야기…")}
       </>
     ),
-    detail: (
-      <>
-        {productField("예: 해남 절임배추")}
-        <ChipGroup label="강조 포인트" options={DETAIL_FOCUSES} value={detailFocus} onChange={setDetailFocus} />
-        {memo("중량, 등급, 꼭 넣을 혜택…")}
-      </>
-    ),
     review: (
       <>
         {productField("예: 사과 배 선물세트")}
@@ -317,12 +305,7 @@ export default function MarketingPage() {
 
   return (
     <>
-      <PageHeader title={`${BRAND} 마케팅`} description="만들고 싶은 형식을 고르면 팝업 스튜디오가 열립니다. 결과는 보관함에 자동 저장돼요." />
-
-      <div className="flex min-h-[58vh] flex-col items-center py-6">
-        <p className="mb-4 text-base text-stone-500 sm:text-lg">어떤 콘텐츠를 만들까요?</p>
-        <MoleculeHub onPick={openStudio} />
-      </div>
+      <MarketingHub product={product} setProduct={setProduct} inSeason={inSeason} onPick={openStudio} />
 
       {open && (
         <StudioModal format={open} onClose={closeStudio}>

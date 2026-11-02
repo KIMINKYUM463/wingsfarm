@@ -35,7 +35,6 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
       { href: "/thumbnails", label: "썸네일 제조기", short: "썸네일", icon: "🖼️" },
       { href: "/detail-page", label: `${BRAND} 상세페이지`, short: "상세", icon: "📄" },
       { href: "/marketing", label: `${BRAND} 마케팅`, short: "마케팅", icon: "📣" },
-      { href: "/listing-check", label: "등록 전 검수", short: "검수", icon: "🛡️" },
     ],
   },
   {

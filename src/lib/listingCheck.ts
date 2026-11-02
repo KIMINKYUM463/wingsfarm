@@ -1,5 +1,5 @@
 /**
- * 등록 전 검수 — 상품명·상세 문구·원산지 표기를 규칙으로 점검한다 (AI 미사용·요금 없음).
+ * 상품명·상세 문구·원산지 표기를 규칙으로 점검한다 (AI 미사용·요금 없음). 옵션명 만들기가 쓴다.
  * 근거: 식품표시광고법 제8조(효능·질병 표현), 표시광고법 제3조(거짓·과장), 원산지표시법 제5·6조,
  * 마켓 상품명 정책(배송·할인 문구), 한국소비자원 2026 과일 선물세트 조사(크기·당도·등급 모호 표현).
  * 사전에 걸린다고 모두 위법은 아니고, 안 걸린다고 안전한 것도 아니다 — 최종 판단은 판매자 몫.
@@ -217,28 +217,4 @@ export function checkListing(input: CheckInput): Finding[] {
   return [...originFindings(input), ...patternFindings(input), ...(input.title.trim() ? titleFormatFindings(input.title) : [])].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity],
   );
-}
-
-/** 100점에서 위험 −25, 주의 −8, 참고 −2 */
-export function listingScore(findings: Finding[]) {
-  const penalty = findings.reduce((sum, f) => sum + (f.severity === "danger" ? 25 : f.severity === "warn" ? 8 : 2), 0);
-  return Math.max(0, 100 - penalty);
-}
-
-/** 형광펜 표시용: 해당 필드의 문제 구간으로 텍스트를 나눈다 */
-export function highlightParts(text: string, findings: Finding[], field: CheckField) {
-  const ranges = findings
-    .filter((f) => f.field === field && f.match)
-    .map((f) => ({ start: f.index, end: f.index + f.match.length, severity: f.severity }))
-    .sort((a, b) => a.start - b.start);
-  const parts: { text: string; severity?: Severity }[] = [];
-  let cursor = 0;
-  for (const r of ranges) {
-    if (r.start < cursor) continue;
-    if (r.start > cursor) parts.push({ text: text.slice(cursor, r.start) });
-    parts.push({ text: text.slice(r.start, r.end), severity: r.severity });
-    cursor = r.end;
-  }
-  if (cursor < text.length) parts.push({ text: text.slice(cursor) });
-  return parts;
 }

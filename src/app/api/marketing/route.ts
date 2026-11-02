@@ -8,7 +8,6 @@ import {
   CAROUSEL_COUNTS,
   CAROUSEL_MOODS,
   CHAT_PURPOSES,
-  DETAIL_FOCUSES,
   LIVE_STYLES,
   ADS_GOALS,
   MARKETING_FORMATS,
@@ -37,7 +36,6 @@ const RequestSchema = z.object({
   threads: z.object({ style: z.string().max(40), length: z.number() }).optional(),
   carousel: z.object({ slides: z.number(), mood: z.string().max(40), audience: z.string().max(40) }).optional(),
   blog: z.object({ length: z.number(), tone: z.string().max(40) }).optional(),
-  detail: z.object({ focus: z.string().max(40) }).optional(),
   review: z.object({ type: z.string().max(40) }).optional(),
   chat: z.object({ purpose: z.string().max(40) }).optional(),
   live: z
@@ -80,10 +78,6 @@ function normalize(body: z.infer<typeof RequestSchema>): MarketingRequestBody {
     const length = BLOG_LENGTHS.includes(body.blog?.length as (typeof BLOG_LENGTHS)[number]) ? (body.blog!.length as (typeof BLOG_LENGTHS)[number]) : 1500;
     const tone = BLOG_TONES.some((t) => t.id === body.blog?.tone) ? body.blog!.tone : "guide";
     return { format, product, note, blog: { length, tone } };
-  }
-  if (format === "detail") {
-    const focus = DETAIL_FOCUSES.some((f) => f.id === body.detail?.focus) ? body.detail!.focus : "fresh";
-    return { format, product, note, detail: { focus } };
   }
   if (format === "review") {
     const type = REVIEW_TYPES.some((t) => t.id === body.review?.type) ? body.review!.type : "praise";

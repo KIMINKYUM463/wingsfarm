@@ -1,11 +1,19 @@
 import { z } from "zod";
 
-export const MARKETING_FORMATS = ["shorts", "threads", "carousel", "blog", "detail", "review", "chat", "live", "ads"] as const;
+export const MARKETING_FORMATS = ["shorts", "threads", "carousel", "blog", "review", "chat", "live", "ads"] as const;
 export type MarketingFormat = (typeof MARKETING_FORMATS)[number];
+
+/** reach = 처음 보는 고객을 데려오는 콘텐츠, convert = 관심 고객·구매 고객에게 보내는 메시지 */
+export type MarketingStage = "reach" | "convert";
+
+export const MARKETING_STAGES: Record<MarketingStage, { title: string; description: string }> = {
+  reach: { title: "고객을 데려오는 콘텐츠", description: "SNS·검색에서 처음 만나는 고객이 상품을 알게 만들어요." },
+  convert: { title: "사게 하고, 다시 사게 하는 메시지", description: "이미 관심 있거나 구매한 고객에게 보내는 말이에요." },
+};
 
 export const MARKETING_FORMAT_META: Record<
   MarketingFormat,
-  { title: string; blurb: string; icon: string; accent: string; studio: string }
+  { title: string; blurb: string; icon: string; accent: string; studio: string; stage: MarketingStage; gets: string[] }
 > = {
   shorts: {
     title: "숏폼 영상",
@@ -13,6 +21,8 @@ export const MARKETING_FORMAT_META: Record<
     icon: "🎬",
     accent: "from-rose-600 via-orange-500 to-amber-400",
     studio: "영상 스튜디오",
+    stage: "reach",
+    gets: ["장면별 화면·대사·자막", "캡션·해시태그"],
   },
   threads: {
     title: "쓰레드 글",
@@ -20,6 +30,8 @@ export const MARKETING_FORMAT_META: Record<
     icon: "🧵",
     accent: "from-stone-900 via-stone-700 to-emerald-800",
     studio: "글쓰기 룸",
+    stage: "reach",
+    gets: ["5~9개 연속 포스트", "첫 줄 후킹"],
   },
   carousel: {
     title: "카드뉴스",
@@ -27,6 +39,8 @@ export const MARKETING_FORMAT_META: Record<
     icon: "🃏",
     accent: "from-violet-700 via-fuchsia-600 to-rose-500",
     studio: "편집실",
+    stage: "reach",
+    gets: ["장별 카피·디자인 지시", "AI 사진(선택)"],
   },
   blog: {
     title: "블로그 글",
@@ -34,34 +48,8 @@ export const MARKETING_FORMAT_META: Record<
     icon: "✍️",
     accent: "from-emerald-700 via-teal-600 to-sky-500",
     studio: "에디터룸",
-  },
-  detail: {
-    title: "상세페이지",
-    blurb: "스마트스토어·쿠팡 본문 카피",
-    icon: "📄",
-    accent: "from-amber-600 via-yellow-500 to-lime-500",
-    studio: "상세 스튜디오",
-  },
-  review: {
-    title: "리뷰 답글",
-    blurb: "별점·클레임 리뷰 응대 문구",
-    icon: "💬",
-    accent: "from-sky-600 via-blue-500 to-indigo-500",
-    studio: "응대 데스크",
-  },
-  chat: {
-    title: "톡톡·문자",
-    blurb: "출고·제철·재구매 짧은 메시지",
-    icon: "📱",
-    accent: "from-cyan-600 via-teal-500 to-emerald-400",
-    studio: "메시지 룸",
-  },
-  live: {
-    title: "라이브 대본",
-    blurb: "라이브커머스 분 단위 진행 대본",
-    icon: "📡",
-    accent: "from-red-600 via-rose-500 to-pink-400",
-    studio: "라이브 부스",
+    stage: "reach",
+    gets: ["검색용 제목·본문·FAQ", "AI 사진(선택)"],
   },
   ads: {
     title: "검색광고",
@@ -69,13 +57,37 @@ export const MARKETING_FORMAT_META: Record<
     icon: "📢",
     accent: "from-blue-700 via-indigo-600 to-violet-500",
     studio: "광고 소재실",
+    stage: "reach",
+    gets: ["제목 15자 후보", "설명 45자 후보"],
+  },
+  review: {
+    title: "리뷰 답글",
+    blurb: "별점·클레임 리뷰 응대 문구",
+    icon: "💬",
+    accent: "from-sky-600 via-blue-500 to-indigo-500",
+    studio: "응대 데스크",
+    stage: "convert",
+    gets: ["상황별 답글 3~5개", "리뷰 요청 메시지"],
+  },
+  chat: {
+    title: "톡톡·문자",
+    blurb: "출고·제철·재구매 짧은 메시지",
+    icon: "📱",
+    accent: "from-cyan-600 via-teal-500 to-emerald-400",
+    studio: "메시지 룸",
+    stage: "convert",
+    gets: ["톡톡·문자·알림톡 버전", "발송 타이밍"],
+  },
+  live: {
+    title: "라이브 대본",
+    blurb: "라이브커머스 분 단위 진행 대본",
+    icon: "📡",
+    accent: "from-red-600 via-rose-500 to-pink-400",
+    studio: "라이브 부스",
+    stage: "convert",
+    gets: ["구간별 대사·화면 지시", "오프닝·클로징"],
   },
 };
-
-/** @deprecated use MARKETING_FORMAT_META */
-export const MARKETING_FORMAT_LABELS = Object.fromEntries(
-  MARKETING_FORMATS.map((f) => [f, { title: MARKETING_FORMAT_META[f].title, blurb: MARKETING_FORMAT_META[f].blurb, icon: MARKETING_FORMAT_META[f].icon }]),
-) as Record<MarketingFormat, { title: string; blurb: string; icon: string }>;
 
 export const SHORTS_DURATIONS = [15, 30, 45] as const;
 export const SHORTS_HOOKS = [
@@ -114,13 +126,6 @@ export const BLOG_TONES = [
   { id: "story", label: "산지 스토리", hint: "사람·계절 서사" },
   { id: "seo", label: "검색 칼럼", hint: "키워드·FAQ 중심" },
   { id: "recipe", label: "레시피·활용", hint: "손질부터 상차림" },
-] as const;
-
-export const DETAIL_FOCUSES = [
-  { id: "gift", label: "선물용", hint: "포장·인상 강조" },
-  { id: "fresh", label: "신선·제철", hint: "수확·출고 속도" },
-  { id: "value", label: "가성비", hint: "양·가격 설득" },
-  { id: "premium", label: "프리미엄", hint: "등급·선별 강조" },
 ] as const;
 
 export const REVIEW_TYPES = [
@@ -269,18 +274,6 @@ export const BlogSchema = z.object({
   tips: z.array(z.string()).describe("발행·썸네일·내부링크 팁 2~3개"),
 });
 
-export const DetailSchema = z.object({
-  headline: z.string().describe("상세 상단 큰 카피 (한 줄)"),
-  subhead: z.string().describe("상단 보조 문구"),
-  bullets: z.array(z.string()).describe("특장점 불릿 5~7개"),
-  story: z.string().describe("산지·선별·출고 스토리 문단"),
-  howToChoose: z.string().describe("고르는 법 / 사이즈·등급 안내"),
-  storage: z.string().describe("보관·손질 안내"),
-  cta: z.string().describe("구매 유도 CTA"),
-  notices: z.array(z.string()).describe("교환·배송·주의 문구 2~4개"),
-  tips: z.array(z.string()).describe("상세 배치·사진 팁 2~3개"),
-});
-
 export const ReviewSchema = z.object({
   toneNote: z.string().describe("이 답글의 말투 한 줄"),
   replies: z
@@ -351,7 +344,6 @@ export type ShortsResult = z.infer<typeof ShortsSchema>;
 export type ThreadsResult = z.infer<typeof ThreadsSchema>;
 export type CarouselResult = z.infer<typeof CarouselSchema>;
 export type BlogResult = z.infer<typeof BlogSchema>;
-export type DetailResult = z.infer<typeof DetailSchema>;
 export type ReviewResult = z.infer<typeof ReviewSchema>;
 export type ChatResult = z.infer<typeof ChatSchema>;
 export type LiveResult = z.infer<typeof LiveSchema>;
@@ -371,7 +363,6 @@ export type MarketingResult =
   | ({ format: "threads" } & ThreadsResult)
   | ({ format: "carousel" } & CarouselResult)
   | ({ format: "blog" } & BlogResult)
-  | ({ format: "detail" } & DetailResult)
   | ({ format: "review" } & ReviewResult)
   | ({ format: "chat" } & ChatResult)
   | ({ format: "live" } & LiveResult)
@@ -382,7 +373,6 @@ export const SCHEMA_BY_FORMAT = {
   threads: ThreadsSchema,
   carousel: CarouselSchema,
   blog: BlogSchema,
-  detail: DetailSchema,
   review: ReviewSchema,
   chat: ChatSchema,
   live: LiveSchema,
@@ -397,7 +387,6 @@ export type MarketingRequestBody = {
   threads?: { style: string; length: number };
   carousel?: { slides: number; mood: string; audience: string };
   blog?: { length: number; tone: string };
-  detail?: { focus: string };
   review?: { type: string };
   chat?: { purpose: string };
   live?: { duration: number; style: string };
@@ -430,10 +419,6 @@ ${COMMON_RULES}`,
 요청한 분량(대략 글자 수)과 톤을 지키세요. 문단을 짧게, 전문용어는 쉽게.
 상단 히어로용 heroImagePrompt를 반드시 채우고, 섹션의 절반 이상은 showImage=true 로 두어 본문 중간중간 사진이 들어가게 하세요.
 imagePrompt는 영어, 상품이 잘 보이게, 화면 위 글자·로고·워터마크 없이. imageCaption은 짧은 한글.
-${COMMON_RULES}`,
-  detail: `당신은 스마트스토어·쿠팡 상세페이지 카피라이터입니다.
-스크롤하며 읽히는 상단 카피, 특장점 불릿, 스토리, 보관법, CTA, 고지 문구를 씁니다.
-요청한 포커스(선물/신선/가성비/프리미엄)를 반영하세요.
 ${COMMON_RULES}`,
   review: `당신은 농수산물 셀러의 리뷰 응대 전문가입니다.
 칭찬·보통·클레임·리뷰요청 상황에 맞는 짧고 진심 어린 한국어 답글을 여러 버전으로 씁니다.
@@ -512,19 +497,6 @@ export function buildMarketingPrompt(body: MarketingRequestBody & { today: strin
       `톤: ${tone?.label ?? o.tone} (${tone?.hint ?? ""})`,
       "title은 검색 클릭용. intro → sections → faq → CTA. 본문은 문단을 나눠 주세요.",
       "heroImagePrompt와 섹션별 showImage/imagePrompt/imageCaption을 채워 중간중간 사진이 들어가게 하세요.",
-    ]
-      .filter(Boolean)
-      .join("\n");
-  }
-
-  if (body.format === "detail") {
-    const o = body.detail!;
-    const focus = DETAIL_FOCUSES.find((f) => f.id === o.focus);
-    return [
-      ...base,
-      `형식: 상세페이지 카피`,
-      `포커스: ${focus?.label ?? o.focus} (${focus?.hint ?? ""})`,
-      "headline → bullets → story → howToChoose → storage → cta → notices 순으로.",
     ]
       .filter(Boolean)
       .join("\n");
@@ -662,27 +634,6 @@ export function marketingToText(r: MarketingResult) {
     ]
       .filter((line, i, arr) => !(line === "" && arr[i - 1] === ""))
       .join("\n");
-  }
-  if (r.format === "detail") {
-    return [
-      `[상세페이지] ${r.headline}`,
-      r.subhead,
-      "",
-      ...r.bullets.map((b) => `• ${b}`),
-      "",
-      r.story,
-      "",
-      `[고르는 법]\n${r.howToChoose}`,
-      "",
-      `[보관·손질]\n${r.storage}`,
-      "",
-      `CTA: ${r.cta}`,
-      "",
-      ...r.notices.map((n) => `- ${n}`),
-      "",
-      "팁:",
-      ...r.tips.map((t) => `- ${t}`),
-    ].join("\n");
   }
   if (r.format === "review") {
     return [
