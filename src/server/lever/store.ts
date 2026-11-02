@@ -113,9 +113,15 @@ const getBackend = (): Backend => {
       list: (relDir) => storage.list(toKey(relDir)),
     };
   }
-  if (process.env.VERCEL) throw new ApiError(503, NO_STORAGE_ON_VERCEL);
-  return localBackend;
+  return process.env.VERCEL ? readOnlyBackend : localBackend;
 };
+
+const refuseWrite = async () => {
+  throw new ApiError(503, NO_STORAGE_ON_VERCEL);
+};
+
+/** Supabase 없는 Vercel: 화면은 빈 상태로 열리고, 저장하려는 순간에만 안내한다 */
+const readOnlyBackend: Backend = { ...localBackend, write: refuseWrite, remove: refuseWrite };
 
 /** Supabase를 쓰면 브라우저 업로드 주소를 Supabase가 직접 발급한다 (로컬이면 null) */
 export const remoteUploadUrl = (relPath: string) => getSupabase()?.signedUploadUrl(toKey(relPath)) ?? null;
