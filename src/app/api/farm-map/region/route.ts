@@ -1,4 +1,4 @@
-import { UNLOCATED, matchesFilter, parseFilter, rankSites, regionLabel, type FarmRegionResponse } from "@/lib/farmMap";
+import { UNLOCATED, matchesFilter, parseFilter, rankSites, regionLabel, topItems, type FarmRegionResponse } from "@/lib/farmMap";
 import { getFarmMapState } from "@/lib/server/farmMap";
 
 const LIMIT = 300;
@@ -11,6 +11,6 @@ export async function GET(request: Request) {
   const { snapshot } = await getFarmMapState();
   const region = code === UNLOCATED ? "" : code;
   const sites = rankSites((snapshot?.sites ?? []).filter((s) => s.region === region && matchesFilter(s, filter)));
-  const body: FarmRegionResponse = { code, label: code === UNLOCATED ? "위치 미확인" : regionLabel(code), total: sites.length, sites: sites.slice(0, LIMIT) };
+  const body: FarmRegionResponse = { code, label: code === UNLOCATED ? "위치 미확인" : regionLabel(code), total: sites.length, items: topItems(sites, 12), sites: sites.slice(0, LIMIT) };
   return Response.json(body);
 }

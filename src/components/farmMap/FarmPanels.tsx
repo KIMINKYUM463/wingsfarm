@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Badge, Button } from "@/components/ui";
-import { FARM_SOURCES, UNLOCATED, filterParams, regionLabel, type FarmFilter, type FarmRegionResponse, type FarmSite, type RegionStat } from "@/lib/farmMap";
+import { FARM_SOURCES, UNLOCATED, filterParams, itemSummary, regionLabel, type FarmFilter, type FarmRegionResponse, type FarmSite, type RegionStat } from "@/lib/farmMap";
 import { num } from "@/lib/format";
 import { errorMessage } from "@/lib/http";
 
@@ -25,7 +25,14 @@ export function RegionRanking({ regions, unlocated, onSelect }: { regions: Regio
         <li key={r.code}>
           <button type="button" onClick={() => onSelect(r.code)} className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-stone-50">
             <span className="w-5 text-xs text-stone-400 tabular-nums">{i + 1}</span>
-            <span className="w-32 shrink-0 truncate text-stone-800">{r.label}</span>
+            <span className="w-36 shrink-0 min-w-0">
+              <span className="block truncate text-stone-800">{r.label}</span>
+              {r.items.length > 0 && (
+                <span className="block truncate text-xs text-stone-400" title={itemSummary(r.items)}>
+                  {r.items.slice(0, 3).map((item) => item.name).join(" · ")}
+                </span>
+              )}
+            </span>
             <span className="h-1.5 flex-1 rounded-full bg-stone-100">
               <span className="block h-full rounded-full bg-emerald-500" style={{ width: `${(r.sites / top) * 100}%` }} />
             </span>
@@ -81,6 +88,18 @@ export function RegionDetail({ code, filter, onClose }: { code: string; filter: 
         </Button>
       </div>
       {failed && <p className="text-sm text-rose-600">{failed}</p>}
+      {current && current.items.length > 0 && (
+        <div className="mb-3 rounded-xl bg-stone-50 p-3">
+          <p className="mb-1.5 text-xs font-medium text-stone-500">이 지역에서 많이 나오는 품목</p>
+          <div className="flex flex-wrap gap-1">
+            {current.items.map((item) => (
+              <span key={item.name} className={`rounded-md px-1.5 py-0.5 text-xs ${item.name === filter.item ? "bg-emerald-600 text-white" : "bg-white text-stone-700 ring-1 ring-stone-200"}`}>
+                {item.name} <span className="opacity-60 tabular-nums">{num(item.count)}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       <ul className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
         {current?.sites.map((site) => (
           <SiteCard key={site.id} site={site} highlight={filter.item} />

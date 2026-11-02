@@ -5,7 +5,7 @@ import { ColumnLayer, GeoJsonLayer, ScatterplotLayer } from "@deck.gl/layers";
 import DeckGL from "@deck.gl/react";
 import { useState, type ReactNode } from "react";
 import { num } from "@/lib/format";
-import type { FarmPoint, RegionStat } from "@/lib/farmMap";
+import { itemSummary, type FarmPoint, type RegionStat } from "@/lib/farmMap";
 
 /** public/geo/korea-sigungu.json 의 feature.properties */
 type RegionProps = { code: string; name: string; sido: string };
@@ -111,11 +111,12 @@ export default function FarmMap3D({
     }),
   ];
 
+  const itemsLine = (r: RegionStat) => (r.items.length ? `\n주요 품목: ${itemSummary(r.items)}` : "");
   const tooltip = ({ object, layer }: PickingInfo) => {
     if (!object || !layer) return null;
     if (layer.id === "columns") {
       const r = object as RegionStat;
-      return { text: `${r.label}\n산지 ${num(r.sites)}곳${r.farms ? ` · 등록 농가 ${num(r.farms)}` : ""}\n클릭하면 목록` };
+      return { text: `${r.label}\n산지 ${num(r.sites)}곳${r.farms ? ` · 등록 농가 ${num(r.farms)}` : ""}${itemsLine(r)}\n클릭하면 목록` };
     }
     if (layer.id === "apc") {
       const p = object as FarmPoint;
@@ -123,7 +124,7 @@ export default function FarmMap3D({
     }
     const f = object as RegionFeature;
     const r = byCode.get(f.properties.code);
-    return { text: `${f.properties.sido} ${f.properties.name}${r ? `\n산지 ${num(r.sites)}곳` : "\n조건에 맞는 산지 없음"}` };
+    return { text: `${f.properties.sido} ${f.properties.name}${r ? `\n산지 ${num(r.sites)}곳${itemsLine(r)}` : "\n조건에 맞는 산지 없음"}` };
   };
 
   return (

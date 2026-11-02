@@ -361,10 +361,20 @@ export interface RegionStat {
   /** 등록 농가 수 합 (APC 제외) */
   farms: number;
   bySource: Record<FarmSource, number>;
+  /** 이 시군구에서 많이 나오는 품목 */
+  items: ItemCount[];
 }
 
+export interface ItemCount {
+  name: string;
+  count: number;
+}
+
+/** 지도 툴팁·순위에 보여 줄 시군구별 주요 품목 수 */
+export const REGION_TOP_ITEMS = 5;
+
 export function summarizeRegions(sites: FarmSite[]) {
-  const map = new Map<string, RegionStat>();
+  const map = new Map<string, { stat: RegionStat; sites: FarmSite[] }>();
   let unlocated = 0;
   for (const site of sites) {
     const row = REGION_BY_CODE.get(site.region);
@@ -372,20 +382,29 @@ export function summarizeRegions(sites: FarmSite[]) {
       unlocated++;
       continue;
     }
-    let stat = map.get(site.region);
-    if (!stat) {
-      stat = { code: row[0], label: regionLabel(row[0]), lng: row[2], lat: row[3], sites: 0, farms: 0, bySource: { gap: 0, eco: 0, apc: 0 } };
-      map.set(site.region, stat);
+    let entry = map.get(site.region);
+    if (!entry) {
+      entry = { stat: { code: row[0], label: regionLabel(row[0]), lng: row[2], lat: row[3], sites: 0, farms: 0, bySource: { gap: 0, eco: 0, apc: 0 }, items: [] }, sites: [] };
+      map.set(site.region, entry);
     }
-    stat.sites++;
-    stat.farms += site.farms;
-    stat.bySource[site.source]++;
+    entry.stat.sites++;
+    entry.stat.farms += site.farms;
+    entry.stat.bySource[site.source]++;
+    entry.sites.push(site);
   }
-  return { regions: [...map.values()].sort((a, b) => b.sites - a.sites), unlocated };
+  const regions = [...map.values()].map(({ stat, sites: inRegion }) => ({ ...stat, items: topItems(inRegion, REGION_TOP_ITEMS) }));
+  return { regions: regions.sort((a, b) => b.sites - a.sites), unlocated };
 }
 
+/** "벼 120 · 감자 30 · 딸기 12" */
+export const itemSummary = (items: ItemCount[], limit = REGION_TOP_ITEMS) =>
+  items
+    .slice(0, limit)
+    .map((i) => `${i.name} ${i.count.toLocaleString("ko-KR")}`)
+    .join(" · ");
+
 /** 많이 나오는 품목 순위 (칩으로 보여 줌) */
-export function topItems(sites: FarmSite[], limit = 40) {
+export function topItems(sites: FarmSite[], limit = 40): ItemCount[] {
   const count = new Map<string, number>();
   for (const site of sites) for (const item of site.items) count.set(item, (count.get(item) ?? 0) + 1);
   return [...count.entries()]
@@ -446,7 +465,7 @@ export interface FarmMapResponse {
   /** 정확한 위치가 있는 산지(APC) */
   points: FarmPoint[];
   /** 고른 출처 안에서 많이 나오는 품목 */
-  items: { name: string; count: number }[];
+  items: ItemCount[];
   total: number;
   unlocated: number;
 }
@@ -455,6 +474,8 @@ export interface FarmRegionResponse {
   code: string;
   label: string;
   total: number;
+  /** 목록을 자르기 전 전체 산지 기준 품목 순위 */
+  items: ItemCount[];
   sites: FarmSite[];
 }
 

@@ -6,6 +6,7 @@ import {
   fromEcoRow,
   fromGapRow,
   isCurrent,
+  itemSummary,
   matchRegion,
   matchesFilter,
   parseLooseJson,
@@ -255,6 +256,11 @@ describe("걸러내기·모으기", () => {
     assert.equal(regions[0].sites, 2);
     assert.equal(regions[0].farms, 11);
     assert.deepEqual(regions[0].bySource, { gap: 1, eco: 1, apc: 0 });
+    assert.deepEqual(regions[0].items, [
+      { name: "배", count: 1 },
+      { name: "배추", count: 1 },
+    ]);
+    assert.equal(itemSummary(regions[1].items), "배 1 · 사과 1");
     assert.deepEqual(topItems(sites, 2), [
       { name: "배", count: 3 },
       { name: "배추", count: 1 },
