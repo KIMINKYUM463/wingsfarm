@@ -17,8 +17,6 @@ type Cls = (typeof CLS_TABS)[number]["id"];
 type Sort = "name" | "up" | "down";
 
 const monthRate = (i: KamisPrice) => changeRate(i.today, i.monthAgo);
-const priceKey = (i: KamisPrice) => `${i.cls}:${i.category}:${i.name}:${i.unit}`;
-
 function Change({ rate }: { rate: number | null }) {
   if (rate === null) return <span className="text-stone-300">-</span>;
   const pct = Math.round(rate * 100);
@@ -40,7 +38,8 @@ function Change({ rate }: { rate: number | null }) {
 }
 
 function ItemName({ item }: { item: KamisPrice }) {
-  const { main, sub } = splitItemName(item.name, item.unit);
+  const { main, sub: kind } = splitItemName(item.name, item.unit);
+  const sub = [kind, item.variant && `구분 ${item.variant}`].filter(Boolean).join(" · ");
   return (
     <div className="flex items-center gap-2.5">
       <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-stone-50 text-base" aria-hidden>
@@ -260,7 +259,7 @@ export default function PricesPage() {
                 </thead>
                 <tbody>
                   {rows.map((i) => (
-                    <tr key={priceKey(i)} className="hover:bg-stone-50">
+                    <tr key={i.id} className="hover:bg-stone-50">
                       <td>
                         <ItemName item={i} />
                       </td>

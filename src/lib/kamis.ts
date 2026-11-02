@@ -2,6 +2,10 @@
 import type { Sku } from "@/types";
 
 export interface KamisPrice {
+  /** 목록 안에서 겹치지 않는 값 (화면 key) */
+  id: string;
+  /** 부류·이름·단위가 같은 품목이 여럿이면 1부터 붙는 번호 */
+  variant?: number;
   cls: "도매" | "소매";
   category: string;
   /** 예: "사과/후지(10kg)" — KAMIS 품목명 */
@@ -19,6 +23,23 @@ export interface KamisResponse {
   updatedAt: string;
   error?: string;
   missingKey?: boolean;
+}
+
+/**
+ * 원본 시세에는 이름·단위까지 같은 품목이 여럿 오기도 한다 (예: 소매 마른멸치 100g 3종).
+ * 합치지 않고 각각 고유 id와 구분 번호를 붙인다.
+ */
+export function withUniqueIds(items: Omit<KamisPrice, "id" | "variant">[]): KamisPrice[] {
+  const sameName = new Map<string, number>();
+  const nameKey = (i: Omit<KamisPrice, "id" | "variant">) => `${i.cls}:${i.category}:${i.name}:${i.unit}`;
+  for (const i of items) sameName.set(nameKey(i), (sameName.get(nameKey(i)) ?? 0) + 1);
+  const seen = new Map<string, number>();
+  return items.map((i) => {
+    const key = nameKey(i);
+    const n = (seen.get(key) ?? 0) + 1;
+    seen.set(key, n);
+    return (sameName.get(key) ?? 0) > 1 ? { ...i, id: `${key}#${n}`, variant: n } : { ...i, id: key };
+  });
 }
 
 export const changeRate = (now: number | null, before: number | null) => (now && before ? now / before - 1 : null);

@@ -4,7 +4,7 @@
  * 응답 필드(product_cls_code 01 소매·02 도매, item_name, unit, lastest_date, dpr1 최근·dpr2 1일전·dpr3 1개월전·dpr4 1년전)는
  * KAMIS Open-API 이용안내(boardno=6) 기준이며, 형식이 바뀌면 빈 목록과 안내를 돌려준다.
  */
-import type { KamisPrice, KamisResponse } from "@/lib/kamis";
+import { withUniqueIds, type KamisPrice, type KamisResponse } from "@/lib/kamis";
 
 const ENDPOINT = "https://www.kamis.or.kr/service/price/xml.do";
 const CACHE_MS = 3 * 60 * 60 * 1000;
@@ -21,7 +21,7 @@ const price = (value: unknown) => {
 
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 
-function toPrice(row: Record<string, unknown>): KamisPrice | null {
+function toPrice(row: Record<string, unknown>): Omit<KamisPrice, "id" | "variant"> | null {
   const name = text(row.item_name) || text(row.productName);
   if (!name) return null;
   return {
@@ -56,7 +56,7 @@ export async function getKamisPrices(): Promise<KamisResponse> {
     if (json.error_code && json.error_code !== "000") return { items: [], updatedAt: "", error: `시세 서버 오류 코드 ${json.error_code} — 인증키·ID를 확인하세요.` };
     const rows = (Array.isArray(json.price) ? json.price : json.price && typeof json.price === "object" ? [json.price] : []) as Record<string, unknown>[];
     if (rows[0]?.result_code === "900") return { items: [], updatedAt: "", error: "시세 인증 실패 — 인증키·ID를 확인하세요." };
-    const items = rows.map(toPrice).filter((x): x is KamisPrice => x !== null);
+    const items = withUniqueIds(rows.map(toPrice).filter((x) => x !== null));
     if (items.length === 0) return { items: [], updatedAt: "", error: "받은 시세가 없습니다. 잠시 후 다시 시도하세요." };
     const body: KamisResponse = { items, updatedAt: new Date().toISOString() };
     cache = { at: Date.now(), body };

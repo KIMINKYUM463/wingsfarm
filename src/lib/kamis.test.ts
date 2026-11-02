@@ -1,6 +1,17 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { priceIcon, splitItemName } from "./kamis.ts";
+import { priceIcon, splitItemName, withUniqueIds } from "./kamis.ts";
+
+describe("withUniqueIds", () => {
+  const row = (name: string, today: number) => ({ cls: "소매" as const, category: "수산물", name, unit: "100g", latestDate: "당일", today, dayAgo: null, monthAgo: null, yearAgo: null });
+
+  it("이름·단위가 같은 품목은 합치지 않고 구분 번호를 붙인다", () => {
+    const out = withUniqueIds([row("마른멸치/마른멸치", 3292), row("마른멸치/마른멸치", 2322), row("고등어/생선", 5000)]);
+    assert.equal(new Set(out.map((i) => i.id)).size, 3);
+    assert.deepEqual(out.map((i) => i.variant), [1, 2, undefined]);
+    assert.deepEqual(out.map((i) => i.today), [3292, 2322, 5000]);
+  });
+});
 
 describe("splitItemName", () => {
   it("품목과 품종을 나눈다", () => {
