@@ -4,22 +4,23 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge, Card, Notice } from "@/components/ui";
 import { buildContentPlan, type ContentPost } from "@/lib/contentCalendar";
+import { DEFAULT_HOLIDAYS } from "@/lib/data/holidays";
 import { SEASON_ITEMS } from "@/lib/data/season";
 import { formatDate } from "@/lib/format";
+import { addDays, parseDateKey } from "@/lib/holidays";
 import { MARKETING_FORMAT_META } from "@/lib/marketingAi";
-import { addDays, parseDateKey } from "@/lib/shipping";
 import { useAppStore } from "@/store/useAppStore";
 
 const contentKey = (id: string) => `content:${id}`;
 
 export function ContentCalendar() {
   const router = useRouter();
-  const { skus, holidays, opsChecks, toggleOpsCheck, setWorkingProduct } = useAppStore();
+  const { skus, opsChecks, toggleOpsCheck, setWorkingProduct } = useAppStore();
   const [today] = useState(() => new Date());
   const plan = buildContentPlan(
     SEASON_ITEMS,
     skus.map((s) => s.productName),
-    holidays,
+    DEFAULT_HOLIDAYS,
     today,
   );
   const weeks = [...new Set(plan.map((p) => p.weekStart))];

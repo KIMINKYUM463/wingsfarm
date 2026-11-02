@@ -1,8 +1,6 @@
 /**
- * 의존성 없이 쓰는 최소 xlsx 읽기·쓰기 (jszip 사용, 브라우저 전용).
- * - 읽기: 첫 번째 시트의 셀 값을 문자열 2차원 배열로
- * - 쓰기: 모든 셀을 문자열로 저장 (전화번호·우편번호 앞자리 0 보존)
- * 수식·서식·병합은 다루지 않는다.
+ * 의존성 없이 쓰는 최소 xlsx 읽기 (jszip 사용, 브라우저 전용).
+ * 첫 번째 시트의 셀 값을 문자열 2차원 배열로 읽는다. 수식·서식·병합은 다루지 않는다.
  */
 import JSZip from "jszip";
 
@@ -68,57 +66,4 @@ export async function readXlsx(data: ArrayBuffer): Promise<Sheet> {
     rows[rowIndex] = Array.from(cells, (x) => x ?? "");
   }
   return Array.from(rows, (r) => r ?? []);
-}
-
-const escapeXml = (s: string) =>
-  s
-    // XML 1.0에서 허용되지 않는 제어문자 제거
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-
-const columnName = (index: number) => {
-  let name = "";
-  for (let n = index + 1; n > 0; n = Math.floor((n - 1) / 26)) name = String.fromCharCode(65 + ((n - 1) % 26)) + name;
-  return name;
-};
-
-export async function writeXlsx(rows: Sheet, sheetName = "Sheet1"): Promise<Blob> {
-  const sheetRows = rows
-    .map((row, r) => {
-      const cells = row
-        .map((value, c) => (value === "" ? "" : `<c r="${columnName(c)}${r + 1}" t="inlineStr"><is><t xml:space="preserve">${escapeXml(value)}</t></is></c>`))
-        .join("");
-      return `<row r="${r + 1}">${cells}</row>`;
-    })
-    .join("");
-
-  const zip = new JSZip();
-  zip.file(
-    "[Content_Types].xml",
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
-  );
-  zip.file(
-    "_rels/.rels",
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
-  );
-  zip.file(
-    "xl/workbook.xml",
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${escapeXml(sheetName.slice(0, 31))}" sheetId="1" r:id="rId1"/></sheets></workbook>`,
-  );
-  zip.file(
-    "xl/_rels/workbook.xml.rels",
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
-  );
-  zip.file(
-    "xl/styles.xml",
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="맑은 고딕"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs></styleSheet>`,
-  );
-  zip.file(
-    "xl/worksheets/sheet1.xml",
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheetRows}</sheetData></worksheet>`,
-  );
-  return zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 }

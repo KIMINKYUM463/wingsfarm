@@ -80,9 +80,3 @@ export function findHeaderRowBy(rows: string[][], score: (row: string[]) => numb
   });
   return best;
 }
-
-/** 2차원 배열 → CSV (엑셀에서 한글이 깨지지 않도록 BOM 포함) */
-export function toCsv(rows: string[][]) {
-  const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-  return "\uFEFF" + rows.map((r) => r.map(escape).join(",")).join("\r\n");
-}

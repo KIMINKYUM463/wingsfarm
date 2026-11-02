@@ -4,7 +4,7 @@
  */
 import type { Channel, CostDefaults, Sku } from "@/types";
 import { buildSkuInput, calcMargin } from "./margin.ts";
-import { matchSku } from "./orders.ts";
+import { matchSku } from "./skuMatch.ts";
 import { findHeaderRowBy, matchColumns, normalizeHeader } from "./table.ts";
 
 /** 보고서 열 — 같은 지표가 1일·14일 기준으로 둘 다 있으면 14일(쿠팡 광고센터 기본)을 먼저 잡는다 */

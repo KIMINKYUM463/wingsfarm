@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { AdReport } from "@/components/ads/AdReport";
 import { WingSales } from "@/components/ads/WingSales";
-import { TableLoader, type LoadedTable } from "@/components/orders/TableLoader";
+import { TableLoader, type LoadedTable } from "@/components/TableLoader";
 import { Button, Card, Field, Notice, NumberInput, PageHeader, Toggle } from "@/components/ui";
 import { parseAdReport, productBreakEven, type AdRow } from "@/lib/coupangAds";
 import { num } from "@/lib/format";

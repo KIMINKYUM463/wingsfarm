@@ -4,7 +4,7 @@ import type { SeasonItem } from "@/types";
 import { buildContentPlan } from "./contentCalendar.ts";
 import { SEASON_ITEMS } from "./data/season.ts";
 import { findSeasonItem } from "./season.ts";
-import { parseDelimited, toCsv, toTsv } from "./table.ts";
+import { parseDelimited, toTsv } from "./table.ts";
 
 const items: SeasonItem[] = [
   { name: "사과", category: "과일", months: [9, 10, 11, 12], tip: "" },
@@ -71,8 +71,7 @@ describe("table", () => {
     ]);
   });
 
-  it("CSV는 BOM·이스케이프, TSV는 칸 안의 탭·줄바꿈을 공백으로", () => {
-    assert.equal(toCsv([["a", 'b"c'], ["1,2", "x"]]), '\uFEFFa,"b""c"\r\n"1,2",x');
+  it("TSV는 칸 안의 탭·줄바꿈을 공백으로", () => {
     assert.equal(toTsv([["a\tb", "c\nd"]]), "a b\tc d");
   });
 });

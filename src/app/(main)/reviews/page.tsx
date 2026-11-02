@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { Badge, Button, Card, CopyButton, Field, Notice, PageHeader, TextArea, TextInput } from "@/components/ui";
 import { trySaveArchive } from "@/lib/archive";
@@ -124,11 +123,7 @@ export default function ReviewsPage() {
             )}
             {complaints.some((t) => ["damage", "spoiled", "size"].includes(t.theme.id) && t.share >= 0.05) && (
               <Notice tone="warn" className="mt-3 text-xs">
-                파손·상함·크기 불만이 5%를 넘어요. 공급처와 포장·선별 기준을 맞추고,{" "}
-                <Link href="/claims" className="font-medium underline">
-                  클레임 기록
-                </Link>
-                으로 공급처별 비율을 관리하세요.
+                파손·상함·크기 불만이 5%를 넘어요. 공급처와 포장·선별 기준을 맞추세요.
               </Notice>
             )}
           </Card>

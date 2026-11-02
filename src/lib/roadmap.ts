@@ -67,7 +67,7 @@ export const ROADMAP: RoadmapStage[] = [
         title: "공급 조건 문서로 받기",
         detail: "공급가(택배비 포함 여부), 발주 마감시각, 출고 요일, 신선품 금요일 출고 여부, 파손·상함 보상 기준, 송장 회신 방법을 카톡이 아닌 문서로.",
       },
-      { id: "sup-register", title: "공급처·상품을 윙스팜AI에 등록", detail: "마감시각·출고요일·발주서 양식까지 넣어 두면 발주서·도착일 계산이 자동으로 돼요.", href: "/settings" },
+      { id: "sup-register", title: "공급처·상품을 윙스팜AI에 등록", detail: "공급가·택배비·채널별 판매가를 넣어 두면 역마진 점검과 CS 답변에 자동으로 쓰여요.", href: "/settings" },
     ],
   },
   {
@@ -96,10 +96,9 @@ export const ROADMAP: RoadmapStage[] = [
     title: "6. 첫 주문 처리",
     goal: "실수 없이 출고하고 첫 정산 받기",
     steps: [
-      { id: "op-order", title: "발주서 만들어 공급처에 보내기", detail: "마켓 주문 엑셀을 올리면 공급처별 발주서가 나옵니다. 마감시각 전에 보내세요.", href: "/orders" },
-      { id: "op-invoice", title: "송장 회신 받아 마켓에 등록", detail: "회신 파일을 올리면 받는 분이 다른 건을 걸러 주고 마켓 업로드 파일을 만들어요.", href: "/orders" },
-      { id: "op-cs", title: "첫 CS 응대", detail: "캡처를 붙여넣으면 답변 초안이 나와요. 클레임은 기록해 두세요.", href: "/cs" },
-      { id: "op-ledger", title: "장부에 판매 기록", detail: "주문을 장부로 보내면 월 매출·순이익·면세/과세 매출이 자동 집계돼요.", href: "/ledger" },
+      { id: "op-order", title: "공급처에 발주 보내기", detail: "마켓 주문을 공급처 양식에 맞춰 발주 마감시각 전에 보내세요." },
+      { id: "op-invoice", title: "송장 회신 받아 마켓에 등록", detail: "받는 분·주문번호가 맞는지 확인하고 당일 안에 송장을 등록하세요." },
+      { id: "op-cs", title: "첫 CS 응대", detail: "캡처를 붙여넣으면 답변 초안이 나와요.", href: "/cs" },
     ],
   },
   {
@@ -109,8 +108,8 @@ export const ROADMAP: RoadmapStage[] = [
     steps: [
       { id: "grow-review", title: "리뷰 분석으로 품질 이슈 잡기", detail: "리뷰를 붙여넣어 불만 원인을 찾고 공급처에 전달하세요.", href: "/reviews" },
       { id: "grow-content", title: "주 2회 콘텐츠 발행", detail: "콘텐츠 캘린더대로 숏폼·카드뉴스를 올리세요.", href: "/season?tab=content" },
-      { id: "grow-holiday", title: "명절 선물 시즌 준비", detail: "연휴 45일 전부터 일정표대로. 주문 마감일 계산 포함.", href: "/calendar" },
-      { id: "grow-supplier", title: "공급처 스코어카드 점검", detail: "클레임률 높은 공급처는 포장·선별 기준을 다시 맞추거나 교체하세요.", href: "/claims" },
+      { id: "grow-holiday", title: "명절 선물 시즌 준비", detail: "연휴 45일 전부터 선물세트 구성·상세페이지·주문 마감 공지를 준비하세요.", href: "/season?tab=content" },
+      { id: "grow-supplier", title: "공급처 품질 점검", detail: "파손·상함 클레임이 잦은 공급처는 포장·선별 기준을 다시 맞추거나 교체하세요." },
       { id: "grow-routine", title: "운영 체크리스트 루틴화", detail: "매일 5분·매주 30분·매월 2시간.", href: "/ops" },
     ],
   },

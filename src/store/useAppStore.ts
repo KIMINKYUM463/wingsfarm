@@ -2,31 +2,27 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Channel, ChannelId, ClaimRecord, CostDefaults, LedgerEntry, Sku, Supplier } from "@/types";
+import type { Channel, ChannelId, CostDefaults, Sku, Supplier } from "@/types";
 import { DEFAULT_CHANNELS } from "@/lib/data/channels";
-import { DEFAULT_HOLIDAYS } from "@/lib/data/holidays";
 import { DEFAULT_COSTS, DEFAULT_CS_POLICY } from "@/lib/data/defaults";
 import type { CsTone } from "@/lib/csAi";
 import { toDateKey } from "@/lib/format";
 
 const RECENT_KEYWORD_LIMIT = 12;
-const STORE_VERSION = 7;
+const STORE_VERSION = 8;
 
 export interface AppData {
   channels: Channel[];
   suppliers: Supplier[];
   skus: Sku[];
   costs: CostDefaults;
-  holidays: Record<string, string>;
   csPolicy: string;
   csTone: CsTone;
   recentKeywords: string[];
-  /** 운영 체크리스트·로드맵·명절 준비·콘텐츠 캘린더 완료 상태 — key = `${접두어}:${itemId}` */
+  /** 운영 체크리스트·로드맵·콘텐츠 캘린더 완료 상태 — key = `${접두어}:${itemId}` */
   opsChecks: Record<string, boolean>;
   /** 상품명·태그·썸네일·마케팅 화면이 함께 쓰는 "작업 중인 상품" */
   workingProduct: string;
-  ledger: LedgerEntry[];
-  claims: ClaimRecord[];
 }
 
 interface AppActions {
@@ -39,20 +35,12 @@ interface AppActions {
   setSupplyPrice: (skuId: string, price: number) => void;
   /** price가 null이면 해당 채널 판매 중지 */
   setListing: (skuId: string, channelId: ChannelId, price: number | null) => void;
-  /** 주문 파일의 상품명·옵션 표기를 SKU에 기억시켜 다음부터 자동 매칭 */
-  addSkuAlias: (skuId: string, alias: string) => void;
   setWorkingProduct: (name: string) => void;
-  setHoliday: (date: string, name: string | null) => void;
   setCsSettings: (patch: Partial<Pick<AppData, "csPolicy" | "csTone">>) => void;
   addRecentKeyword: (keyword: string) => void;
   clearRecentKeywords: () => void;
   toggleOpsCheck: (key: string) => void;
   resetOpsCadence: (periodKey: string, itemIds: string[]) => void;
-  addLedgerEntries: (entries: LedgerEntry[]) => void;
-  updateLedgerEntry: (entry: LedgerEntry) => void;
-  removeLedgerEntry: (id: string) => void;
-  upsertClaim: (claim: ClaimRecord) => void;
-  removeClaim: (id: string) => void;
   importData: (data: AppData) => void;
   resetAll: () => void;
 }
@@ -62,22 +50,26 @@ const initialData = (): AppData => ({
   suppliers: [],
   skus: [],
   costs: DEFAULT_COSTS,
-  holidays: DEFAULT_HOLIDAYS,
   csPolicy: DEFAULT_CS_POLICY,
   csTone: "warm",
   recentKeywords: [],
   opsChecks: {},
   workingProduct: "",
-  ledger: [],
-  claims: [],
 });
 
 /** v1까지 기본 탑재됐던 샘플 데이터의 ID (사용자가 만든 항목은 UUID라 겹치지 않음) */
 const SAMPLE_ID = /^(sku-|sup-)/;
-/** 삭제된 기능의 데이터 (orderLogs: v3, sourcing: v7). claims는 v6에서 새 형식으로 다시 생겨서 v6 미만 데이터만 버린다 */
-const REMOVED_KEYS = ["orderLogs", "sourcing"];
+/** 삭제된 기능의 데이터 (orderLogs: v3, sourcing: v7, ledger·claims·holidays: v8) */
+const REMOVED_KEYS = ["orderLogs", "sourcing", "ledger", "claims", "holidays"];
 
 const withoutRemovedKeys = (data: AppData) => Object.fromEntries(Object.entries(data).filter(([key]) => !REMOVED_KEYS.includes(key))) as AppData;
+
+/** v8에서 발주·출고 설정(마감시각·출고요일·발주서 양식)과 신선상품 표시가 빠졌다 */
+const slimSupplier = ({ id, name, contact }: Supplier): Supplier => (contact ? { id, name, contact } : { id, name });
+const slimSku = (sku: Sku): Sku => {
+  const { fresh: _fresh, ...rest } = sku as Sku & { fresh?: boolean };
+  return rest;
+};
 
 function migrateData(data: AppData, version: number): AppData {
   const keep = <T extends { id: string }>(items: T[] = []) => items.filter((item) => !SAMPLE_ID.test(item.id));
@@ -86,10 +78,9 @@ function migrateData(data: AppData, version: number): AppData {
     ...cleaned,
     opsChecks: cleaned.opsChecks ?? {},
     workingProduct: cleaned.workingProduct ?? "",
-    ledger: cleaned.ledger ?? [],
-    claims: version < 6 ? [] : (cleaned.claims ?? []),
   };
-  return version < 2 ? { ...filled, suppliers: keep(filled.suppliers), skus: keep(filled.skus) } : filled;
+  const sampled = version < 2 ? { ...filled, suppliers: keep(filled.suppliers), skus: keep(filled.skus) } : filled;
+  return version < 8 ? { ...sampled, suppliers: (sampled.suppliers ?? []).map(slimSupplier), skus: (sampled.skus ?? []).map(slimSku) } : sampled;
 }
 
 /** 공급가 변경 시 같은 날 이력은 덮어쓰고, 다른 날이면 추가 */
@@ -134,28 +125,7 @@ export const useAppStore = create<AppData & AppActions>()(
           }),
         })),
 
-      addSkuAlias: (skuId, alias) =>
-        set((s) => {
-          const value = alias.trim();
-          if (!value) return {};
-          return {
-            skus: s.skus.map((x) => {
-              // 같은 표기가 다른 SKU에 기억돼 있으면 옮긴다 (한 표기 = 한 SKU)
-              const others = x.aliases.filter((a) => a !== value);
-              return x.id === skuId ? { ...x, aliases: [...others, value] } : others.length === x.aliases.length ? x : { ...x, aliases: others };
-            }),
-          };
-        }),
-
       setWorkingProduct: (name) => set({ workingProduct: name }),
-
-      setHoliday: (date, name) =>
-        set((s) => {
-          const holidays = { ...s.holidays };
-          if (name === null) delete holidays[date];
-          else holidays[date] = name;
-          return { holidays };
-        }),
 
       setCsSettings: (patch) => set(patch),
 
@@ -179,16 +149,6 @@ export const useAppStore = create<AppData & AppActions>()(
           return { opsChecks };
         }),
 
-      addLedgerEntries: (entries) => set((s) => ({ ledger: [...s.ledger, ...entries] })),
-
-      updateLedgerEntry: (entry) => set((s) => ({ ledger: upsertById(s.ledger, entry) })),
-
-      removeLedgerEntry: (id) => set((s) => ({ ledger: s.ledger.filter((x) => x.id !== id) })),
-
-      upsertClaim: (claim) => set((s) => ({ claims: upsertById(s.claims, claim) })),
-
-      removeClaim: (id) => set((s) => ({ claims: s.claims.filter((x) => x.id !== id) })),
-
       importData: (data) => set(migrateData({ ...initialData(), ...data }, STORE_VERSION)),
 
       resetAll: () => set(initialData()),
@@ -206,12 +166,9 @@ export const pickAppData = (s: AppData): AppData => ({
   suppliers: s.suppliers,
   skus: s.skus,
   costs: s.costs,
-  holidays: s.holidays,
   csPolicy: s.csPolicy,
   csTone: s.csTone,
   recentKeywords: s.recentKeywords,
   opsChecks: s.opsChecks ?? {},
   workingProduct: s.workingProduct ?? "",
-  ledger: s.ledger ?? [],
-  claims: s.claims ?? [],
 });

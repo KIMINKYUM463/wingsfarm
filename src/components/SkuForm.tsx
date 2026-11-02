@@ -20,7 +20,6 @@ export function createEmptySku(supplierId: string): Sku {
     extraShippingCost: 0,
     packagingCost: 0,
     taxFree: true,
-    fresh: false,
     listings: {},
     aliases: [],
     priceHistory: [],
@@ -51,7 +50,7 @@ export function SkuForm({ initial, onDone }: { initial: Sku; onDone: () => void 
         <Field label="상품명">
           <TextInput value={sku.productName} onChange={(e) => set("productName")(e.target.value)} placeholder="청송 꿀사과" />
         </Field>
-        <Field label="옵션" hint="주문 파일 매칭에 사용">
+        <Field label="옵션">
           <TextInput value={sku.optionName} onChange={(e) => set("optionName")(e.target.value)} placeholder="5kg" />
         </Field>
         <Field label="SKU 코드">
@@ -94,10 +93,7 @@ export function SkuForm({ initial, onDone }: { initial: Sku; onDone: () => void 
           ))}
         </div>
       </div>
-      <div className="flex gap-6">
-        <Toggle checked={sku.taxFree} onChange={set("taxFree")} label="면세(미가공)" />
-        <Toggle checked={sku.fresh} onChange={set("fresh")} label="신선상품(출고요일 제한)" />
-      </div>
+      <Toggle checked={sku.taxFree} onChange={set("taxFree")} label="면세(미가공)" />
       <div className="flex justify-end gap-2 pt-2">
         <Button variant="secondary" onClick={onDone}>
           취소

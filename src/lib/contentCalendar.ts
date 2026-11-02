@@ -5,7 +5,7 @@
 import type { SeasonItem } from "@/types";
 import type { MarketingFormat } from "./marketingAi.ts";
 import { seasonStatus } from "./season.ts";
-import { addDays, dateKey, upcomingMajorHolidays } from "./shipping.ts";
+import { addDays, dateKey, upcomingMajorHolidays } from "./holidays.ts";
 
 export interface ContentPost {
   id: string;

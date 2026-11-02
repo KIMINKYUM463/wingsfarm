@@ -72,7 +72,7 @@ describe("상품 손익분기 ROAS", () => {
   const defaults: CostDefaults = { adRate: 10, lossRate: 0, targetMargin: 15, customerShippingFee: 0, roundUnit: 10 };
   const sku: Sku = {
     id: "s1", code: "", productName: "박달홍게", optionName: "2kg", category: "수산", supplierId: "p1",
-    supplyPrice: 20000, extraShippingCost: 0, packagingCost: 0, taxFree: true, fresh: true,
+    supplyPrice: 20000, extraShippingCost: 0, packagingCost: 0, taxFree: true,
     listings: { coupang: 30000 }, aliases: [], priceHistory: [],
   };
 

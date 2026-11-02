@@ -12,44 +12,11 @@ export interface Channel {
   shippingFeeRate: number;
 }
 
-/** 발주서 양식에서 사용할 수 있는 표준 필드 */
-export type OrderField =
-  | "orderNo"
-  | "channel"
-  | "orderer"
-  | "receiver"
-  | "phone"
-  | "zipcode"
-  | "address"
-  | "productName"
-  | "optionName"
-  | "skuCode"
-  | "qty"
-  | "message"
-  | "bundleGroup"
-  | "supplyPrice"
-  | "payAmount"
-  | "constant";
-
-export interface TemplateColumn {
-  header: string;
-  field: OrderField;
-  /** field가 constant일 때 출력할 고정값 */
-  value?: string;
-}
-
 export interface Supplier {
   id: SupplierId;
   name: string;
-  /** 발주 담당자 연락처·메일 (선택) */
+  /** 담당자 연락처·메일 (선택) */
   contact?: string;
-  /** 발주 마감 시각 HH:mm */
-  cutoffTime: string;
-  /** 출고 가능 요일 (0=일 ~ 6=토) */
-  shipWeekdays: number[];
-  /** 신선상품 출고 제한 요일 */
-  freshBlockedWeekdays: number[];
-  template: TemplateColumn[];
 }
 
 export interface PricePoint {
@@ -69,10 +36,9 @@ export interface Sku {
   extraShippingCost: number;
   packagingCost: number;
   taxFree: boolean;
-  fresh: boolean;
   /** 채널별 판매가 (미판매 채널은 키 없음) */
   listings: Record<ChannelId, number>;
-  /** 주문 파일의 상품명/옵션과 매칭하기 위해 학습된 별칭 */
+  /** 마켓에 등록한 다른 상품명 — 광고 보고서의 상품명과 매칭할 때 쓴다 */
   aliases: string[];
   priceHistory: PricePoint[];
 }
@@ -88,47 +54,6 @@ export interface CostDefaults {
   customerShippingFee: number;
   /** 권장가 올림 단위(원) */
   roundUnit: number;
-}
-
-export type ClaimType = "damage" | "spoiled" | "underweight" | "quality" | "delay" | "wrongItem";
-
-export type ClaimResolution = "partial" | "refund" | "resend" | "coupon" | "none";
-
-export interface ClaimRecord {
-  id: string;
-  /** YYYY-MM-DD */
-  date: string;
-  supplierId: SupplierId;
-  skuId: string | null;
-  type: ClaimType;
-  orderNo: string;
-  resolution: ClaimResolution;
-  /** 환불·재발송 등으로 실제 잃은 금액 */
-  loss: number;
-  /** 받은 증빙 (CS 가이드의 증빙 항목 이름) */
-  evidence: string[];
-  note: string;
-}
-
-/** 매출 장부 한 줄 — 금액은 모두 그 줄의 합계(수량 반영)이고 VAT 포함 */
-export interface LedgerEntry {
-  id: string;
-  /** YYYY-MM-DD */
-  date: string;
-  channelId: ChannelId;
-  skuId: string | null;
-  label: string;
-  qty: number;
-  /** 고객 결제금액(배송비 포함) */
-  revenue: number;
-  /** 공급가·택배·포장 */
-  cost: number;
-  /** 채널 수수료 */
-  fee: number;
-  ad: number;
-  other: number;
-  taxFree: boolean;
-  source: "manual" | "orders";
 }
 
 export type SeasonCategory = "과일" | "채소" | "수산" | "축산" | "가공";

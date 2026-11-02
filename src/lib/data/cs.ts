@@ -1,4 +1,4 @@
-import type { ClaimType } from "@/types";
+export type ClaimType = "damage" | "spoiled" | "underweight" | "quality" | "delay" | "wrongItem";
 
 export interface CsGuide {
   label: string;

@@ -8,7 +8,7 @@ import { SupplierForm } from "@/components/SupplierForm";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { emptySupplier } from "@/lib/data/defaults";
 import { downloadBlob } from "@/lib/file";
-import { WEEKDAYS, toDateKey, uid, won } from "@/lib/format";
+import { toDateKey, uid, won } from "@/lib/format";
 import { pickAppData, useAppStore, type AppData } from "@/store/useAppStore";
 
 export default function SettingsPage() {
@@ -108,7 +108,7 @@ export default function SettingsPage() {
             <thead>
               <tr>
                 <th>공급처</th>
-                <th>마감·출고</th>
+                <th>연락처</th>
                 <th className="text-right">연결 상품</th>
                 <th />
               </tr>
@@ -117,9 +117,7 @@ export default function SettingsPage() {
               {suppliers.map((s) => (
                 <tr key={s.id}>
                   <td className="font-medium">{s.name}</td>
-                  <td className="whitespace-nowrap text-xs text-stone-500">
-                    {s.cutoffTime} 마감 · {s.shipWeekdays.map((d) => WEEKDAYS[d]).join("")}
-                  </td>
+                  <td className="text-xs text-stone-500">{s.contact || "-"}</td>
                   <td className="text-right tabular-nums">{skus.filter((sku) => sku.supplierId === s.id).length}개</td>
                   <td className="whitespace-nowrap text-right">
                     <Button variant="ghost" onClick={() => setEditing(s)}>
@@ -169,9 +167,7 @@ export default function SettingsPage() {
                       <div className="font-medium">{sku.productName}</div>
                       <div className="flex gap-1 text-xs text-stone-400">
                         {sku.optionName} · {sku.code || "코드없음"}
-                        {sku.taxFree ? <Badge>면세</Badge> : <Badge tone="info">과세</Badge>}
-                        {sku.fresh && <Badge tone="warn">신선</Badge>}
-                      </div>
+                        {sku.taxFree ? <Badge>면세</Badge> : <Badge tone="info">과세</Badge>}                      </div>
                     </td>
                     <td className="text-xs">{sku.category}</td>
                     <td className="whitespace-nowrap text-xs">{suppliers.find((s) => s.id === sku.supplierId)?.name ?? "미지정"}</td>

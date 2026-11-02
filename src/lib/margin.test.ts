@@ -91,7 +91,6 @@ describe("evaluateListings", () => {
     extraShippingCost: 0,
     packagingCost: 0,
     taxFree: true,
-    fresh: false,
     listings: { a: 22000, b: 30000 },
     aliases: [],
     priceHistory: [],

@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { CLAIM_TYPES, CS_GUIDES } from "@/lib/data/cs";
-import type { ClaimType } from "@/types";
+import { CLAIM_TYPES, CS_GUIDES, type ClaimType } from "@/lib/data/cs";
 import { CS_BOT_NAME } from "@/lib/brand";
 
 export const CS_TONES = {

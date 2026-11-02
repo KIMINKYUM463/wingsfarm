@@ -1,16 +1,6 @@
 import type { CostDefaults, Supplier } from "@/types";
 
-/** 발주서 도우미·도착일 계산이 쓰는 공급처 기본값 (템플릿이 비면 기본 발주서 양식을 쓴다) */
-export function emptySupplier(id: string): Supplier {
-  return {
-    id,
-    name: "",
-    cutoffTime: "14:00",
-    shipWeekdays: [1, 2, 3, 4, 5],
-    freshBlockedWeekdays: [5],
-    template: [],
-  };
-}
+export const emptySupplier = (id: string): Supplier => ({ id, name: "" });
 
 export const DEFAULT_CS_POLICY = `- 신선식품 특성상 단순 변심에 의한 반품·교환은 어렵습니다.
 - 수령 후 24시간 이내 사진으로 접수된 파손·변질은 보상합니다.
