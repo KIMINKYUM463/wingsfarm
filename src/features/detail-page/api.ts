@@ -76,30 +76,15 @@ export const getProjectGenerationJob = async (
 };
 
 /**
- * Project Generation 확정 (신규 생성 또는 덮어쓰기)
+ * Project Generation 확정
  *
  * POST /projects/generation/{jobId}/confirm
  *
- * ## 동작 방식
- * - AI 처리 완료 후 사용자가 신규 프로젝트 생성 또는 초안 프로젝트 덮어쓰기를 선택
- * - `ai_completed` 상태의 generation job만 확정 가능
- * - Worker가 자동으로 `saving_pending` → `saving_processing` → `completed` 진행
- * - Step 4 완료 후 `GET /projects/generation/:jobId`에서 `projectId` 조회 가능
+ * AI가 끝나면 초안 프로젝트(`sourceProjectId`)에 결과를 덮어쓴다.
+ * UI에서는 항상 overwrite로 호출한다. (create는 API 호환용으로만 남김)
  *
- * ## Create 모드
- * - 프로젝트가 즉시 생성됩니다
- * - Worker는 이미 생성된 프로젝트에 frames만 추가합니다
- * - `projectId`는 Step 4 완료 후 조회 가능
- *
- * ## Overwrite 모드
- * - `sourceProjectId`를 생성 요청 시 제공했다면 해당 초안 프로젝트를 덮어씁니다
- * - 초안 프로젝트가 없으면 오류 발생
- * - 프로젝트 소유자만 가능
- * - Transaction으로 원자성 보장 (Soft Delete → 생성 → Timestamp 갱신)
- *
- * @param jobId - 생성 Job ID (UUID)
+ * @param jobId - 생성 Job ID
  * @param request - 확정 모드 (create | overwrite)
- * @returns 확정 성공 응답 (status: saving_pending)
  */
 export const confirmProjectGeneration = async (
   jobId: string,

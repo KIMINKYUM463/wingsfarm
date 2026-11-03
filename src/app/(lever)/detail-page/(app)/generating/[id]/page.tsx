@@ -11,14 +11,8 @@ import { GeneratingContent } from '@/features/editor/components/overlay/Generati
  *
  * ## 흐름
  * 1. ProductInfoForm에서 성공 시 jobId 반환
- * 2. `/projects/generating/[jobId]?source=[sourceProjectId]`로 이동
- * 3. GeneratingContent가 Job 상태 실시간 추적
- * 4. Job 완료되면:
- *    - 새 프로젝트 추가: 새 탭에서 열고, 현재 탭은 sourceProjectId로 복귀
- *    - 덮어쓰기: 같은 탭에서 이동
- *
- * @param params - URL 파라미터 (jobId 포함)
- * @param searchParams - 쿼리 파라미터 (source: 기존 프로젝트 ID)
+ * 2. `/projects/generating/[jobId]`로 이동
+ * 3. GeneratingContent가 Job 상태 추적 → AI 끝나면 초안 프로젝트에 덮어쓰기 → 에디터로 이동
  */
 interface GeneratingPageProps {
   params: Promise<{ id: string }>;
@@ -26,11 +20,8 @@ interface GeneratingPageProps {
 }
 
 export default async function GeneratingPage({ params, searchParams }: GeneratingPageProps) {
-  // URL 파라미터에서 jobId 추출
   const { id: jobId } = await params;
-  // 쿼리 파라미터에서 sourceProjectId, create 플래그 추출
   const { source: sourceProjectId, create } = await searchParams;
-  // create=true 쿼리 파라미터면 create 모드 (다이얼로그 스킵)
   const isCreateMode = create === 'true';
 
   return (

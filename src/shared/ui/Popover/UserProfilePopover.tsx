@@ -18,7 +18,7 @@ export default function UserProfilePopover() {
     router.push(ROUTES.SETTINGS_API_KEY);
   };
 
-  // 윙스팜AI는 로그인이 없으므로 로그아웃 대신 템플릿 관리·대시보드 이동을 둔다
+  // 윙스팜AI는 로그인이 없으므로 로그아웃 대신 대시보드 이동을 둔다 (템플릿 관리는 메뉴에서 숨김)
   const menuItems: PopoverMenuItem[] = [
     {
       icon: 'format_list_bulleted',
@@ -29,11 +29,6 @@ export default function UserProfilePopover() {
       icon: 'key_vertical',
       label: 'API 키 설정',
       onClick: handleApiKeys,
-    },
-    {
-      icon: 'dashboard_customize',
-      label: '템플릿 관리 (Figma)',
-      onClick: () => router.push(ROUTES.ADMIN_TEMPLATES),
     },
     {
       icon: 'home',
