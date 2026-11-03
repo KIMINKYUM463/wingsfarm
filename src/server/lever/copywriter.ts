@@ -2,7 +2,7 @@ import 'server-only';
 import type { ProjectFrame } from '@/features/editor/types';
 import { hasPlaceholder } from '@/shared/lib/placeholder';
 import { findCategory } from './catalog/categories';
-import { NATURAL_COPY_RULES } from './copyStyle';
+import { DETAIL_COPY_RULES } from './copyStyle';
 import { asFrame, asNode, applyTexts, collectEditableTexts, collectPromptGuides } from './frames/tree';
 import type { GeminiClient } from './gemini';
 import type { ProductContext, ProjectRecord } from './projects';
@@ -120,7 +120,7 @@ ${JSON.stringify(targets.map((t) => ({ id: t.id, text: t.text, maxChars: maxChar
 ${PLACEHOLDER_RULES}
 - 영문 라벨(예: POINT 01, BEST)은 형식을 유지한다.
 
-${NATURAL_COPY_RULES}
+${DETAIL_COPY_RULES}
 
 JSON 형식: {"texts":[{"id":"...","text":"..."}]}`,
       [],

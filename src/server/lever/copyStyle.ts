@@ -1,3 +1,5 @@
+import { MARKETING_PSYCHOLOGY_RULES } from './marketingPsychology';
+
 /**
  * 판매 문구 문체 규칙 — AI가 쓴 티가 나지 않게
  * 기획 초안·템플릿 문구·에디터 AI 문구·AI 채팅·외부 AI용 기획안 가이드가 함께 쓴다
@@ -31,3 +33,8 @@ export const NATURAL_COPY_RULES = `문체 규칙 (AI가 쓴 티가 나지 않게
 - 형용사를 겹쳐 쌓지 않는다("부드럽고 촉촉하고 달콤한" X). 한 문장에 핵심 하나만 담는다.
 - 메인 문구는 광고 슬로건보다, 손님이 먹어 보거나 써 보고 할 법한 말이나 눈에 그려지는 사실 한 줄로 쓴다.
 - 존댓말 톤(~해요/~합니다)은 같은 섹션 안에서 섞지 않는다.`;
+
+/** 상세페이지에 실리는 판매 문구 — 문체 + 마케팅 심리 */
+export const DETAIL_COPY_RULES = `${NATURAL_COPY_RULES}
+
+${MARKETING_PSYCHOLOGY_RULES}`;

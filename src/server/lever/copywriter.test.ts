@@ -60,12 +60,15 @@ describe('템플릿 문구 → 상품 문구', () => {
     assert.equal(textsOf(frame).title, '이것만은\n자신 있어요', '원본 프레임은 그대로');
   });
 
-  it('판매 문구는 copy 등급 모델과 문체 규칙으로 쓴다', async () => {
+  it('판매 문구는 copy 등급 모델과 문체·마케팅 심리 규칙으로 쓴다', async () => {
     const writer = fakeWriter({ title: '아삭해요' });
     await rewriteFrame(writer, '상품명: 참외', frameOf('f1', 'a1', [text('title', '제목')]));
     assert.deepEqual(writer.tiers, ['copy']);
     assert.match(writer.prompts[0], /AI가 쓴 티가 나지 않게/);
     assert.match(writer.prompts[0], /"선사합니다"/);
+    assert.match(writer.prompts[0], /마케팅 심리/);
+    assert.match(writer.prompts[0], /Jobs to Be Done/);
+    assert.match(writer.prompts[0], /없는 마감·재고·한정수량을 만들지 않는다/);
   });
 
   it('AI가 빈 문구를 주면 템플릿 문구를 남긴다', async () => {

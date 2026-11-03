@@ -1,7 +1,7 @@
 import 'server-only';
 import type { ChatEditChange, ChatEditRequest, ChatEditResult, ChatTextAlign } from '@/shared/types/chatEdit';
 import { describeWarnings, findUnsupportedClaims } from './catalog/factGuard';
-import { NATURAL_COPY_RULES } from './copyStyle';
+import { DETAIL_COPY_RULES } from './copyStyle';
 import { contextBrief } from './copywriter';
 import { requireGemini } from './gemini';
 import { badRequest } from './http';
@@ -84,7 +84,7 @@ ${history.length ? `\n[이전 대화]\n${history.join('\n')}\n` : ''}
 - reply: 한 문장 요약 (예: "히어로 문구 5개를 더 짧게 다듬었어요").
 - followUps: 이어서 해볼 만한 요청 2개 (짧은 명령문).
 
-${NATURAL_COPY_RULES}
+${DETAIL_COPY_RULES}
 
 JSON 형식: {"reply":"...","changes":[{"id":"...","text":"...","align":"center","fontScale":1.2}],"followUps":["...","..."]}`,
     [],

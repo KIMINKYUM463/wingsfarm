@@ -3,7 +3,7 @@ import pLimit from 'p-limit';
 import { defaultCutSource, sceneIdeas, spreadOwnCuts } from '@/shared/lib/draftMedia';
 import type { DraftAnalysis, DraftInput, DraftPlan, DraftProgress, DraftRecord, DraftSection, PhotoAnalysis } from '@/shared/types/draft';
 import { CATEGORIES, findCategory } from '../catalog/categories';
-import { NATURAL_COPY_RULES } from '../copyStyle';
+import { DETAIL_COPY_RULES } from '../copyStyle';
 import { derivePalette, normalizePalette, palettePresets, tintNeutralBackgrounds, TONE_PRESETS } from '../catalog/palette';
 import { defaultFlow, findSectionType, fitLength, LENGTH_TARGET, suggestableTypes, withAiNotice, type SectionType } from '../catalog/sections';
 import {
@@ -43,7 +43,7 @@ const COPY_RULES = `규칙:
 - 다른 상품을 깎아내리지 않는다. 의학적 효능을 단정하지 않는다.
 - 메인 문구는 짧고 구체적으로(공백 포함 22자 이내, 필요하면 \\n으로 두 줄). 픽셀·글꼴은 지정하지 않는다.
 
-${NATURAL_COPY_RULES}`;
+${DETAIL_COPY_RULES}`;
 
 const IMAGE_PLAN_RULES = `컷(사진) 계획 규칙:
 - scene: 짧은 장면 이름(15자 이내). plan: 배경·구도·조명·소품을 구체적으로 한두 문장(한국어).
@@ -593,7 +593,7 @@ ${features}
 7. 전체 3,000자 이내로 쓰세요.
 8. 예시 문구나 확인되지 않은 항목은 완성본에 남기지 말고, Markdown으로 출력하세요.
 
-## ${NATURAL_COPY_RULES}
+## ${DETAIL_COPY_RULES}
 
 ## 양식
 # ${input.productName || '[상품명]'} 상세페이지 기획안

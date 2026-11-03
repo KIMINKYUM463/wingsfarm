@@ -6,7 +6,7 @@ import { CATEGORIES, categoryImageUrl, findCategory } from './catalog/categories
 import { findImageStyle } from './catalog/styles';
 import { sceneIdeas } from '@/shared/lib/draftMedia';
 import { asNode, collectEditableTexts, collectPromptGuides, findNode, isImageSlot, walk } from './frames/tree';
-import { NATURAL_COPY_RULES } from './copyStyle';
+import { DETAIL_COPY_RULES } from './copyStyle';
 import { PLACEHOLDER_RULES } from './copywriter';
 import { copyBrief } from './productFacts';
 import { distinctFrom, productPhotoPrompt, sceneForIndex } from './photoPrompt';
@@ -199,7 +199,7 @@ ${body.prompt?.trim() ? `[사용자 요청] ${body.prompt.trim()}` : ''}
 규칙: 현재 문구와 비슷한 길이(공백 제외 ${Math.ceil(current.replace(/\s/g, '').length * 1.2) + 2}자 이내)와 같은 줄 수(${current.split('\n').length}줄)를 유지하고, 줄바꿈은 \\n 으로 쓴다.
 ${PLACEHOLDER_RULES}
 
-${NATURAL_COPY_RULES}
+${DETAIL_COPY_RULES}
 
 JSON 형식: {"text":"..."}`,
     [],

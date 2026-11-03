@@ -8,6 +8,7 @@
 | Phosphor Icons 2.1 | 아이콘 (path, 색 변경 가능) | https://github.com/phosphor-icons/core |
 | Fluent Emoji Flat | 스티커 (컬러 SVG) | https://github.com/microsoft/fluentui-emoji |
 | gifenc 1.0.3 | 에디터 "움직임" 패널의 GIF 만들기 (npm 패키지) | https://github.com/mattdesl/gifenc |
+| marketing-psychology (marketingskills) | 상세페이지 판매 문구의 마케팅 심리 규칙 | https://github.com/coreyhaines31/marketingskills |
 
 ---
 
@@ -28,6 +29,15 @@ Copyright (c) Microsoft Corporation.
 MIT License
 
 Copyright (c) 2017 Matt DesLauriers
+
+## marketing-psychology (marketingskills)
+
+MIT License
+
+Copyright (c) 2025 Corey Haines
+
+원문: `docs/vendor/marketing-psychology/SKILL.md`
+적용: `src/server/lever/marketingPsychology.ts` (상세페이지 카피 프롬프트)
 
 ---
 
