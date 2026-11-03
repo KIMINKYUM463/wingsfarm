@@ -52,5 +52,6 @@ export const queryKeys = {
   SETTINGS: {
     all: ['settings'] as const,
     apiKey: () => [...queryKeys.SETTINGS.all, 'apiKey'] as const,
+    copyModel: () => [...queryKeys.SETTINGS.all, 'copyModel'] as const,
   },
 } as const;

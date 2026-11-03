@@ -1,5 +1,6 @@
 import 'server-only';
 import type { AssetSignedUrlRequest } from '@/features/detail-page/types';
+import { isCopyModelId } from '@/shared/constants/copyModels';
 import { archiveAssets, getAsset, listAssets, markReady, reserveUploads } from './assets';
 import {
   generateElementText,
@@ -57,7 +58,7 @@ import {
 import { chatEdit } from './chat';
 import { reviewSection } from './sectionReview';
 import { createVersion, deleteVersion, listVersions, restoreVersion } from './versions';
-import { getApiKeyInfo, updateSettings } from './settings';
+import { getApiKeyInfo, getCopyModelInfo, updateSettings } from './settings';
 import { loadFile, mimeFromPath, saveFile, toStoragePath, verifyUploadToken } from './storage';
 import { getFigmaStatus, syncFigmaTemplates } from './templates/figmaSync';
 import { adminCategories, adminListTemplates, listTemplateGroups, updateExcludedCategories } from './templates/repo';
@@ -165,6 +166,13 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['DELETE', 'settings/api-keys', async () => {
     await updateSettings(({ geminiApiKey: _removed, ...rest }) => rest);
     return noContent();
+  }],
+  ['GET', 'settings/copy-model', () => getCopyModelInfo()],
+  ['PUT', 'settings/copy-model', async ({ body }) => {
+    const model = (await body<{ model?: unknown }>()).model;
+    if (!isCopyModelId(model)) throw badRequest('지원하지 않는 문구 AI입니다.');
+    await updateSettings((s) => ({ ...s, copyModel: model }));
+    return getCopyModelInfo();
   }],
 
   // ===== 템플릿 관리 (관리 화면 + Figma 동기화) =====

@@ -84,5 +84,6 @@ export const ENDPOINTS = {
   },
   SETTINGS: {
     API_KEY: '/functions/v1/settings/api-keys',
+    COPY_MODEL: '/functions/v1/settings/copy-model',
   },
 } as const;

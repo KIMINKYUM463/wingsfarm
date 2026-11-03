@@ -6,7 +6,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { connection } from 'next/server';
-import { getApiKeyInfo } from '@/server/lever/settings';
+import { getApiKeyInfo, getCopyModelInfo } from '@/server/lever/settings';
 
 /**
  * API 키 조회 (cache 메모이제이션)
@@ -19,4 +19,10 @@ import { getApiKeyInfo } from '@/server/lever/settings';
 export const getApiKey = cache(async () => {
   await connection();
   return getApiKeyInfo();
+});
+
+/** 판매 문구 AI 선택값 + OpenAI 키 유무 */
+export const getCopyModelSettings = cache(async () => {
+  await connection();
+  return getCopyModelInfo();
 });

@@ -1,5 +1,6 @@
 import 'server-only';
 import { randomBytes } from 'node:crypto';
+import { DEFAULT_COPY_MODEL, isCopyModelId, type CopyModelId, type CopyModelInfo } from '@/shared/constants/copyModels';
 import { readJson, updateJson } from './store';
 
 const FILE = 'settings.json';
@@ -14,6 +15,8 @@ interface LeverSettings {
   secret?: string;
   geminiApiKey?: string;
   figma?: Partial<FigmaConfig>;
+  /** 판매 문구를 쓰는 AI */
+  copyModel?: CopyModelId;
 }
 
 export const readSettings = () => readJson<LeverSettings>(FILE, {});
@@ -41,6 +44,15 @@ export const maskKey = (key: string) =>
 export async function getApiKeyInfo() {
   const key = await getGeminiApiKey();
   return key ? { id: 'gemini', maskedKey: maskKey(key), isActive: true } : null;
+}
+
+export async function getCopyModel(): Promise<CopyModelId> {
+  const { copyModel } = await readSettings();
+  return isCopyModelId(copyModel) ? copyModel : DEFAULT_COPY_MODEL;
+}
+
+export async function getCopyModelInfo(): Promise<CopyModelInfo> {
+  return { model: await getCopyModel(), openaiReady: Boolean(process.env.OPENAI_API_KEY) };
 }
 
 /** 화면 등록값 우선, 없으면 FIGMA_ACCESS_TOKEN / FIGMA_FILE_ID 환경 변수 */

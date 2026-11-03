@@ -2,7 +2,7 @@ import 'server-only';
 import { canFallback, TEXT_MODELS, type TextTier } from './geminiModels';
 import { ApiError } from './http';
 import { writeCopyWithOpenAI } from './openaiCopy';
-import { getGeminiApiKey } from './settings';
+import { getCopyModel, getGeminiApiKey } from './settings';
 import { parseVideoResponse, videoRequestBody, type ParsedVideo, type VideoAspect } from './media/motion';
 import { loadFile, mimeFromPath, toStoragePath } from './storage';
 
@@ -100,11 +100,11 @@ export class GeminiClient {
 
   /**
    * JSON으로 답하게 하고 파싱해서 반환
-   * @param tier 'copy'면 판매 문구용 — OpenAI 키가 있으면 GPT가 먼저 쓰고,
-   *   없거나 실패하면 Gemini 최상위 모델 → fast 모델 순으로 시도한다
+   * @param tier 'copy'면 판매 문구용 — 설정에서 GPT를 골랐고 OpenAI 키가 있으면 GPT가 먼저 쓰고,
+   *   Gemini를 골랐거나 GPT가 실패하면 Gemini 최상위 모델 → fast 모델 순으로 시도한다
    */
   async generateJson<T>(prompt: string, images: InlineImage[] = [], tier: TextTier = 'fast'): Promise<T> {
-    if (tier === 'copy') {
+    if (tier === 'copy' && (await getCopyModel()) === 'gpt') {
       const written = await writeCopyWithOpenAI(prompt, images);
       const parsed = written === null ? null : parseJson<T>(written);
       if (parsed !== null) return parsed;

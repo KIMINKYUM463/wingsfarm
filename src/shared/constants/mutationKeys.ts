@@ -37,6 +37,7 @@ export const mutationKeys = {
     all: ['settings'] as const,
     apiKey: ['settings', 'api-key'] as const,
     deleteApiKey: ['settings', 'delete-api-key'] as const,
+    copyModel: ['settings', 'copy-model'] as const,
   },
 } as const;
 
