@@ -64,16 +64,17 @@ export function WingSales({ rows, period, costMultiplier, breakEven }: Props) {
   if (!configured) return <SetupGuide />;
 
   return (
-    <Card
-      title="실제 쿠팡 매출과 비교"
-      actions={
-        period && (
-          <Button variant="secondary" onClick={load} disabled={loading}>
-            {loading ? "불러오는 중…" : sales ? "다시 불러오기" : "실제 매출 불러오기"}
-          </Button>
-        )
-      }
-    >
+    <Panel>
+      <SectionHeader
+        title="실제 쿠팡 매출"
+        actions={
+          period && (
+            <Button variant="secondary" onClick={load} disabled={loading}>
+              {loading ? "불러오는 중…" : sales ? "다시 불러오기" : "실제 매출 불러오기"}
+            </Button>
+          )
+        }
+      />
       {!period && <Notice tone="warn">보고서 기간을 알 수 없어요. 기간 구분을 &quot;일별&quot;로 만들거나, 파일 이름을 광고센터에서 받은 그대로(…_20261012_20261102.xlsx) 올려 주세요.</Notice>}
       {period && !sales && !error && (
         <p className="text-sm text-stone-500">
@@ -82,8 +83,8 @@ export function WingSales({ rows, period, costMultiplier, breakEven }: Props) {
       )}
       {error && <Notice tone="loss">{error}</Notice>}
       {sales && <Comparison sales={sales} adByDate={adByDate} costMultiplier={costMultiplier} breakEven={breakEven} rows={rows} />}
-    </Card>
     </Panel>
+  );
 }
 
 function Comparison({ sales, adByDate, rows, costMultiplier, breakEven }: { sales: Sales; adByDate: Map<string, AdRow[]>; rows: AdRow[]; costMultiplier: number; breakEven: number }) {
@@ -169,7 +170,6 @@ function Comparison({ sales, adByDate, rows, costMultiplier, breakEven }: { sale
 
 function SetupGuide() {
   return (
-    <Card title="실제 쿠팡 매출과 비교 (선택)">
     <Panel>
       <SectionHeader title="실제 쿠팡 매출 (선택)" />
       <p className="text-sm text-stone-600">광고 ROAS는 광고를 거친 주문만 세요. 윙 Open API를 연결하면 같은 기간의 전체 주문 매출과 비교해요.</p>
@@ -190,4 +190,5 @@ function SetupGuide() {
       </ol>
       <p className="mt-3 text-xs text-stone-400">키는 발급 후 사용까지 최대 하루가 걸릴 수 있고, 180일마다 다시 발급해야 해요.</p>
     </Panel>
+  );
 }
