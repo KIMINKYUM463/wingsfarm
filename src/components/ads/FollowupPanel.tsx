@@ -18,9 +18,24 @@ interface Props {
 }
 
 const VERDICT_STYLE: Record<FollowupVerdict, { label: string; chip: string; text: string; ring: string }> = {
-  better: { label: "효과 있음", chip: "bg-emerald-500 text-white", text: "text-emerald-600", ring: "ring-emerald-200" },
-  flat: { label: "변화 없음", chip: "bg-stone-200 text-stone-700", text: "text-stone-700", ring: "ring-stone-200" },
-  worse: { label: "역효과", chip: "bg-rose-500 text-white", text: "text-rose-600", ring: "ring-rose-200" },
+  better: {
+    label: "효과 있음",
+    chip: "bg-emerald-500 text-white",
+    text: "text-emerald-600",
+    ring: "ring-emerald-200",
+  },
+  flat: {
+    label: "변화 없음",
+    chip: "bg-stone-200 text-stone-700",
+    text: "text-stone-700",
+    ring: "ring-stone-200",
+  },
+  worse: {
+    label: "역효과",
+    chip: "bg-rose-500 text-white",
+    text: "text-rose-600",
+    ring: "ring-rose-200",
+  },
 };
 
 const signedWon = (value: number) => `${value >= 0 ? "+" : "−"}${won(Math.abs(value))}`;
@@ -41,16 +56,44 @@ interface Row {
 const rowsFor = (f: AdFollowup): Row[] => {
   const growing = FOLLOWUP_META[f.kind].focus === "revenue";
   return [
-    { id: "cost", label: "광고비", value: (d) => d.cost, format: (v) => (v === null ? "-" : won(v)), delta: (a, b) => signedWon(b - a), direction: growing ? null : "down" },
-    { id: "revenue", label: "광고 매출", value: (d) => d.revenue, format: (v) => (v === null ? "-" : won(v)), delta: (a, b) => signedWon(b - a), direction: "up" },
-    { id: "roas", label: "ROAS", value: (d) => d.roas, format: roasText, delta: (a, b) => `${b >= a ? "+" : "−"}${Math.round(Math.abs(b - a))}%p`, direction: "up" },
-    { id: "profit", label: "남긴 돈", value: (d) => d.profit, format: (v) => (v === null ? "-" : signedWon(v)), delta: (a, b) => signedWon(b - a), direction: "up" },
+    {
+      id: "cost",
+      label: "광고비",
+      value: (d) => d.cost,
+      format: (v) => (v === null ? "-" : won(v)),
+      delta: (a, b) => signedWon(b - a),
+      direction: growing ? null : "down",
+    },
+    {
+      id: "revenue",
+      label: "광고 매출",
+      value: (d) => d.revenue,
+      format: (v) => (v === null ? "-" : won(v)),
+      delta: (a, b) => signedWon(b - a),
+      direction: "up",
+    },
+    {
+      id: "roas",
+      label: "ROAS",
+      value: (d) => d.roas,
+      format: roasText,
+      delta: (a, b) => `${b >= a ? "+" : "−"}${Math.round(Math.abs(b - a))}%p`,
+      direction: "up",
+    },
+    {
+      id: "profit",
+      label: "남긴 돈",
+      value: (d) => d.profit,
+      format: (v) => (v === null ? "-" : signedWon(v)),
+      delta: (a, b) => signedWon(b - a),
+      direction: "up",
+    },
   ];
 };
 
 const deltaTone = (direction: Direction, before: number, after: number) => {
   if (!direction || before === after) return "text-stone-400";
-  return (after > before) === (direction === "up") ? "text-emerald-600" : "text-rose-600";
+  return after > before === (direction === "up") ? "text-emerald-600" : "text-rose-600";
 };
 
 /** 지난 조치의 전후 비교 + 보고서별 추이 */
@@ -63,31 +106,24 @@ export function FollowupPanel({ views, reports, period, costMultiplier, onRemove
   return (
     <Panel>
       <SectionHeader
-        eyebrow="Follow-up"
         title="지난 조치, 효과 있었나요?"
-        description="'실행했어요'로 기록한 조치를 같은 키워드·상품끼리 하루 평균으로 비교해요. 보고서마다 기간이 달라도 공정하게 비교되고, 손익분기·부가세는 기록 당시 값을 그대로 써요."
+        description="같은 키워드·상품의 하루 평균을 조치 전과 비교해요."
       />
 
       {evaluated.length > 0 && (
-        <div className="relative mb-5 overflow-hidden rounded-2xl bg-[#07140f] p-6 text-white">
-          <div className="pointer-events-none absolute -right-16 -top-20 size-64 animate-float rounded-full bg-emerald-500/20 blur-3xl" />
-          <div className="relative flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.3em] text-amber-300/80">Result</p>
-              <p className="mt-2 text-sm text-white/60">기록한 조치 {evaluated.length}개로 광고에서 남긴 돈이</p>
-              <p className={`mt-1 text-4xl font-black tracking-tight tabular-nums md:text-5xl ${total >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
-                월 {profitText(monthly(total))}
-              </p>
-              <p className="mt-1 text-xs text-white/40">하루 {signedWon(total)} × 30일 (추정)</p>
-            </div>
-            <div className="flex gap-2">
-              {(["better", "flat", "worse"] as const).map((verdict) => (
-                <div key={verdict} className="min-w-20 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center backdrop-blur">
-                  <p className="text-2xl font-bold tabular-nums">{count(verdict)}</p>
-                  <p className="text-[11px] text-white/50">{VERDICT_STYLE[verdict].label}</p>
-                </div>
-              ))}
-            </div>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-6 rounded-xl border border-stone-200 bg-stone-50/60 p-5">
+          <div>
+            <p className="text-xs font-medium text-stone-500">기록한 조치 {evaluated.length}개로 광고에서 남긴 돈 변화</p>
+            <p className={`mt-1 text-3xl font-semibold tracking-tight tabular-nums ${total >= 0 ? "text-emerald-600" : "text-rose-600"}`}>월 {profitText(monthly(total))}</p>
+            <p className="mt-0.5 text-xs text-stone-400">하루 {signedWon(total)} × 30일 (추정)</p>
+          </div>
+          <div className="flex gap-2">
+            {(["better", "flat", "worse"] as const).map((verdict) => (
+              <div key={verdict} className="min-w-20 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-center">
+                <p className="text-xl font-semibold tabular-nums text-stone-900">{count(verdict)}</p>
+                <p className="text-[11px] text-stone-500">{VERDICT_STYLE[verdict].label}</p>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -168,8 +204,12 @@ function FollowupCard({ followup: f, result: r, onRemove }: FollowupView & { onR
 function matchedNote(f: AdFollowup, r: FollowupResult) {
   const unit = FOLLOWUP_META[f.kind].scope === "keyword" ? "키워드" : "상품";
   if (f.kind === "exclude")
-    return r.matched === 0 ? "대상 키워드가 새 보고서에서 모두 사라졌어요 — 제외 키워드가 잘 적용됐어요." : `대상 ${f.items.length}개 중 ${r.matched}개가 아직 광고되고 있어요. 제외 키워드 등록이 빠진 캠페인이 없는지 확인해 보세요.`;
-  return r.matched < f.items.length ? `대상 ${unit} ${f.items.length}개 중 ${r.matched}개가 새 보고서에 나왔어요. 나오지 않은 ${unit}은 광고비·매출 0으로 계산했어요.` : `대상 ${unit} ${f.items.length}개 모두 새 보고서에서 비교했어요.`;
+    return r.matched === 0
+      ? "대상 키워드가 새 보고서에서 모두 사라졌어요 — 제외 키워드가 잘 적용됐어요."
+      : `대상 ${f.items.length}개 중 ${r.matched}개가 아직 광고되고 있어요. 제외 키워드 등록이 빠진 캠페인이 없는지 확인해 보세요.`;
+  return r.matched < f.items.length
+    ? `대상 ${unit} ${f.items.length}개 중 ${r.matched}개가 새 보고서에 나왔어요. 나오지 않은 ${unit}은 광고비·매출 0으로 계산했어요.`
+    : `대상 ${unit} ${f.items.length}개 모두 새 보고서에서 비교했어요.`;
 }
 
 function CompareTable({ followup, before, after }: { followup: AdFollowup; before: DailyStats; after: DailyStats }) {
@@ -212,7 +252,6 @@ function ReportTrend({ reports, period, costMultiplier, onRemove }: { reports: A
   return (
     <div className="mt-6">
       <h3 className="text-sm font-semibold text-stone-900">보고서별 추이</h3>
-      <p className="mt-0.5 text-xs text-stone-400">올린 보고서마다 하루 평균으로 맞춰 쌓아요. 기간이 겹치는 보고서끼리는 같은 날이 두 번 들어갈 수 있어요.</p>
       <div className="mt-3 overflow-x-auto rounded-2xl border border-stone-200">
         <table className="w-full min-w-[680px] text-sm">
           <thead className="bg-stone-50 text-xs text-stone-500">
@@ -261,7 +300,9 @@ function ReportTrend({ reports, period, costMultiplier, onRemove }: { reports: A
                       <div className="absolute inset-y-0 left-1/2 w-px bg-stone-300" />
                       <div
                         className={`absolute inset-y-0 rounded-full ${profit >= 0 ? "left-1/2 bg-emerald-400" : "right-1/2 bg-rose-400"}`}
-                        style={{ width: `${(Math.abs(profit) / maxProfit) * 50}%` }}
+                        style={{
+                          width: `${(Math.abs(profit) / maxProfit) * 50}%`,
+                        }}
                       />
                     </div>
                   </td>

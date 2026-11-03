@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { HealthResponse } from "@/app/api/health/route";
-import { Button, Card, Notice, Stat, Table } from "@/components/ui";
+import { Button, Notice, Stat, Table } from "@/components/ui";
+import { Panel, SectionHeader } from "./parts";
 import { summarize, type AdRow } from "@/lib/coupangAds";
 import { toIsoDate, totalSalesView, type WingSales as Sales, type WingSalesResponse } from "@/lib/coupangWing";
 import { num, percent, won } from "@/lib/format";
@@ -82,7 +83,7 @@ export function WingSales({ rows, period, costMultiplier, breakEven }: Props) {
       {error && <Notice tone="loss">{error}</Notice>}
       {sales && <Comparison sales={sales} adByDate={adByDate} costMultiplier={costMultiplier} breakEven={breakEven} rows={rows} />}
     </Card>
-  );
+    </Panel>
 }
 
 function Comparison({ sales, adByDate, rows, costMultiplier, breakEven }: { sales: Sales; adByDate: Map<string, AdRow[]>; rows: AdRow[]; costMultiplier: number; breakEven: number }) {
@@ -169,9 +170,9 @@ function Comparison({ sales, adByDate, rows, costMultiplier, breakEven }: { sale
 function SetupGuide() {
   return (
     <Card title="실제 쿠팡 매출과 비교 (선택)">
-      <p className="text-sm text-stone-600">
-        광고 ROAS는 광고를 거친 주문만 세요. 쿠팡 윙 Open API를 연결하면 같은 기간의 <b>전체 주문 매출</b>을 불러와 광고비가 매출의 몇 %인지 볼 수 있어요.
-      </p>
+    <Panel>
+      <SectionHeader title="실제 쿠팡 매출 (선택)" />
+      <p className="text-sm text-stone-600">광고 ROAS는 광고를 거친 주문만 세요. 윙 Open API를 연결하면 같은 기간의 전체 주문 매출과 비교해요.</p>
       <ol className="mt-3 list-decimal space-y-1.5 pl-4 text-sm leading-6 text-stone-600">
         <li>
           <a href="https://wing.coupang.com" target="_blank" rel="noreferrer" className="text-emerald-700 underline">
@@ -187,7 +188,6 @@ function SetupGuide() {
           <code className="rounded bg-stone-100 px-1">COUPANG_ACCESS_KEY</code>, <code className="rounded bg-stone-100 px-1">COUPANG_SECRET_KEY</code> 입력 → 서버 재시작
         </li>
       </ol>
-      <Notice className="mt-3">키는 발급 후 사용까지 최대 하루가 걸릴 수 있고, 180일마다 다시 발급해야 해요.</Notice>
-    </Card>
-  );
+      <p className="mt-3 text-xs text-stone-400">키는 발급 후 사용까지 최대 하루가 걸릴 수 있고, 180일마다 다시 발급해야 해요.</p>
+    </Panel>
 }

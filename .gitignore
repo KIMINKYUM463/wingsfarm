@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# Figma 템플릿 분석 결과 (구매 템플릿 내용 포함 — 저장소에 올리지 않음)
+/.figma-analysis/
+
 # vercel
 .vercel
 
