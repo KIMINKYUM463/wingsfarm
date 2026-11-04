@@ -18,13 +18,14 @@ import {
   GIF_MAX_BYTES,
   GIF_STEPS,
   heroGifArgs,
+  joinRenderedCutsArgs,
+  MONTAGE,
   MONTAGE_FILES,
-  montageArgs,
   montagePrompt,
   normalizePlan,
   panClipArgs,
   sampleTimes,
-  simpleMontageArgs,
+  singleCutRenderArgs,
   stockOrientation,
   totalSeconds,
   VIDEO_PROMPT_RULES,
@@ -102,30 +103,68 @@ async function downloadStockInputs(inputs: StockInput[], target: Target, dir: st
   );
 }
 
+/** 영상에서 AI가 볼 장면 JPG를 뽑는다. 한 영상이 실패해도 나머지는 이어 간다. */
+async function grabPlanFrames(files: string[], clips: MontageClip[], dir: string) {
+  const times = clips.map((clip) => sampleTimes(clip.duration, Math.min(4, MONTAGE.framesPerClip)));
+  const frames: { mimeType: string; data: string }[] = [];
+  const labels: string[] = [];
+  for (let clip = 0; clip < files.length; clip++) {
+    const outputs = times[clip]!.map((_, i) => path.join(dir, `frame-${clip}-${i}.jpg`));
+    try {
+      await ffmpeg(frameGrabArgs(files[clip]!, times[clip]!, outputs), 45_000);
+      for (let i = 0; i < outputs.length; i++) {
+        frames.push({ mimeType: 'image/jpeg', data: (await readFile(outputs[i]!)).toString('base64') });
+        labels.push(`clip ${clip + 1} @ ${times[clip]![i]}s`);
+      }
+    } catch (err) {
+      console.error('[lever] frame grab skip', clip, err);
+    }
+  }
+  return { frames, times, labels };
+}
+
 /** AI(Gemini)가 장면을 보고 컷을 고른다 — 키가 없거나 답이 규칙에 안 맞으면 기본 편집 + 안내 */
 async function planMontage(files: string[], clips: MontageClip[], productName: string, dir: string) {
   const gemini = await requireGemini().catch(() => null);
-  if (!gemini) return { cuts: fallbackPlan(clips, productName), summary: null, notice: 'Gemini 키가 없어 AI 대신 기본 컷 편집으로 만들었어요(자막은 상품명만).' };
-  try {
-    const times = clips.map((clip) => sampleTimes(clip.duration));
-    const frames = await Promise.all(
-      files.map(async (file, clip) => {
-        const outputs = times[clip].map((_, i) => path.join(dir, `frame-${clip}-${i}.jpg`));
-        await ffmpeg(frameGrabArgs(file, times[clip], outputs), 60_000);
-        return Promise.all(outputs.map(async (output) => ({ mimeType: 'image/jpeg', data: (await readFile(output)).toString('base64') })));
-      }),
-    );
-    const answer = await gemini.generateJson<{ cuts?: unknown; summary?: unknown }>(montagePrompt(productName, clips, times), frames.flat());
-    const cuts = normalizePlan(answer, clips);
-    if (!cuts) throw new Error('AI 편집안이 규칙에 맞지 않음');
-    return { cuts, summary: typeof answer.summary === 'string' ? answer.summary.trim().slice(0, 120) || null : null, notice: null };
-  } catch (err) {
-    console.error('[lever] montage plan failed, using fallback', err);
-    return { cuts: fallbackPlan(clips, productName), summary: null, notice: 'AI 편집이 잘 안 돼서 기본 컷 편집으로 만들었어요(자막은 상품명만).' };
+  if (!gemini) {
+    return {
+      cuts: fallbackPlan(clips, productName),
+      summary: null,
+      notice: 'Gemini 키가 없어 AI 대신 기본 컷 편집으로 만들었어요(자막은 상품명만).',
+    };
   }
+
+  const { frames, times, labels } = await grabPlanFrames(files, clips, dir);
+  const prompt = frames.length
+    ? montagePrompt(productName, clips, times)
+    : `${montagePrompt(productName, clips, times)}\n(장면 이미지는 없다. 길이만 보고 컷을 짜라.)`;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const answer = await gemini.generateJson<{ cuts?: unknown; summary?: unknown }>(prompt, frames);
+      const cuts = normalizePlan(answer, clips);
+      if (!cuts?.length) throw new Error(`AI 편집안이 규칙에 맞지 않음 (attempt ${attempt + 1}, frames=${frames.length}, labels=${labels.length})`);
+      return {
+        cuts,
+        summary: typeof answer.summary === 'string' ? answer.summary.trim().slice(0, 120) || null : null,
+        notice: null,
+      };
+    } catch (err) {
+      console.error('[lever] montage plan attempt failed', attempt + 1, err);
+    }
+  }
+
+  return {
+    cuts: fallbackPlan(clips, productName),
+    summary: null,
+    notice: 'AI 편집이 잘 안 돼서 기본 컷 편집으로 만들었어요(자막은 상품명만).',
+  };
 }
 
-/** 무료 영상 1~3개 → AI가 고른 장면·자막으로 컷 편집 + 모션그래픽(줌·전환·상품명 태그·진행 막대) */
+/**
+ * 무료 영상 1~3개 → AI가 고른 장면·자막으로 컷 편집 + 모션그래픽
+ * 배포에서는 컷을 하나씩 렌더한 뒤 전환으로 이어, 로컬과 같은 고급 편집 결과를 만든다.
+ */
 async function makeStockMontage(inputs: StockInput[], target: Target, productName: string) {
   return withTempDir(async (dir) => {
     const [files, withText] = await Promise.all([downloadStockInputs(inputs, target, dir), prepareFont(dir)]);
@@ -140,29 +179,32 @@ async function makeStockMontage(inputs: StockInput[], target: Target, productNam
     ].filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
     await Promise.all(texts.map(([name, text]) => writeFile(path.join(dir, name), text, 'utf8')));
 
-    const output = path.join(dir, 'clip.mp4');
-    const cuts = plan.cuts.map((cut) => ({ ...cut, path: files[cut.clip] }));
-    const render = { cuts, output, width: target.width, height: target.height, withText, tag };
-    let usedSimple = false;
-    try {
-      // 고급 모션그래픽(줌·전환·자막). 배포·일부 스톡 코덱에서 실패하면 단순 이어붙이기로 재시도
-      await ffmpeg(montageArgs(render), 180_000, dir);
-    } catch (err) {
-      console.error('[lever] montage complex failed, trying simple concat', err);
-      usedSimple = true;
-      await ffmpeg(simpleMontageArgs(render), 120_000, dir);
+    const cuts = plan.cuts.map((cut) => ({ ...cut, path: files[cut.clip]! }));
+    const rendered: { path: string; duration: number }[] = [];
+    for (let i = 0; i < cuts.length; i++) {
+      const cutPath = path.join(dir, `cut-${i}.mp4`);
+      await ffmpeg(singleCutRenderArgs(cuts[i]!, i, cutPath, target.width, target.height, withText), 90_000, dir);
+      rendered.push({ path: cutPath, duration: cuts[i]!.duration });
     }
 
-    const captions = withText && !usedSimple ? plan.cuts.flatMap((cut) => (cut.caption ? [cut.caption] : [])) : [];
+    const output = path.join(dir, 'clip.mp4');
+    await ffmpeg(
+      joinRenderedCutsArgs({
+        cuts: rendered,
+        output,
+        width: target.width,
+        height: target.height,
+        withText,
+        tag,
+      }),
+      120_000,
+      dir,
+    );
+
+    const captions = withText ? plan.cuts.flatMap((cut) => (cut.caption ? [cut.caption] : [])) : [];
     const edit = `컷 ${plan.cuts.length}개 · ${totalSeconds(plan.cuts)}초 · 자막 ${captions.length}개`;
     const notice =
-      [
-        plan.notice,
-        usedSimple ? '고급 편집이 안 돼서 영상을 이어 붙인 컷으로 만들었어요.' : null,
-        !usedSimple && !withText ? '자막 글꼴을 찾지 못해 자막 없이 만들었어요.' : null,
-      ]
-        .filter(Boolean)
-        .join(' ') || null;
+      [plan.notice, withText ? null : '자막 글꼴을 찾지 못해 자막 없이 만들었어요.'].filter(Boolean).join(' ') || null;
     return { clip: await readFile(output), summary: plan.summary ? `${plan.summary} (${edit})` : edit, captions, notice };
   });
 }

@@ -287,49 +287,64 @@ export interface MontageRender {
 }
 
 /**
- * 고급 모션그래픽이 실패할 때 쓰는 단순 이어붙이기 (배포 환경·일부 코덱 대응)
- * 각 컷을 같은 크기로 맞춘 뒤 concat — xfade/drawtext 없음
+ * 1단계: 컷 하나를 줌·자막까지 넣어 중간 MP4로 만든다.
+ * 배포(서버리스)에서는 컷을 한꺼번에 filter_complex로 넣으면 메모리·타임베이스가 깨지기 쉬워
+ * 컷마다 따로 렌더한 뒤 2단계에서 전환으로 잇는다.
  */
-export function simpleMontageArgs({ cuts, output, width, height }: Omit<MontageRender, 'withText' | 'tag'>) {
+export function singleCutRenderArgs(
+  cut: MontageRender['cuts'][number],
+  index: number,
+  output: string,
+  width: number,
+  height: number,
+  withText: boolean,
+) {
   const w = even(width);
   const h = even(height);
-  const total = totalSeconds(cuts);
-  const inputs = cuts.flatMap((c) => [
+  return [
+    '-y',
     ...DECODE_THREADS,
     '-ss',
-    String(c.start),
+    String(cut.start),
     '-t',
-    String(floor1(c.duration + 0.1 + 1e-9)),
+    String(floor1(cut.duration + 0.1 + 1e-9)),
     '-i',
-    c.path,
-  ]);
-  const chains = cuts.map(
-    (cut, i) =>
-      `[${i}:v]scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${CLIP_FPS},setsar=1,format=yuv420p[v${i}]`,
-  );
-  chains.push(`${cuts.map((_, i) => `[v${i}]`).join('')}concat=n=${cuts.length}:v=1:a=0[out]`);
-  return ['-y', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-t', String(total), ...encodeArgs, output];
+    cut.path,
+    '-vf',
+    `${cutFilter(cut, index, w, h, withText)},format=yuv420p,fps=${CLIP_FPS},settb=AVTB,setpts=PTS-STARTPTS`,
+    '-frames:v',
+    String(Math.max(1, Math.round(cut.duration * CLIP_FPS))),
+    ...encodeArgs,
+    output,
+  ];
 }
 
 /**
- * 컷 편집 + 모션그래픽 (소리 없음)
- * 컷마다 줌·자막 → 전환 효과로 이어 붙임 → 상품명 태그가 왼쪽에서 들어오고 → 아래 진행 막대가 차오른다
+ * 2단계: 이미 같은 크기·프레임으로 맞춰 둔 컷들을 전환·태그·진행 막대로 잇는다.
+ * xfade는 해상도·fps·타임베이스가 같아야 해서, 여기서 settb=AVTB로 한 번 더 맞춘다.
  */
-export function montageArgs({ cuts, output, width, height, withText, tag }: MontageRender) {
+export function joinRenderedCutsArgs({
+  cuts,
+  output,
+  width,
+  height,
+  withText,
+  tag,
+}: {
+  cuts: { path: string; duration: number }[];
+  output: string;
+  width: number;
+  height: number;
+  withText: boolean;
+  tag: string | null;
+}) {
   const w = even(width);
   const h = even(height);
   const total = totalSeconds(cuts);
-  // 컷 끝 0.1초 여유를 더 읽어 trim 길이를 확실히 채운다
-  const inputs = cuts.flatMap((c) => [
-    ...DECODE_THREADS,
-    '-ss',
-    String(c.start),
-    '-t',
-    String(floor1(c.duration + 0.1 + 1e-9)),
-    '-i',
-    c.path,
-  ]);
-  const chains = cuts.map((cut, i) => `[${i}:v]${cutFilter(cut, i, w, h, withText)},format=yuv420p[v${i}]`);
+  const inputs = cuts.flatMap((c) => [...DECODE_THREADS, '-i', c.path]);
+  const chains = cuts.map(
+    (_, i) => `[${i}:v]fps=${CLIP_FPS},format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS,setsar=1[v${i}]`,
+  );
 
   let joined = 'v0';
   let length = cuts[0]?.duration ?? 0;
@@ -338,7 +353,60 @@ export function montageArgs({ cuts, output, width, height, withText, tag }: Mont
     const transition = TRANSITIONS[(i - 1) % TRANSITIONS.length];
     chains.push(`[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset}[x${i}]`);
     joined = `x${i}`;
-    length += cuts[i].duration - MONTAGE.transition;
+    length += cuts[i]!.duration - MONTAGE.transition;
+  }
+
+  const finish: string[] = [];
+  if (withText && tag) {
+    const size = Math.round(w * 0.03);
+    const show = easeIn(0.3, 0.5);
+    finish.push(
+      [
+        `drawtext=fontfile=${MONTAGE_FILES.font}:textfile=${MONTAGE_FILES.tag}:expansion=none`,
+        `fontsize=${size}:fontcolor=white:alpha=${show}`,
+        `x=${Math.round(w * 0.045)}-${Math.round(w * 0.05)}*(1-${show}):y=${Math.round(h * 0.06)}`,
+        `box=1:boxcolor=${POINT_COLOR}@0.9:boxborderw=${Math.round(size * 0.55)}`,
+      ].join(':'),
+    );
+  }
+  const barHeight = Math.max(4, Math.round(h * 0.008));
+  chains.push(`color=c=${POINT_COLOR}:s=${w}x${barHeight}:r=${CLIP_FPS}[bar]`);
+  chains.push(`[${joined}]${finish.length ? `${finish.join(',')},` : ''}null[base]`);
+  chains.push(`[base][bar]overlay=x=-w+w*t/${total}:y=H-h:shortest=1,format=yuv420p[out]`);
+
+  return ['-y', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-t', String(total), ...encodeArgs, output];
+}
+
+/**
+ * 한 번에 돌리는 고급 편집(로컬·테스트용).
+ * 배포에서는 메모리·타임베이스 문제로 깨질 수 있어 실제 생성은 singleCut + join 경로를 쓴다.
+ */
+export function montageArgs({ cuts, output, width, height, withText, tag }: MontageRender) {
+  const w = even(width);
+  const h = even(height);
+  const total = totalSeconds(cuts);
+  const inputs = cuts.flatMap((c) => [
+    ...DECODE_THREADS,
+    '-ss',
+    String(c.start),
+    '-t',
+    String(floor1(c.duration + 0.1 + 1e-9)),
+    '-i',
+    c.path,
+  ]);
+  // xfade 직전 타임베이스를 맞춰 배포 ffmpeg에서도 전환이 실패하지 않게 한다
+  const chains = cuts.map(
+    (cut, i) => `[${i}:v]${cutFilter(cut, i, w, h, withText)},format=yuv420p,fps=${CLIP_FPS},settb=AVTB,setpts=PTS-STARTPTS[v${i}]`,
+  );
+
+  let joined = 'v0';
+  let length = cuts[0]?.duration ?? 0;
+  for (let i = 1; i < cuts.length; i++) {
+    const offset = floor1(length - MONTAGE.transition + 1e-9);
+    const transition = TRANSITIONS[(i - 1) % TRANSITIONS.length];
+    chains.push(`[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset}[x${i}]`);
+    joined = `x${i}`;
+    length += cuts[i]!.duration - MONTAGE.transition;
   }
 
   const finish: string[] = [];

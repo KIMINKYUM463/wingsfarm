@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 const {
   GIF_STEPS,
   heroGifArgs,
+  joinRenderedCutsArgs,
   panClipArgs,
   parseVideoResponse,
   cleanCaption,
@@ -13,6 +14,7 @@ const {
   montageArgs,
   normalizePlan,
   sampleTimes,
+  singleCutRenderArgs,
   stockOrientation,
   totalSeconds,
   videoAspect,
@@ -107,11 +109,12 @@ describe('무료 영상 컷 편집', () => {
       assert.ok(args.includes('-an'));
     });
 
-    it('줌(번갈아 확대·축소) → 전환 효과로 잇고 → 진행 막대', () => {
+    it('줌(번갈아 확대·축소) → 전환 효과로 잇고 → 진행 막대 (타임베이스 맞춤)', () => {
       const filter = filterOf(montageArgs(render));
       assert.match(filter, /\[0:v\]scale=1720:1280:force_original_aspect_ratio=increase,crop=1720:1280/);
       assert.match(filter, /zoompan=z='1\+0\.08\*on\/29'/);
       assert.match(filter, /zoompan=z='1\.08-0\.08\*on\/48'/);
+      assert.match(filter, /settb=AVTB/);
       assert.match(filter, /\[v0\]\[v1\]xfade=transition=fade:duration=0\.3:offset=0\.9\[x1\]/);
       assert.match(filter, /\[x1\]\[v2\]xfade=transition=slideleft:duration=0\.3:offset=2\.6\[x2\]/);
       assert.match(filter, /overlay=x=-w\+w\*t\/4\.1:y=H-h/);
@@ -130,7 +133,29 @@ describe('무료 영상 컷 편집', () => {
     it('컷 하나면 전환 없이', () => {
       const filter = filterOf(montageArgs({ ...render, cuts: cuts.slice(0, 1) }));
       assert.ok(!filter.includes('xfade'));
-      assert.match(filter, /\[v0\]drawtext/);
+      assert.match(filter, /drawtext/);
+    });
+
+    it('배포용: 컷 단건 렌더 → 전환 조인 인자를 만든다', () => {
+      const one = singleCutRenderArgs(cuts[0]!, 0, 'cut-0.mp4', 860, 640, true);
+      assert.ok(one.includes('-vf'));
+      assert.match(one[one.indexOf('-vf') + 1]!, /zoompan/);
+      assert.match(one[one.indexOf('-vf') + 1]!, /settb=AVTB/);
+      const join = joinRenderedCutsArgs({
+        cuts: [
+          { path: 'cut-0.mp4', duration: 1.2 },
+          { path: 'cut-1.mp4', duration: 2 },
+        ],
+        output: 'out.mp4',
+        width: 860,
+        height: 640,
+        withText: true,
+        tag: '영덕 홍게',
+      });
+      const filter = filterOf(join);
+      assert.match(filter, /xfade=transition=fade/);
+      assert.match(filter, /textfile=tag\.txt/);
+      assert.match(filter, /overlay=x=-w\+w\*t\/2\.9/);
     });
   });
 
