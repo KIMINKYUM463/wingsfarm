@@ -11,6 +11,7 @@ import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
+import { handleShortformNode, isShortformServerless } from '@/server/shortform/nodeApi';
 
 const ROOT = path.join(process.cwd(), 'shortform');
 const BRIDGE = path.join(ROOT, 'studio', 'bridge.py');
@@ -150,8 +151,29 @@ async function ensureEngine() {
 }
 
 export async function shortformCall(method: string, params: Record<string, unknown> = {}, timeoutMs = 300_000): Promise<EngineResult> {
-  await ensureEngine();
-  if (!state.child?.stdin) throw new Error('숏폼 엔진에 연결하지 못했어요.');
+  // Vercel 등 serverless: Python spawn 불가 → Node 읽기 전용으로 bootstrap 등은 살린다
+  if (isShortformServerless()) {
+    return handleShortformNode(method, params);
+  }
+
+  try {
+    await ensureEngine();
+  } catch (err) {
+    // 로컬에서도 Python이 없으면 bootstrap만이라도 Node로 열어 UI가 뜨게 한다
+    if (method === 'bootstrap' || method === 'products' || method === 'jobs' || method === 'analysis' || method === 'job') {
+      console.error('[shortform] python engine unavailable, falling back to node', err);
+      return handleShortformNode(method, params);
+    }
+    const message =
+      err instanceof Error
+        ? err.message
+        : '숏폼 엔진에 연결하지 못했어요. Python·requirements 설치를 확인해 주세요.';
+    return { ok: false, error: message, status: 500 };
+  }
+
+  if (!state.child?.stdin) {
+    return { ok: false, error: '숏폼 엔진에 연결하지 못했어요.', status: 500 };
+  }
   const id = ++state.seq;
   return new Promise<EngineResult>((resolve, reject) => {
     const timer = setTimeout(() => {

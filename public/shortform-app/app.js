@@ -1222,9 +1222,16 @@ async function boot() {
     $("#app").innerHTML = `<div class="empty">서버에 연결하지 못했어요: ${esc(e.message)}</div>`;
     return;
   }
-  const k = S.boot.keys;
+  const k = S.boot.keys || {};
   $("#keys").innerHTML = [["fal", "AI 영상"], ["replicate", "AI 예비"], ["openai", "AI 문구"], ["pexels", "무료 풍경 영상"], ["gemini", "Gemini 목소리"]]
     .map(([id, n]) => `<span class="key ${k[id] ? "" : "off"}" title="${k[id] ? "연결됨" : "연결 안 됨 (.env 에 키가 없어요)"}">${n}</span>`).join("");
+  if (S.boot.notice || S.boot.deployHost) {
+    const bar = document.createElement("div");
+    bar.className = "deploy-notice";
+    bar.setAttribute("role", "status");
+    bar.textContent = S.boot.notice || "배포 환경에서는 참고 영상·템플릿 조회만 가능합니다. 영상 생성은 로컬에서 실행하세요.";
+    $("#app")?.prepend(bar);
+  }
   window.addEventListener("hashchange", route);
   route();
   refreshBadge();
