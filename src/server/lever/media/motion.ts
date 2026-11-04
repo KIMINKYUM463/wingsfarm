@@ -287,6 +287,31 @@ export interface MontageRender {
 }
 
 /**
+ * 고급 모션그래픽이 실패할 때 쓰는 단순 이어붙이기 (배포 환경·일부 코덱 대응)
+ * 각 컷을 같은 크기로 맞춘 뒤 concat — xfade/drawtext 없음
+ */
+export function simpleMontageArgs({ cuts, output, width, height }: Omit<MontageRender, 'withText' | 'tag'>) {
+  const w = even(width);
+  const h = even(height);
+  const total = totalSeconds(cuts);
+  const inputs = cuts.flatMap((c) => [
+    ...DECODE_THREADS,
+    '-ss',
+    String(c.start),
+    '-t',
+    String(floor1(c.duration + 0.1 + 1e-9)),
+    '-i',
+    c.path,
+  ]);
+  const chains = cuts.map(
+    (cut, i) =>
+      `[${i}:v]scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${CLIP_FPS},setsar=1,format=yuv420p[v${i}]`,
+  );
+  chains.push(`${cuts.map((_, i) => `[v${i}]`).join('')}concat=n=${cuts.length}:v=1:a=0[out]`);
+  return ['-y', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-t', String(total), ...encodeArgs, output];
+}
+
+/**
  * 컷 편집 + 모션그래픽 (소리 없음)
  * 컷마다 줌·자막 → 전환 효과로 이어 붙임 → 상품명 태그가 왼쪽에서 들어오고 → 아래 진행 막대가 차오른다
  */

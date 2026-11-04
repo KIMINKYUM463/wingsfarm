@@ -17,8 +17,10 @@ describe('ffmpeg 실패 이유', () => {
     assert.match(err!.message, /메모리/);
   });
 
-  it('그 밖의 실패는 원래 오류를 그대로 쓴다', () => {
-    assert.equal(ffmpegFailure({ code: 1, signal: null }), null);
+  it('실행 권한·파일 없음·ffmpeg 종료 코드는 안내 메시지로 바꾼다', () => {
+    assert.equal(ffmpegFailure({ code: 'EACCES' })?.status, 503);
+    assert.equal(ffmpegFailure({ code: 'ENOENT' })?.status, 503);
+    assert.equal(ffmpegFailure({ code: 1, stderr: 'Error while filtering' })?.status, 502);
     assert.equal(ffmpegFailure(undefined), null);
   });
 });

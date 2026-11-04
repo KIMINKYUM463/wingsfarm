@@ -107,8 +107,8 @@ export const pixabayClipSource = (v: PixabayVideo): StockClipSource => ({
 
 /** GIF는 최대 1080px까지 키우므로 사진 자리보다 1.25배 넉넉한 파일이 필요하다 */
 const STOCK_UPSCALE = 1.25;
-/** 4K 원본은 받을 필요가 없다 */
-const STOCK_MAX_SIDE = 2560;
+/** 4K·고해상도는 배포(서버리스)에서 메모리·시간 초과를 잘 일으켜 상한을 낮춘다 */
+const STOCK_MAX_SIDE = 1920;
 
 /** 사진 자리를 흐리지 않게 덮는 가장 작은 파일 (없으면 받을 수 있는 가장 큰 것) */
 export function pickVideoFile(files: StockFile[], width: number, height: number) {

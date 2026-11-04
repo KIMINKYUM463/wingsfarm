@@ -24,6 +24,7 @@ import {
   normalizePlan,
   panClipArgs,
   sampleTimes,
+  simpleMontageArgs,
   stockOrientation,
   totalSeconds,
   VIDEO_PROMPT_RULES,
@@ -141,11 +142,27 @@ async function makeStockMontage(inputs: StockInput[], target: Target, productNam
 
     const output = path.join(dir, 'clip.mp4');
     const cuts = plan.cuts.map((cut) => ({ ...cut, path: files[cut.clip] }));
-    await ffmpeg(montageArgs({ cuts, output, width: target.width, height: target.height, withText, tag }), 180_000, dir);
+    const render = { cuts, output, width: target.width, height: target.height, withText, tag };
+    let usedSimple = false;
+    try {
+      // 고급 모션그래픽(줌·전환·자막). 배포·일부 스톡 코덱에서 실패하면 단순 이어붙이기로 재시도
+      await ffmpeg(montageArgs(render), 180_000, dir);
+    } catch (err) {
+      console.error('[lever] montage complex failed, trying simple concat', err);
+      usedSimple = true;
+      await ffmpeg(simpleMontageArgs(render), 120_000, dir);
+    }
 
-    const captions = withText ? plan.cuts.flatMap((cut) => (cut.caption ? [cut.caption] : [])) : [];
+    const captions = withText && !usedSimple ? plan.cuts.flatMap((cut) => (cut.caption ? [cut.caption] : [])) : [];
     const edit = `컷 ${plan.cuts.length}개 · ${totalSeconds(plan.cuts)}초 · 자막 ${captions.length}개`;
-    const notice = [plan.notice, withText ? null : '자막 글꼴을 찾지 못해 자막 없이 만들었어요.'].filter(Boolean).join(' ') || null;
+    const notice =
+      [
+        plan.notice,
+        usedSimple ? '고급 편집이 안 돼서 영상을 이어 붙인 컷으로 만들었어요.' : null,
+        !usedSimple && !withText ? '자막 글꼴을 찾지 못해 자막 없이 만들었어요.' : null,
+      ]
+        .filter(Boolean)
+        .join(' ') || null;
     return { clip: await readFile(output), summary: plan.summary ? `${plan.summary} (${edit})` : edit, captions, notice };
   });
 }
@@ -159,9 +176,21 @@ async function runStockMotion(projectId: string, inputs: StockInput[], target: T
     await setMotion(projectId, { ...base, status: 'ready', clipPath, summary, captions, notice, updatedAt: nowIso() });
   } catch (err) {
     console.error('[lever] stock motion failed', err);
-    const notice = err instanceof ApiError ? err.message : '무료 영상으로 컷을 만들지 못했어요. 잠시 뒤 다시 만들어 보고, 계속 안 되면 다른 영상을 골라 주세요.';
+    const notice =
+      err instanceof ApiError
+        ? err.message
+        : `무료 영상으로 컷을 만들지 못했어요. 잠시 뒤 다시 만들어 보고, 계속 안 되면 다른 영상을 골라 주세요. (${summarizeUnknownError(err)})`;
     await setMotion(projectId, { ...base, status: 'failed', clipPath: null, notice, updatedAt: nowIso() }).catch(() => null);
   }
+}
+
+/** 배포 로그·사용자 안내용으로 알 수 없는 오류를 짧게 남긴다 */
+function summarizeUnknownError(err: unknown) {
+  const e = err as { code?: string | number; signal?: string; message?: string };
+  const parts = [e.code != null ? `code=${e.code}` : null, e.signal ? `signal=${e.signal}` : null, e.message?.slice(0, 80)]
+    .filter(Boolean)
+    .join(' · ');
+  return parts || 'unknown';
 }
 
 async function loadStockPhotoSource(productName: string) {
