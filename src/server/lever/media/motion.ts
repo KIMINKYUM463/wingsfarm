@@ -67,7 +67,49 @@ export function parseVideoResponse(body: unknown): ParsedVideo {
   throw new Error(res.status === 'failed' ? '영상 생성이 거절되었어요' : '영상이 만들어지지 않았어요');
 }
 
-const encodeArgs = ['-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart'];
+/**
+ * 인코딩 공통 인자.
+ * -r / fps_mode=cfr: 중간 컷 MP4에 상수 프레임레이트(CFR)를 박는다.
+ * 배포 Linux ffmpeg-static의 xfade는 VFR·rate 1/0 입력을 거절한다 (로컬 Windows는 통과하는 경우가 많음).
+ */
+const encodeArgs = [
+  '-an',
+  '-r',
+  String(CLIP_FPS),
+  '-fps_mode',
+  'cfr',
+  '-c:v',
+  'libx264',
+  '-preset',
+  'veryfast',
+  '-crf',
+  '20',
+  '-pix_fmt',
+  'yuv420p',
+  '-movflags',
+  '+faststart',
+];
+
+/**
+ * xfade 직전 스트림 정규화.
+ * settb=AVTB는 Linux static 빌드에서 frame_rate를 1/0으로 만들어
+ * "The inputs needs to be a constant frame rate; current rate of 1/0 is invalid" 를 낸다.
+ * fps + setpts 만으로 CFR·타임라인을 맞춘다.
+ */
+const cfrNormalize = (inputLabel: string, outputLabel: string, width: number, height: number) =>
+  `[${inputLabel}]scale=${width}:${height}:flags=bilinear,fps=${CLIP_FPS},format=yuv420p,setsar=1,setpts=PTS-STARTPTS[${outputLabel}]`;
+
+/** PNG 정지 이미지를 영상 입력으로 넣을 때 — framerate 없으면 배포에서 1/0 rate가 된다 */
+const pngInputArgs = (file: string, seconds: number) => [
+  '-framerate',
+  String(CLIP_FPS),
+  '-loop',
+  '1',
+  '-t',
+  String(seconds),
+  '-i',
+  file,
+];
 
 /** 정지 사진 → 천천히 확대(1.0→1.12)하며 왼쪽에서 오른쪽으로 흐르는 클립 */
 export function panClipArgs(input: string, output: string, width: number, height: number) {
@@ -292,7 +334,7 @@ export function singleCutRenderArgs(
     return [
       ...base,
       '-vf',
-      `${motion},fps=${CLIP_FPS},settb=AVTB,setpts=PTS-STARTPTS`,
+      `${motion},fps=${CLIP_FPS},setpts=PTS-STARTPTS`,
       '-frames:v',
       String(frames),
       ...encodeArgs,
@@ -303,17 +345,12 @@ export function singleCutRenderArgs(
   const y = Math.round(h * 0.72);
   return [
     ...base,
-    '-loop',
-    '1',
-    '-t',
-    String(cut.duration),
-    '-i',
-    captionPng,
+    ...pngInputArgs(captionPng, cut.duration),
     '-filter_complex',
     [
       `[0:v]${motion}[base]`,
-      `[1:v]format=rgba,fade=t=in:st=${fadeStart}:d=0.35:alpha=1[txt]`,
-      `[base][txt]overlay=(W-w)/2:${y}:format=auto,fps=${CLIP_FPS},settb=AVTB,setpts=PTS-STARTPTS,format=yuv420p[out]`,
+      `[1:v]fps=${CLIP_FPS},format=rgba,fade=t=in:st=${fadeStart}:d=0.35:alpha=1[txt]`,
+      `[base][txt]overlay=(W-w)/2:${y}:format=auto,fps=${CLIP_FPS},setpts=PTS-STARTPTS,format=yuv420p[out]`,
     ].join(';'),
     '-map',
     '[out]',
@@ -344,19 +381,21 @@ export function joinRenderedCutsArgs({
   const h = even(height);
   const total = totalSeconds(cuts);
   const inputs = cuts.flatMap((c) => [...DECODE_THREADS, '-i', c.path]);
-  if (tagPng) inputs.push(...DECODE_THREADS, '-loop', '1', '-t', String(total), '-i', tagPng);
+  if (tagPng) inputs.push(...DECODE_THREADS, ...pngInputArgs(tagPng, total));
   const tagIndex = cuts.length;
 
-  const chains = cuts.map(
-    (_, i) => `[${i}:v]fps=${CLIP_FPS},format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS,setsar=1[v${i}]`,
-  );
+  // 컷마다 CFR로 맞춘 뒤 xfade (배포 Linux에서 rate 1/0 방지)
+  const chains = cuts.map((_, i) => cfrNormalize(`${i}:v`, `v${i}`, w, h));
 
   let joined = 'v0';
   let length = cuts[0]?.duration ?? 0;
   for (let i = 1; i < cuts.length; i++) {
     const offset = floor1(length - MONTAGE.transition + 1e-9);
     const transition = TRANSITIONS[(i - 1) % TRANSITIONS.length];
-    chains.push(`[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset}[x${i}]`);
+    // xfade 출력도 다음 xfade 입력용으로 다시 CFR 고정
+    chains.push(
+      `[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset},fps=${CLIP_FPS},setpts=PTS-STARTPTS[x${i}]`,
+    );
     joined = `x${i}`;
     length += cuts[i]!.duration - MONTAGE.transition;
   }
@@ -364,15 +403,15 @@ export function joinRenderedCutsArgs({
   if (tagPng) {
     const x = Math.round(w * 0.045);
     const y = Math.round(h * 0.06);
-    chains.push(`[${tagIndex}:v]format=rgba,fade=t=in:st=0.3:d=0.5:alpha=1[tag]`);
-    chains.push(`[${joined}][tag]overlay=x=${x}:y=${y}:format=auto[tagged]`);
+    chains.push(`[${tagIndex}:v]fps=${CLIP_FPS},format=rgba,fade=t=in:st=0.3:d=0.5:alpha=1[tag]`);
+    chains.push(`[${joined}][tag]overlay=x=${x}:y=${y}:format=auto,fps=${CLIP_FPS},setpts=PTS-STARTPTS[tagged]`);
     joined = 'tagged';
   }
 
   const barHeight = Math.max(4, Math.round(h * 0.008));
   chains.push(`color=c=${POINT_COLOR}:s=${w}x${barHeight}:r=${CLIP_FPS}[bar]`);
   chains.push(`[${joined}]null[base]`);
-  chains.push(`[base][bar]overlay=x=-w+w*t/${total}:y=H-h:shortest=1,format=yuv420p[out]`);
+  chains.push(`[base][bar]overlay=x=-w+w*t/${total}:y=H-h:shortest=1,fps=${CLIP_FPS},format=yuv420p[out]`);
 
   return ['-y', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-t', String(total), ...encodeArgs, output];
 }
@@ -395,7 +434,7 @@ export function montageArgs({ cuts, output, width, height }: MontageRender) {
     c.path,
   ]);
   const chains = cuts.map(
-    (cut, i) => `[${i}:v]${cutFilter(cut, i, w, h)},format=yuv420p,fps=${CLIP_FPS},settb=AVTB,setpts=PTS-STARTPTS[v${i}]`,
+    (cut, i) => `[${i}:v]${cutFilter(cut, i, w, h)},format=yuv420p,fps=${CLIP_FPS},setpts=PTS-STARTPTS[v${i}]`,
   );
 
   let joined = 'v0';
@@ -403,7 +442,9 @@ export function montageArgs({ cuts, output, width, height }: MontageRender) {
   for (let i = 1; i < cuts.length; i++) {
     const offset = floor1(length - MONTAGE.transition + 1e-9);
     const transition = TRANSITIONS[(i - 1) % TRANSITIONS.length];
-    chains.push(`[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset}[x${i}]`);
+    chains.push(
+      `[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset},fps=${CLIP_FPS},setpts=PTS-STARTPTS[x${i}]`,
+    );
     joined = `x${i}`;
     length += cuts[i]!.duration - MONTAGE.transition;
   }
@@ -411,7 +452,7 @@ export function montageArgs({ cuts, output, width, height }: MontageRender) {
   const barHeight = Math.max(4, Math.round(h * 0.008));
   chains.push(`color=c=${POINT_COLOR}:s=${w}x${barHeight}:r=${CLIP_FPS}[bar]`);
   chains.push(`[${joined}]null[base]`);
-  chains.push(`[base][bar]overlay=x=-w+w*t/${total}:y=H-h:shortest=1,format=yuv420p[out]`);
+  chains.push(`[base][bar]overlay=x=-w+w*t/${total}:y=H-h:shortest=1,fps=${CLIP_FPS},format=yuv420p[out]`);
 
   return ['-y', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-t', String(total), ...encodeArgs, output];
 }
