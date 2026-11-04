@@ -50,10 +50,8 @@ const baseRequestSchema = z.object({
     .string()
     .min(1, '업체명을 입력해주세요')
     .max(100, '회사명은 100자 이내로 입력해주세요'),
-  productImageUrls: z
-    .array(z.string())
-    .max(10, '상품 이미지는 최대 10개까지 업로드 가능합니다')
-    .default([]),
+  // default()를 쓰면 input 타입이 optional이 되어 RHF UseFormReturn과 어긋난다
+  productImageUrls: z.array(z.string()).max(10, '상품 이미지는 최대 10개까지 업로드 가능합니다'),
 });
 
 // keyword_selection 방식 스키마

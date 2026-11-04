@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -30,9 +30,9 @@ export const useProductInfoModal = ({ currentStep, projectId }: UseProductInfoMo
   productImagePreviewsRef.current = productImagePreviews;
   referenceImagePreviewsRef.current = referenceImagePreviews;
 
-  // React Hook Form 설정
+  // React Hook Form 설정 (zod discriminatedUnion ↔ RHF 제네릭 정합)
   const form = useForm<CreateDetailPageRequest>({
-    resolver: zodResolver(productInfoFormSchema),
+    resolver: zodResolver(productInfoFormSchema) as Resolver<CreateDetailPageRequest>,
     mode: 'onChange',
     shouldFocusError: false,
     defaultValues: {

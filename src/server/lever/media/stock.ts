@@ -85,13 +85,15 @@ export async function searchStockPhotos(query: string): Promise<StockPhoto[]> {
   const seen = new Set<string>();
   const photos: StockPhoto[] = [];
   for (const q of searches) {
-    const found = (await Promise.allSettled([searchPexelsPhotos(q), searchPixabayPhotos(q)]))
-      .flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
-    for (const photo of found) {
-      const key = `${photo.source}-${photo.id}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      photos.push(photo);
+    const results = await Promise.allSettled([searchPexelsPhotos(q), searchPixabayPhotos(q)]);
+    for (const result of results) {
+      if (result.status !== 'fulfilled') continue;
+      for (const photo of result.value as StockPhoto[]) {
+        const key = `${photo.source}-${photo.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        photos.push(photo);
+      }
     }
     if (photos.length >= 4) break;
   }

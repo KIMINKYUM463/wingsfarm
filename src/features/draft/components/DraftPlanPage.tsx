@@ -207,18 +207,27 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
     await flush();
     return draftApi.compositions(draft.id);
   });
-  /** planOverride: 「만들지 않기」로 AI 컷을 비운 뒤 바로 생성할 때 저장·생성에 쓴다 */
-  const generate = useDraftMutation(async (planOverride?: DraftPlan) => {
-    if (planOverride) {
-      setPlan(planOverride);
-      const saved = await draftApi.patch(draft.id, { plan: planOverride });
-      queryClient.setQueryData(draftKey(draft.id), saved);
-      markSaved(planOverride);
-    } else {
-      await flush();
-    }
-    return draftApi.generate(draft.id);
-  });
+  /** override: 「만들지 않기」로 AI 컷을 비우거나, 영상만 끌 때 저장·생성에 쓴다 */
+  const generate = useDraftMutation(
+    async (override?: { plan?: DraftPlan; heroMotion?: HeroMotion }) => {
+      if (override?.plan || override?.heroMotion !== undefined) {
+        if (override.plan) {
+          setPlan(override.plan);
+          markSaved(override.plan);
+        }
+        const saved = await draftApi.patch(draft.id, {
+          ...(override.plan && { plan: override.plan }),
+          ...(override.heroMotion !== undefined && {
+            input: { ...draft.input, heroMotion: override.heroMotion },
+          }),
+        });
+        queryClient.setQueryData(draftKey(draft.id), saved);
+      } else {
+        await flush();
+      }
+      return draftApi.generate(draft.id);
+    },
+  );
 
   const palettes = useQuery({ queryKey: ['palettes', draft.input.categoryId], queryFn: () => draftApi.palettes(draft.input.categoryId), enabled: paletteOpen });
   const [shuffled, setShuffled] = useState<PalettePreset[] | null>(null);
@@ -390,17 +399,19 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
                 }
                 // 「만들지 않기」→ AI 컷을 빈 자리로 두고(영상도 끄고) 생성 진행
                 generate.mutate({
-                  ...plan,
-                  heroMotion: withVideo ? 'off' : plan.heroMotion,
-                  sections: plan.sections.map((s) => ({
-                    ...s,
-                    cuts: s.cuts.map((c) => (c.source === 'ai' ? { ...c, source: 'blank' as const } : c)),
-                  })),
+                  plan: {
+                    ...plan,
+                    sections: plan.sections.map((s) => ({
+                      ...s,
+                      cuts: s.cuts.map((c) => (c.source === 'ai' ? { ...c, source: 'blank' as const } : c)),
+                    })),
+                  },
+                  ...(withVideo ? { heroMotion: 'off' as const } : {}),
                 });
                 return;
               }
               if (withVideo && !window.confirm(`AI 영상이 포함돼 ${formatCost(HERO_VIDEO_USD)} 정도가 Gemini 키로 청구돼요. 만들까요?`)) {
-                generate.mutate({ ...plan, heroMotion: 'off' });
+                generate.mutate({ heroMotion: 'off' });
                 return;
               }
               generate.mutate(undefined);
