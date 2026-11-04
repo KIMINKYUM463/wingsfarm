@@ -105,7 +105,7 @@ ${productBlock}
 [쓸 수 있는 섹션] (id: 이름 — 역할)
 ${available.map((t) => `${t.id}: ${t.name} — ${t.description}`).join('\n')}
 [디자인 스타일] ${styles}
-[톤 id] ${tones} / 추천 톤 ${recommended.join(', ')}
+[색감 세트 toneId] ${tones} / 상품 추천 톤 ${recommended.join(', ')}
 [피해야 할 이전 시퀀스]
 ${avoid}
 
@@ -121,6 +121,7 @@ ${JSON.stringify(flowRows).slice(0, 6000)}
 6) lengthHint 기본값은 "${input.length}". conversion만 short 가능. 섹션 수는 ${minLen}~${maxLen}.
 7) 흐름에 없는 섹션을 끼워 길이를 억지로 늘리지 말 것. 부족하면 같은 전략에 맞는 근거·활용 박지만 추가.
 8) 후보마다 sectionIds가 달라야 한다.
+9) 후보마다 toneId를 서로 다르게 — 추천 톤(${recommended.join(', ')})을 우선 배분. 한 후보 안에서는 초록·남색·빨강이 섞이지 않게 색감 세트 하나(toneId 하나)만 쓴다.
 
 JSON:
 {"candidates":[{"strategy":"conversion","title":"...","reason":"...","sectionIds":["hero","..."],"designStyle":"modern","toneId":"${recommended[0] ?? 'forest'}","lengthHint":"short|long|extra"}]}`,

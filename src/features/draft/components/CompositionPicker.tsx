@@ -65,7 +65,8 @@ export function CompositionPicker({ draft }: { draft: DraftDto }) {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">어떤 구성으로 만들까요?</h1>
         <p className="mt-1 text-sm text-gray-500">
-          상품에 맞춰 AI가 고른 구성 5안이에요. 섹션 목록을 보고, 카드를 누르면 샘플 레이아웃 미리보기가 열려요.
+          상품에 맞춰 AI가 고른 구성 5안이에요. 카드마다 색감 세트가 달라요 — 초록·남색·빨강이 한 페이지에 섞이지 않게 골랐어요.
+          섹션 목록을 보고, 카드를 누르면 샘플 레이아웃 미리보기가 열려요.
         </p>
       </div>
 
@@ -202,10 +203,11 @@ function CandidateCard({
         <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">{style.name}</span>
       </div>
 
-      <div className="flex gap-1.5">
+      <div className="flex items-center gap-1.5">
         {(['main', 'point', 'bgLight', 'bgDark'] as const).map((role) => (
           <span key={role} className="h-5 w-5 rounded-full border border-black/5" style={{ background: candidate.palette[role] }} title={role} />
         ))}
+        <span className="ml-1 text-[11px] text-gray-500">페이지 전체 동일 색감</span>
       </div>
 
       {/* 섹션 목차 — 어떤 섹션이 있는지 전부 표시 */}

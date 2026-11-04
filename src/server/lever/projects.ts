@@ -7,7 +7,7 @@ import { isTemplateStartLength } from '@/shared/constants/templateStart';
 import type { DraftPalette } from '@/shared/types/draft';
 import type { HeroMotionInfo } from '@/shared/types/heroMotion';
 import type { DesignStyleId } from '@/shared/lib/designStyles';
-import { normalizePalette, recolorTree, type PaletteNode } from '@/shared/lib/palette';
+import { normalizePalette, paletteFromToneId, unifyTreePalette, type PaletteNode } from '@/shared/lib/palette';
 import { resolveAssetUrls } from './assets';
 import { findCategory } from './catalog/categories';
 import { asNode, cloneWithNewIds, collectAssetIds, normalizeSellerFrame, type FrameNode } from './frames/tree';
@@ -113,7 +113,7 @@ export const saveNewProject = (project: ProjectRecord) => writeJson(projectPath(
 export const sortFrames = (frames: ProjectFrame[]) =>
   [...frames].sort((a, b) => (a.frameOrder < b.frameOrder ? -1 : a.frameOrder > b.frameOrder ? 1 : 0));
 
-/** 템플릿 → 프로젝트 프레임 행 (palette가 있으면 팔레트 역할이 달린 요소를 그 색으로 칠한다) */
+/** 템플릿 → 프로젝트 프레임 행 (palette가 있으면 페이지 색감 세트로 통일한다) */
 export async function buildTemplateFrame(
   projectId: string,
   template: TemplateRecord,
@@ -122,7 +122,9 @@ export async function buildTemplateFrame(
   palette?: DraftPalette,
 ): Promise<ProjectFrame> {
   const data = await instantiateTemplate(template, frameId);
-  const frameData = palette ? recolorTree(data.frameData as PaletteNode, palette) : data.frameData;
+  const frameData = palette
+    ? unifyTreePalette(data.frameData as PaletteNode, palette)
+    : data.frameData;
   const now = nowIso();
   return {
     id: frameId,
@@ -153,13 +155,14 @@ export async function createProject(body: { productName?: string; categoryId?: s
   if (!findCategory(body.categoryId)) throw badRequest('카테고리를 선택해주세요.');
 
   const id = newId();
-  const templates = await pickDraftTemplates(
+  const { templates, toneId } = await pickDraftTemplates(
     body.categoryId!,
     isTemplateStartLength(body.length) ? body.length : 'short',
     productName,
   );
+  const palette = paletteFromToneId(toneId);
   const orders = generateNKeysBetween(null, null, templates.length);
-  const frames = await Promise.all(templates.map((t, i) => buildTemplateFrame(id, t, orders[i])));
+  const frames = await Promise.all(templates.map((t, i) => buildTemplateFrame(id, t, orders[i], undefined, palette)));
   const now = nowIso();
 
   await saveNewProject({
@@ -175,6 +178,13 @@ export async function createProject(body: { productName?: string; categoryId?: s
     createdAt: now,
     updatedAt: now,
     productImagePaths: [],
+    /** 템플릿 시작도 페이지 색감 세트를 저장해 두어, 이후 섹션 추가·교체 시 같은 톤을 유지한다 */
+    draftLayout: {
+      draftId: '',
+      sectionTypeIds: [],
+      palette,
+      originalPalette: palette,
+    },
     frames,
   });
   return { id, status: 'active', message: '초안 프로젝트가 생성되었습니다.' };

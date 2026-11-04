@@ -1,7 +1,24 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { findUnsupportedClaims } from './factGuard.ts';
-import { countPaletteNodes, derivePalette, luminance, normalizePalette, recolorTree, resolveProductToneId, suggestProductTones, tintNeutralBackgrounds, TONE_PRESETS } from '../../../shared/lib/palette.ts';
+import {
+  countPaletteNodes,
+  derivePalette,
+  dominantToneFromTree,
+  harmonizeTreeColors,
+  luminance,
+  nearestToneId,
+  normalizePalette,
+  parseCssColor,
+  recolorTree,
+  resolveProductToneId,
+  suggestProductTones,
+  tintNeutralBackgrounds,
+  toneMatchScore,
+  TONE_PRESETS,
+  unifyTreePalette,
+} from '../../../shared/lib/palette.ts';
+import { toneIdFromTemplateId } from '../../../shared/lib/templateTone.ts';
 import { defaultFlow, fitLength, LENGTH_TARGET, sectionTypesFor, suggestableTypes, withAiNotice } from './sections.ts';
 import { estimateLines } from '../templates/nodes.ts';
 
@@ -78,6 +95,42 @@ describe('색 팔레트', () => {
     assert.equal(suggestProductTones('아카시아 벌꿀', 'food')[0], 'amber');
     assert.equal(resolveProductToneId('rose', '제주 고등어', 'agri'), 'ocean');
     assert.equal(resolveProductToneId('mocha', '햇사과 5kg', 'agri'), 'mocha');
+  });
+
+  it('색감 세트: 가까운 톤·트리 강조색·하모나이즈가 페이지 톤을 맞춘다', () => {
+    assert.equal(nearestToneId('#2F5D3A'), 'forest');
+    assert.equal(nearestToneId('#1E2A4A'), 'navy');
+    assert.equal(toneMatchScore('forest', 'forest'), 3);
+    assert.ok(toneMatchScore('mint', 'forest') >= 2);
+    assert.equal(parseCssColor('rgba(250, 89, 85, 1)'), '#FA5955');
+    const figmaLike = {
+      children: [
+        { fill: 'rgba(247, 81, 77, 1)' },
+        { fill: 'rgba(255, 255, 255, 1)' },
+        { fill: 'rgba(34, 34, 34, 1)' },
+      ],
+    };
+    assert.equal(dominantToneFromTree(figmaLike), 'coral');
+    const palette = derivePalette('#2F5D3A');
+    const unified = unifyTreePalette(figmaLike, palette);
+    const accent = parseCssColor(unified.children![0].fill);
+    assert.ok(accent);
+    // 빨간 강조가 포레스트 쪽으로 당겨졌는지 (초록 기운)
+    const g = parseInt(accent!.slice(3, 5), 16);
+    const b = parseInt(accent!.slice(5, 7), 16);
+    assert.ok(g > b, `expected greener accent, got ${accent}`);
+    const withVar = { colorVar: 'main' as const, fill: '#000000', children: [{ fill: 'rgba(247, 81, 77, 1)' }] };
+    const onlyVar = unifyTreePalette(withVar, palette);
+    assert.equal(onlyVar.fill, palette.main);
+    // colorVar가 있으면 자식 하드코딩 색은 건드리지 않는다
+    assert.equal(onlyVar.children![0].fill, 'rgba(247, 81, 77, 1)');
+    const harm = harmonizeTreeColors({ fill: 'rgba(247, 81, 77, 1)' }, palette, 1);
+    assert.notEqual(harm.fill, 'rgba(247, 81, 77, 1)');
+    assert.equal(toneIdFromTemplateId('builtin-ds-natural-hero'), 'forest');
+    assert.equal(toneIdFromTemplateId('builtin-ds-premium-cta'), 'navy');
+    assert.equal(toneIdFromTemplateId('builtin-ds-pop-points'), 'coral');
+    assert.equal(toneIdFromTemplateId('builtin-pt-hero-specbanner-b'), 'forest');
+    assert.equal(toneIdFromTemplateId('figma-abc'), undefined);
   });
 
   it('테두리(strokeVar)·그림자(shadowVar)도 팔레트를 따라 바뀐다', () => {

@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { emptyDraftInput } from '@/shared/types/draft';
-import { suggestableTypes } from '../catalog/sections';
-import { derivePalette, TONE_PRESETS } from '@/shared/lib/palette';
+import { emptyDraftInput } from '../../../shared/types/draft.ts';
+import { derivePalette, TONE_PRESETS } from '../../../shared/lib/palette.ts';
+import { suggestableTypes } from '../catalog/sections.ts';
 import {
   buildFallbackCompositionCandidates,
   compositionSequenceKey,
   ensureSalesAnchors,
   orderBySalesFunnel,
   resolveCandidateSectionIds,
-} from './compositionLogic';
+} from './compositionLogic.ts';
 
 const agriInput = () => {
   const input = emptyDraftInput();
@@ -76,10 +76,13 @@ describe('compositionLogic', () => {
     }
   });
 
-  it('폴백 후보 색은 상품 빛깔을 따른다', () => {
+  it('폴백 후보 색은 상품 빛깔을 따르고, 제목에 색감 세트가 붙는다', () => {
     const mainOf = (id: string) => derivePalette(TONE_PRESETS.find((t) => t.id === id)!.main).main;
     const apple = buildFallbackCompositionCandidates(agriInput(), allowed('agri'));
     assert.equal(apple[0].palette.main, mainOf('forest'));
+    assert.match(apple[0].title, /세트/);
+    const tones = new Set(apple.map((c) => c.palette.main));
+    assert.ok(tones.size >= 3, '후보마다 다른 색감 세트');
     const fishInput = agriInput();
     fishInput.productName = '제주 고등어';
     const fish = buildFallbackCompositionCandidates(fishInput, allowed('agri'));

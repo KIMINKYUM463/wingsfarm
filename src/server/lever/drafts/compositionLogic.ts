@@ -3,7 +3,7 @@
  */
 import type { CompositionCandidate, DraftInput, DraftLength, DraftPalette } from '@/shared/types/draft';
 import { isDesignStyleId, normalizeDesignStyle, type DesignStyleId } from '@/shared/lib/designStyles';
-import { paletteFromToneId, resolveProductToneId, suggestProductTones } from '@/shared/lib/palette';
+import { paletteFromToneId, resolveProductToneId, suggestProductTones, TONE_PRESETS } from '@/shared/lib/palette';
 import { defaultFlow, ensureAgriClosing, findSectionType, fitLength, LENGTH_TARGET, withAiNotice } from '../catalog/sections';
 import { dedupeExclusiveRoles, EXCLUSIVE_ROLE_GROUPS } from './compositionRoles';
 
@@ -28,17 +28,23 @@ export function paletteFromTone(toneId: string | undefined, fallbackMain = '#2F5
   return paletteFromToneId(toneId, fallbackMain);
 }
 
+/** 전략마다 서로 다른 색감 세트(톤) — 후보 5안이 초록/남색/빨강 세트로 갈라져 보이게 */
 function tonesForStrategies(input: Pick<DraftInput, 'productName' | 'categoryId'>) {
   const home = suggestProductTones(input.productName, input.categoryId);
-  const pick = (preferred: string, index: number) =>
-    home.includes(preferred) ? preferred : home[Math.min(index, home.length - 1)] ?? home[0] ?? 'forest';
+  const pad = ['forest', 'mocha', 'navy', 'coral', 'ocean', 'amber', 'mono', 'mint', 'wine', 'nude'];
+  const pool = [...new Set([...home, ...pad])].filter((id) => TONE_PRESETS.some((t) => t.id === id));
   return {
-    conversion: home[0] ?? 'forest',
-    trust: pick('mocha', 1),
-    story: pick('forest', 0),
-    detail: pick('mono', Math.min(2, home.length - 1)),
-    premium: pick('navy', 1),
+    conversion: pool[0] ?? 'forest',
+    trust: pool[1] ?? 'mocha',
+    story: pool[2] ?? 'navy',
+    detail: pool[3] ?? 'coral',
+    premium: pool[4] ?? 'ocean',
   };
+}
+
+function toneSetTitle(toneId: string, strategyTitle: string) {
+  const name = TONE_PRESETS.find((t) => t.id === toneId)?.name ?? toneId;
+  return `${name} 세트 · ${strategyTitle}`.slice(0, 24);
 }
 
 export function styleForStrategy(strategy: string, preferred?: string): DesignStyleId {
@@ -197,14 +203,46 @@ export function buildFallbackCompositionCandidates(
       strategy: 'conversion',
       length: input.length === 'extra' ? 'long' : input.length === 'long' ? 'short' : 'short',
       title: '짧게 설득',
-      reason: '핵심 포인트만 모아 빠르게 구매로 이끌어요',
+      reason: '핵심만 빠르게 설득하고, 페이지 색감은 한 세트로 맞춰요',
       style: 'pop',
       toneId: tones.conversion,
     },
-    { strategy: 'trust', length: input.length, title: '믿고 사는 구성', reason: '후기·인증·비교처럼 근거를 앞에 두어요', style: 'docu', toneId: tones.trust, prefer: ['hero', 'review', 'certification', 'social_proof', 'comparison'] },
-    { strategy: 'story', length: input.length === 'short' ? 'long' : input.length, title: '이야기형 구성', reason: '산지·장면·스토리로 상품 세계를 보여 줘요', style: 'natural', toneId: tones.story, prefer: ['hero', 'concept', 'point_origin', 'point_producer', 'usage', 'recipe'] },
-    { strategy: 'detail', length: input.length === 'short' ? 'long' : input.length, title: '꼼꼼한 정보형', reason: '스펙·보관·사용법을 차근차근 보여 줘요', style: 'modern', toneId: tones.detail, prefer: ['hero', 'summary', 'spec', 'size_comparison', 'how_to', 'storage_washing', 'faq'] },
-    { strategy: 'premium', length: input.length, title: '선물·프리미엄', reason: '포장과 고급스러운 톤으로 가치를 올려요', style: 'premium', toneId: tones.premium, prefer: ['hero', 'concept', 'package', 'quality', 'promotion', 'conversion'] },
+    {
+      strategy: 'trust',
+      length: input.length,
+      title: '믿고 사는 구성',
+      reason: '후기·인증 근거를 앞에 두고, 전체 색감을 통일해요',
+      style: 'docu',
+      toneId: tones.trust,
+      prefer: ['hero', 'review', 'certification', 'social_proof', 'comparison'],
+    },
+    {
+      strategy: 'story',
+      length: input.length === 'short' ? 'long' : input.length,
+      title: '이야기형 구성',
+      reason: '산지·장면 스토리와 같은 색감 세트로 이어져요',
+      style: 'natural',
+      toneId: tones.story,
+      prefer: ['hero', 'concept', 'point_origin', 'point_producer', 'usage', 'recipe'],
+    },
+    {
+      strategy: 'detail',
+      length: input.length === 'short' ? 'long' : input.length,
+      title: '꼼꼼한 정보형',
+      reason: '스펙·보관 정보를 한 가지 색감으로 정리해요',
+      style: 'modern',
+      toneId: tones.detail,
+      prefer: ['hero', 'summary', 'spec', 'size_comparison', 'how_to', 'storage_washing', 'faq'],
+    },
+    {
+      strategy: 'premium',
+      length: input.length,
+      title: '선물·프리미엄',
+      reason: '고급스러운 한 가지 톤으로 가치 있게 보여 줘요',
+      style: 'premium',
+      toneId: tones.premium,
+      prefer: ['hero', 'concept', 'package', 'quality', 'promotion', 'conversion'],
+    },
   ];
 
   const out: CompositionCandidate[] = [];
@@ -224,7 +262,7 @@ export function buildFallbackCompositionCandidates(
     if (excludeKeys.has(key) && out.length >= COMPOSITION_CANDIDATE_COUNT - 1) continue;
     out.push({
       id: newCandidateId(),
-      title: b.title,
+      title: toneSetTitle(b.toneId, b.title),
       reason: b.reason,
       strategy: b.strategy,
       sectionTypeIds: ids,
@@ -277,15 +315,17 @@ export function parseGeminiCandidates(
     const key = compositionSequenceKey(ids);
     if (excludeKeys.has(key) && out.length > 0) continue;
     if (out.some((c) => compositionSequenceKey(c.sectionTypeIds) === key)) continue;
+    const toneId = resolveProductToneId(String(r.toneId ?? ''), input.productName, input.categoryId);
+    const rawTitle = String(r.title ?? COMPOSITION_STRATEGIES.find((s) => s.id === strategy)?.label ?? '구성 제안');
     out.push({
       id: newId(),
-      title: String(r.title ?? COMPOSITION_STRATEGIES.find((s) => s.id === strategy)?.label ?? '구성 제안').slice(0, 20),
+      title: toneSetTitle(toneId, rawTitle.slice(0, 12)),
       reason: String(r.reason ?? '상품에 맞춰 구성을 골랐어요').slice(0, 80),
       strategy,
       sectionTypeIds: ids,
       sectionNames: ids.map((id) => findSectionType(input.categoryId, id)?.name ?? id),
       designStyle: normalizeDesignStyle(styleForStrategy(strategy, String(r.designStyle ?? ''))),
-      palette: paletteFromTone(resolveProductToneId(String(r.toneId ?? ''), input.productName, input.categoryId)),
+      palette: paletteFromTone(toneId),
       lengthHint,
     });
     if (out.length >= COMPOSITION_CANDIDATE_COUNT) break;

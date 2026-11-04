@@ -179,10 +179,134 @@ export const countPaletteNodes = (node: PaletteNode): number =>
   (node.children ?? []).reduce((sum, child) => sum + countPaletteNodes(child), 0);
 
 /** 채도가 거의 없는 회색 계열인지 (RGB 세 값의 차이가 작다) */
-const isNeutral = (hex: string) => {
+export const isNeutral = (hex: string) => {
   const rgb = hexToRgb(hex);
   return Math.max(...rgb) - Math.min(...rgb) < 10;
 };
+
+/** #RRGGBB 또는 rgba()/rgb() → #RRGGBB (투명이면 null) */
+export function parseCssColor(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+  const value = input.trim();
+  if (HEX_COLOR.test(value)) return value.toUpperCase();
+  const rgba = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/i.exec(value);
+  if (!rgba) return null;
+  if (rgba[4] !== undefined && Number(rgba[4]) < 0.08) return null;
+  return rgbToHex([Number(rgba[1]), Number(rgba[2]), Number(rgba[3])]);
+}
+
+const colorDistance = (a: string, b: string) => {
+  const [ar, ag, ab] = hexToRgb(a);
+  const [br, bg, bb] = hexToRgb(b);
+  return (ar - br) ** 2 + (ag - bg) ** 2 + (ab - bb) ** 2;
+};
+
+/** 가장 가까운 톤 프리셋 id (무채색·너무 밝은 바탕은 mono — 네이비처럼 어두운 유채색은 살린다) */
+export function nearestToneId(hex: string): string {
+  if (isNeutral(hex) || luminance(hex) > 0.88) return 'mono';
+  let best = TONE_PRESETS[0]!;
+  let bestDist = Infinity;
+  for (const tone of TONE_PRESETS) {
+    const dist = colorDistance(hex, tone.main);
+    if (dist < bestDist) {
+      best = tone;
+      bestDist = dist;
+    }
+  }
+  return best.id;
+}
+
+/** 같은 계열로 묶는 이웃 톤 — 페이지 색감 세트 매칭에 사용 */
+export const TONE_NEIGHBORS: Record<string, string[]> = {
+  forest: ['forest', 'mint', 'mocha', 'nude'],
+  mint: ['mint', 'forest', 'ocean', 'mocha'],
+  ocean: ['ocean', 'navy', 'sky', 'mint', 'mono'],
+  navy: ['navy', 'ocean', 'mono', 'lavender'],
+  sky: ['sky', 'ocean', 'mint', 'mono'],
+  coral: ['coral', 'wine', 'amber', 'mocha'],
+  wine: ['wine', 'coral', 'mocha', 'navy'],
+  amber: ['amber', 'coral', 'mocha', 'nude'],
+  mocha: ['mocha', 'nude', 'amber', 'forest', 'wine'],
+  nude: ['nude', 'mocha', 'amber', 'mono'],
+  mono: ['mono', 'navy', 'mocha', 'nude'],
+  rose: ['rose', 'wine', 'nude', 'mocha'],
+  lavender: ['lavender', 'navy', 'mono', 'rose'],
+};
+
+export function toneNeighbors(toneId: string): string[] {
+  return TONE_NEIGHBORS[toneId] ?? [toneId, 'mono'];
+}
+
+export function toneMatchScore(templateTone: string, preferredTone: string): number {
+  if (templateTone === preferredTone) return 3;
+  if (toneNeighbors(preferredTone).includes(templateTone)) return 2;
+  if (templateTone === 'mono' || preferredTone === 'mono') return 1;
+  return 0;
+}
+
+const COLOR_PROPS = ['fill', 'stroke', 'color', 'shadowColor'] as const;
+
+/** 트리에서 채도 있는 강조색을 모아 가장 자주 쓰인 톤 id */
+export function dominantToneFromTree(node: PaletteNode & { color?: unknown }): string {
+  const votes = new Map<string, number>();
+  const visit = (n: PaletteNode & { color?: unknown }) => {
+    for (const prop of COLOR_PROPS) {
+      const hex = parseCssColor((n as Record<string, unknown>)[prop]);
+      if (!hex || isNeutral(hex) || luminance(hex) > 0.85) continue;
+      const tone = nearestToneId(hex);
+      if (tone === 'mono') continue;
+      votes.set(tone, (votes.get(tone) ?? 0) + 1);
+    }
+    for (const child of n.children ?? []) visit(child as PaletteNode & { color?: unknown });
+  };
+  visit(node);
+  let best = 'mono';
+  let bestCount = 0;
+  for (const [tone, count] of votes) {
+    if (count > bestCount) {
+      best = tone;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
+/**
+ * colorVar 없는 채도 색(피그마 템플릿 등)을 페이지 팔레트 쪽으로 끌어당겨
+ * 상세페이지 전체가 한 색감 세트로 보이게 한다.
+ */
+export function harmonizeTreeColors<T extends PaletteNode & { color?: unknown }>(node: T, palette: DraftPalette, amount = 0.72): T {
+  let changed = false;
+  const next: Record<string, unknown> = {};
+  for (const prop of COLOR_PROPS) {
+    const raw = (node as Record<string, unknown>)[prop];
+    const hex = parseCssColor(raw);
+    if (!hex || isNeutral(hex) || luminance(hex) > 0.9 || luminance(hex) < 0.05) continue;
+    const target =
+      luminance(hex) < 0.28 ? palette.main : luminance(hex) < 0.5 ? palette.point : mix(palette.bgDark, palette.point, 0.45);
+    const shifted = mix(hex, target, amount);
+    if (shifted === hex) continue;
+    next[prop] = typeof raw === 'string' && raw.startsWith('rgb') ? hexToRgbaString(shifted, raw) : shifted;
+    changed = true;
+  }
+  const children = node.children?.map((child) => harmonizeTreeColors(child as T, palette, amount));
+  const childrenChanged = Boolean(children?.some((child, i) => child !== node.children![i]));
+  if (!changed && !childrenChanged) return node;
+  return { ...node, ...next, ...(childrenChanged && { children }) };
+}
+
+function hexToRgbaString(hex: string, original: string) {
+  const [r, g, b] = hexToRgb(hex);
+  const alpha = /,\s*([\d.]+)\s*\)$/.exec(original)?.[1] ?? '1';
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/** colorVar 리컬러 + (필요 시) 느슨한 색 하모나이즈 — 페이지 색감 세트 적용 */
+export function unifyTreePalette<T extends PaletteNode & { color?: unknown }>(node: T, palette: DraftPalette): T {
+  const recolored = recolorTree(node, palette);
+  if (countPaletteNodes(recolored) > 0) return recolored as T;
+  return harmonizeTreeColors(recolored as T, palette);
+}
 
 /**
  * AI가 고른 바탕이 무채색 회색이면 대표색을 옅게 섞은 바탕으로 바꾼다 — 회색 바탕은 식품을 칙칙해 보이게 한다.

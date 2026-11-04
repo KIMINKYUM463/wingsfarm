@@ -21,7 +21,9 @@ import { publicUrl, saveFile } from '../storage';
 import { nowIso, readJson, removeData, withLock, writeJson } from '../store';
 import { BUILTIN_VERSION, buildBuiltinTemplates } from './builtin';
 import { withAgriClosing } from './agriClosing';
+import { preferredPageTone, resolveTemplateToneId, toneIdFromTemplateId } from './colorSets';
 import { DRAFT_PART2_ORDER, normalizePart2, part2SortKeyOf } from './part2Taxonomy';
+import { toneMatchScore } from '@/shared/lib/palette';
 
 export interface TemplateRecord {
   id: string;
@@ -186,42 +188,62 @@ const shuffled = <T,>(items: T[]) => {
   return result;
 };
 
+async function toneMapFor(templates: TemplateRecord[]) {
+  const entries = await Promise.all(
+    templates.map(async (t) => [t.id, await resolveTemplateToneId(t.id, framePath)] as const),
+  );
+  return new Map(entries);
+}
+
+/** 스타일·색감 세트 점수가 높은 순으로 고른다 (동점이면 섞음) */
+function rankByColorSet(candidates: TemplateRecord[], style: string, toneId: string, tones: Map<string, string>) {
+  return shuffled(candidates).sort((a, b) => {
+    const styleScore = (t: TemplateRecord) => (styleGroupOf(t) === style ? 2 : 0);
+    const toneScore = (t: TemplateRecord) => toneMatchScore(tones.get(t.id) ?? 'mono', toneId);
+    return styleScore(b) + toneScore(b) - (styleScore(a) + toneScore(a));
+  });
+}
+
 /**
- * 구성(part2)마다 고르되, 한 페이지 안에서는 같은 디자인 스타일을 우선한다
- * 긴·더 긴 구성은 templateCountFor만큼 서로 다른 템플릿을 같은 구성 자리에 이어 붙인다
- * (Figma 참고용 구성·전체 페이지는 초안에서 제외 — 짧은·긴은 DRAFT_PART2_ORDER, 더 긴은 EXTRA_DRAFT_PART2S)
+ * 구성(part2)마다 고르되, 한 페이지 안에서는 같은 디자인 스타일 + 같은 색감 세트를 우선한다.
+ * 긴·더 긴 구성은 templateCountFor만큼 서로 다른 템플릿을 같은 구성 자리에 이어 붙인다.
  */
-export function pickDraftTemplatesRandom(
+export async function pickDraftTemplatesRandom(
   usable: TemplateRecord[],
   length: TemplateStartLength = 'short',
   preferredStyle?: string,
   categoryId?: string | null,
+  preferredTone = 'forest',
 ) {
   const styles = [...new Set(usable.map(styleGroupOf))];
   const group = preferredStyle && styles.includes(preferredStyle) ? preferredStyle : randomOf(styles);
-  const picked = part2sForLength(length, DRAFT_PART2_ORDER).flatMap((part2) => {
+  const part2List = part2sForLength(length, DRAFT_PART2_ORDER);
+  const pool = usable.filter((t) => part2List.includes(t.part2));
+  const tones = await toneMapFor(pool);
+  const picked = part2List.flatMap((part2) => {
     const candidates = usable.filter((t) => t.part2 === part2);
     if (!candidates.length) return [];
     const count = templateCountFor(part2, length);
-    const sameStyle = candidates.filter((t) => styleGroupOf(t) === group);
-    const others = candidates.filter((t) => styleGroupOf(t) !== group);
-    return [...shuffled(sameStyle), ...shuffled(others)].slice(0, count);
+    return rankByColorSet(candidates, group, preferredTone, tones).slice(0, count);
   });
   return withAgriClosing(usable, picked, categoryId, group, styleGroupOf);
 }
 
 /** 구성별 후보 요약 (AI 프롬프트용, 너무 길지 않게 자름) */
-function candidateSummaries(usable: TemplateRecord[], part2: string, limit = 14) {
+async function candidateSummaries(usable: TemplateRecord[], part2: string, limit = 14) {
   const pool = shuffled(usable.filter((t) => t.part2 === part2));
   const builtin = pool.filter((t) => t.source === 'builtin').slice(0, 5);
   const figma = pool.filter((t) => t.source === 'figma').slice(0, 9);
   const mixed = [...builtin, ...figma];
   const rest = pool.filter((t) => !mixed.includes(t));
-  return [...mixed, ...rest].slice(0, limit).map((t) => ({
+  const rows = [...mixed, ...rest].slice(0, limit);
+  const tones = await toneMapFor(rows);
+  return rows.map((t) => ({
     id: t.id,
     name: t.name.slice(0, 48),
     source: t.source,
     style: styleGroupOf(t),
+    tone: tones.get(t.id) ?? toneIdFromTemplateId(t.id) ?? 'mono',
   }));
 }
 
@@ -239,25 +261,42 @@ const withTimeout = async <T,>(promise: Promise<T>, ms: number) => {
   }
 };
 
+export interface DraftTemplatePick {
+  templates: TemplateRecord[];
+  /** 페이지 전체 색감 세트 (TONE_PRESETS id) */
+  toneId: string;
+}
+
 /**
- * 상품명·카테고리에 어울리는 템플릿을 AI가 고른다. 실패 시 스타일 통일 랜덤으로 폴백.
+ * 상품명·카테고리에 어울리는 템플릿을 AI가 고른다.
+ * 한 페이지는 같은 디자인 스타일 + 같은 색감 세트를 우선한다. 실패 시 랜덤 폴백.
  */
 export async function pickDraftTemplates(
   categoryId: string | null,
   length: TemplateStartLength = 'short',
   productName = '',
-) {
+): Promise<DraftTemplatePick> {
   const usable = (await loadTemplates()).filter((t) => isUsable(t, categoryId)).sort(byOrder);
   const byId = new Map(usable.map((t) => [t.id, t]));
   const part2s = part2sForLength(length, DRAFT_PART2_ORDER);
-  const needed = part2s.map((part2) => ({
-    part2,
-    count: templateCountFor(part2, length),
-    options: candidateSummaries(usable, part2),
-  })).filter((row) => row.options.length > 0);
+  const toneId = preferredPageTone(productName, categoryId);
+  const needed = (
+    await Promise.all(
+      part2s.map(async (part2) => ({
+        part2,
+        count: templateCountFor(part2, length),
+        options: await candidateSummaries(usable, part2),
+      })),
+    )
+  ).filter((row) => row.options.length > 0);
+
+  const asPick = async (templates: TemplateRecord[], style?: string): Promise<DraftTemplatePick> => ({
+    templates: style ? withAgriClosing(usable, templates, categoryId, style, styleGroupOf) : templates,
+    toneId,
+  });
 
   if (!productName.trim() || !needed.length) {
-    return pickDraftTemplatesRandom(usable, length, undefined, categoryId);
+    return asPick(await pickDraftTemplatesRandom(usable, length, undefined, categoryId, toneId));
   }
 
   try {
@@ -265,33 +304,37 @@ export async function pickDraftTemplates(
     const gemini = await requireGemini();
     const categoryName = findCategory(categoryId)?.name ?? categoryId ?? '';
     const result = await withTimeout(
-      gemini.generateJson<{ preferredStyle?: string; picks?: { part2?: string; templateIds?: string[] }[] }>(
+      gemini.generateJson<{ preferredStyle?: string; preferredTone?: string; picks?: { part2?: string; templateIds?: string[] }[] }>(
         `너는 한국 이커머스 상세페이지 디자이너다. 상품에 어울리는 템플릿을 구성(part2)마다 골라라.
 
 [상품] ${productName.slice(0, 80)}
 [카테고리] ${categoryName}
 [길이] ${TEMPLATE_START_LENGTH_LABEL[length]}
+[페이지 색감 세트] tone=${toneId} — 초록/남색/빨강이 섞이지 않게, 가능하면 tone 값이 같은 후보만 고른다.
 
 [구성별 후보] (이 목록의 id만 사용)
 ${needed
   .map(
     (row) =>
       `## ${row.part2} (정확히 ${row.count}개)
-${row.options.map((o) => `- ${o.id} | ${o.name} | ${o.source} | style:${o.style}`).join('\n')}`,
+${row.options.map((o) => `- ${o.id} | ${o.name} | ${o.source} | style:${o.style} | tone:${o.tone}`).join('\n')}`,
   )
   .join('\n\n')}
 
 규칙:
 - 각 part2마다 templateIds를 정확히 필요한 개수만큼, 후보에 있는 id만.
-- 페이지 전체 톤이 맞도록 preferredStyle(style 값 중 하나)을 정하고, 가능하면 그 style 템플릿을 우선.
-- 농수산·식품이면 내추럴·산지 느낌(classic/natural 계열 이름·figma)을, 선물·고급이면 premium 느낌을 선호.
+- preferredStyle(style 값 중 하나)을 정하고 그 style을 우선.
+- preferredTone은 "${toneId}"를 기본으로 하고, 후보 tone이 이와 같거나 가까운 것만 고른다. 페이지 안에서 초록·남색·빨강이 섞이면 안 된다.
+- 농수산·식품이면 natural/classic, 선물·고급이면 premium 느낌을 선호.
 - 같은 템플릿 id를 두 번 쓰지 말 것.
-JSON: {"preferredStyle":"classic","picks":[{"part2":"메인 비주얼","templateIds":["..."]},{"part2":"문제 제기","templateIds":["..."]}]}`,
+JSON: {"preferredStyle":"natural","preferredTone":"${toneId}","picks":[{"part2":"메인 비주얼","templateIds":["..."]},{"part2":"문제 제기","templateIds":["..."]}]}`,
       ),
       12_000,
     );
 
     const preferredStyle = typeof result.preferredStyle === 'string' ? result.preferredStyle : undefined;
+    const pageTone = typeof result.preferredTone === 'string' && result.preferredTone ? result.preferredTone : toneId;
+    const optionTone = new Map(needed.flatMap((row) => row.options.map((o) => [o.id, o.tone] as const)));
     const picked: TemplateRecord[] = [];
     const used = new Set<string>();
     for (const row of needed) {
@@ -304,10 +347,10 @@ JSON: {"preferredStyle":"classic","picks":[{"part2":"메인 비주얼","template
         used.add(t.id);
         picked.push(t);
       }
-      // 부족분은 같은 스타일 우선으로 채움
-      const pool = shuffled(usable.filter((t) => t.part2 === row.part2 && !used.has(t.id)));
-      const same = preferredStyle ? pool.filter((t) => styleGroupOf(t) === preferredStyle) : pool;
-      for (const t of [...same, ...pool.filter((x) => !same.includes(x))]) {
+      // 부족분: 같은 스타일·색감 세트 점수 순
+      const pool = usable.filter((t) => t.part2 === row.part2 && !used.has(t.id));
+      const tones = new Map(pool.map((t) => [t.id, optionTone.get(t.id) ?? toneIdFromTemplateId(t.id) ?? 'mono']));
+      for (const t of rankByColorSet(pool, preferredStyle ?? 'classic', pageTone, tones)) {
         if (picked.filter((p) => p.part2 === row.part2).length >= row.count) break;
         used.add(t.id);
         picked.push(t);
@@ -316,13 +359,13 @@ JSON: {"preferredStyle":"classic","picks":[{"part2":"메인 비주얼","template
 
     const ordered = part2s.flatMap((part2) => picked.filter((t) => t.part2 === part2));
     if (ordered.length >= Math.min(5, needed.length)) {
-      return withAgriClosing(usable, ordered, categoryId, preferredStyle, styleGroupOf);
+      return { templates: withAgriClosing(usable, ordered, categoryId, preferredStyle, styleGroupOf), toneId: pageTone };
     }
   } catch (err) {
     console.warn('[lever] pickDraftTemplates AI fallback', err instanceof Error ? err.message : err);
   }
 
-  return pickDraftTemplatesRandom(usable, length, undefined, categoryId);
+  return asPick(await pickDraftTemplatesRandom(usable, length, undefined, categoryId, toneId));
 }
 
 /** 템플릿 → 프로젝트 프레임 데이터 (새 id 발급 + 템플릿 이미지 연결) */

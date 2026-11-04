@@ -3,13 +3,19 @@ import type { DraftPalette as Palette, PalettePreset as PaletteInfo, PaletteRole
 
 export {
   derivePalette,
+  dominantToneFromTree,
+  harmonizeTreeColors,
+  nearestToneId,
   normalizePalette,
   PALETTE_ROLES,
   paletteFromToneId,
+  parseCssColor,
   resolveProductToneId,
   suggestProductTones,
   tintNeutralBackgrounds,
+  toneMatchScore,
   TONE_PRESETS,
+  unifyTreePalette,
 } from '@/shared/lib/palette';
 export type { Palette, PaletteInfo, PaletteRole };
 

@@ -6,7 +6,7 @@ import { isKonvaGroupElement, isKonvaFrameElement } from '@/shared/types/konva';
 import { updateFrameChildren, updateElementInChildren } from '../lib/frame-utils';
 import { injectRootIdToFrame } from '../lib/rootId-utils';
 import { useHistoryStore } from './useHistoryStore';
-import { recolorTree, type PaletteNode } from '@/shared/lib/palette';
+import { unifyTreePalette, type PaletteNode } from '@/shared/lib/palette';
 import type { DraftPalette } from '@/shared/types/draft';
 
 // ============================================================
@@ -337,7 +337,7 @@ export const useCanvasDataStore = create<CanvasDataState>()(
         const { frames } = get();
         const recolored = frames.map((frame) =>
           frame.status === 'active'
-            ? (recolorTree(frame as PaletteNode, palette) as unknown as KonvaFrameElement)
+            ? (unifyTreePalette(frame as PaletteNode, palette) as unknown as KonvaFrameElement)
             : frame,
         );
         if (recolored.every((frame, i) => frame === frames[i])) return;
