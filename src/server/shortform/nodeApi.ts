@@ -1,10 +1,21 @@
 /**
- * Vercel 등 Python 브릿지를 띄울 수 없는 환경용 읽기 전용 API.
- * bootstrap / products / jobs / analysis 조회만 처리하고,
- * 생성·렌더는 명확한 안내 메시지를 돌려준다.
+ * 숏폼 웹형(Node) API — Vercel 등에서 Python 없이 bootstrap·상품·초안·렌더까지 처리한다.
+ * 렌더는 사진만 모드(OpenAI TTS + ffmpeg-static). AI 장면·Remotion은 이후 확장.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { chatEdit, draftFields, hookVariants, lintTexts, postPack } from '@/server/shortform/copywriter';
+import { enqueueWebJob } from '@/server/shortform/photoRender';
+import {
+  getJob,
+  hideJob,
+  listJobs,
+  listWebProducts,
+  readWebProduct,
+  saveJob,
+  upsertWebProduct,
+  type SfJob,
+} from '@/server/shortform/webStore';
 
 const ORDER = [
   '고르는법',
@@ -43,38 +54,19 @@ const VOICES = [
 
 const MOODS = ['밝은', '경쾌한', '잔잔한', '시장활기', '없음'];
 
-const PHOTO_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp']);
-
-/** Python 엔진이 필요한 쓰기·생성 메서드 */
-const WRITE_METHODS = new Set([
-  'product',
-  'draft',
-  'render',
-  'analyze',
-  'clone_draft',
-  'chat',
-  'post',
-  'hooks',
-  'plan',
-  'plan_run',
-  'jobs_hide',
-  'lint',
-  'reshoot',
-]);
-
 export function isShortformServerless(): boolean {
   return Boolean(process.env.VERCEL) || process.env.SHORTFORM_FORCE_NODE === '1';
 }
 
-function shortformRoot(): string {
+function shortformRoot() {
   return path.join(process.cwd(), 'shortform');
 }
 
-function studioRoot(): string {
+function studioRoot() {
   return path.join(shortformRoot(), 'studio');
 }
 
-function readJson<T>(filePath: string, fallback: T): T {
+function readJsonFile<T>(filePath: string, fallback: T): T {
   try {
     if (!existsSync(filePath)) return fallback;
     return JSON.parse(readFileSync(filePath, 'utf8')) as T;
@@ -83,14 +75,14 @@ function readJson<T>(filePath: string, fallback: T): T {
   }
 }
 
-function loadTemplates(): Record<string, Record<string, unknown>> {
+export function loadTemplates(): Record<string, Record<string, unknown>> {
   const templatesDir = path.join(shortformRoot(), 'templates');
   if (!existsSync(templatesDir)) return {};
   const entries = readdirSync(templatesDir)
     .filter((name) => name.endsWith('.json'))
     .map((name) => {
       const id = name.replace(/\.json$/i, '');
-      const data = readJson<Record<string, unknown>>(path.join(templatesDir, name), {});
+      const data = readJsonFile<Record<string, unknown>>(path.join(templatesDir, name), {});
       return [id, { ...data, id }] as const;
     });
   entries.sort(([a], [b]) => {
@@ -102,7 +94,7 @@ function loadTemplates(): Record<string, Record<string, unknown>> {
 }
 
 function loadReferences() {
-  const raw = readJson<{
+  const raw = readJsonFile<{
     collected?: string;
     hooks?: Record<string, { label?: string; formula?: string }>;
     items?: Array<Record<string, unknown>>;
@@ -116,7 +108,7 @@ function loadReferences() {
   );
 
   const analysisDir = path.join(studioRoot(), 'data', 'analysis');
-  const items = (raw.items ?? []).map((item) => {
+  const items: Array<Record<string, unknown>> = (raw.items ?? []).map((item) => {
     const id = String(item.id ?? '');
     return {
       ...item,
@@ -125,11 +117,10 @@ function loadReferences() {
     };
   });
 
-  // 사용자·자동 수집 레퍼런스(있으면 합침)
   for (const rel of ['user_refs.json', 'refs_auto.json'] as const) {
     const filePath = path.join(studioRoot(), 'data', rel);
-    const extra = readJson<Array<Record<string, unknown>>>(filePath, []);
-    const seen = new Set(items.map((r) => String(r.id)));
+    const extra = readJsonFile<Array<Record<string, unknown>>>(filePath, []);
+    const seen = new Set(items.map((r) => String(r.id ?? '')));
     for (const r of extra) {
       const id = String(r.id ?? '');
       if (!id || seen.has(id)) continue;
@@ -142,68 +133,55 @@ function loadReferences() {
     }
   }
 
-  return {
-    collected: String(raw.collected ?? ''),
-    hooks,
-    items,
-  };
+  return { collected: String(raw.collected ?? ''), hooks, items };
 }
 
-function productInfo(folder: string, pdir: string) {
-  const p = readJson<Record<string, unknown>>(path.join(pdir, 'product.json'), {});
-  let photos = 0;
-  let photo: string | null = null;
-  try {
-    const files = readdirSync(pdir).filter((name) => PHOTO_EXT.has(path.extname(name).toLowerCase()));
-    photos = files.length;
-    if (files[0]) {
-      photo = `/media/products/${encodeURIComponent(folder)}/${encodeURIComponent(files[0])}`;
-    }
-  } catch {
-    /* ignore */
-  }
-  const keep = ['name', 'category', 'en_name', 'look', 'origin', 'price', 'original_price', 'unit', 'memo', 'real_photo'] as const;
-  const out: Record<string, unknown> = { folder, photos, photo, cached: [] as string[] };
-  for (const k of keep) {
-    const v = p[k] ?? (k === 'name' ? folder : undefined);
-    if (v !== undefined && v !== null && v !== '') out[k] = v;
-  }
-  return out;
+function loadAnalysis(id: string) {
+  const filePath = path.join(studioRoot(), 'data', 'analysis', `${id}.json`);
+  if (!existsSync(filePath)) return null;
+  return readJsonFile<Record<string, unknown>>(filePath, {});
 }
 
-function loadProducts() {
+/** 로컬 shortform/products 도 있으면 합친다(개발 편의). 배포는 웹 저장소만. */
+function loadDiskProducts() {
   const productsDir = path.join(shortformRoot(), 'products');
   if (!existsSync(productsDir)) return [];
+  const PHOTO_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp']);
   return readdirSync(productsDir)
     .map((name) => {
       const pdir = path.join(productsDir, name);
       try {
         if (!statSync(pdir).isDirectory()) return null;
         if (!existsSync(path.join(pdir, 'product.json'))) return null;
-        return { name, pdir, mtime: statSync(path.join(pdir, 'product.json')).mtimeMs };
+        const p = readJsonFile<Record<string, unknown>>(path.join(pdir, 'product.json'), {});
+        const files = readdirSync(pdir).filter((n) => PHOTO_EXT.has(path.extname(n).toLowerCase()));
+        return {
+          folder: name,
+          name: String(p.name ?? name),
+          category: p.category,
+          origin: p.origin,
+          unit: p.unit,
+          price: p.price,
+          memo: p.memo,
+          photo: files[0]
+            ? `/media/products/${encodeURIComponent(name)}/${encodeURIComponent(files[0])}`
+            : null,
+          photos: files.length,
+          cached: [] as string[],
+        };
       } catch {
         return null;
       }
     })
-    .filter((x): x is { name: string; pdir: string; mtime: number } => Boolean(x))
-    .sort((a, b) => b.mtime - a.mtime)
-    .map(({ name, pdir }) => productInfo(name, pdir));
+    .filter(Boolean);
 }
 
-function loadAnalysis(id: string) {
-  const filePath = path.join(studioRoot(), 'data', 'analysis', `${id}.json`);
-  if (!existsSync(filePath)) return null;
-  return readJson<Record<string, unknown>>(filePath, {});
-}
-
-function writeBlocked(method: string) {
-  return {
-    ok: false as const,
-    error:
-      `배포 서버에서는 '${method}'를 실행할 수 없습니다. ` +
-      '숏폼 영상 생성·렌더는 로컬(`npm run shortform` 또는 `npm run dev`)에서 Python 엔진과 함께 사용하세요.',
-    status: 503,
-  };
+async function mergedProducts() {
+  const web = await listWebProducts();
+  if (process.env.VERCEL) return web;
+  const disk = loadDiskProducts();
+  const seen = new Set(web.map((p) => p.folder));
+  return [...web, ...disk.filter((p) => p && !seen.has(p.folder))];
 }
 
 export type NodeApiResult =
@@ -214,57 +192,227 @@ export async function handleShortformNode(
   method: string,
   params: Record<string, unknown> = {},
 ): Promise<NodeApiResult> {
-  if (WRITE_METHODS.has(method)) {
-    return writeBlocked(method);
-  }
+  try {
+    switch (method) {
+      case 'ping':
+        return { ok: true, result: { pong: true, engine: 'web' } };
 
-  switch (method) {
-    case 'bootstrap': {
-      const refs = loadReferences();
-      return {
-        ok: true,
-        result: {
-          templates: loadTemplates(),
-          references: refs.items,
-          hooks: refs.hooks,
-          collected: refs.collected,
-          scenes: SCENES,
-          products: loadProducts(),
-          moods: MOODS,
-          voices: VOICES,
-          keys: {
-            fal: Boolean(process.env.FAL_KEY),
-            replicate: Boolean(process.env.REPLICATE_API_TOKEN),
-            openai: Boolean(process.env.OPENAI_API_KEY),
-            pexels: Boolean(process.env.PEXELS_API_KEY),
-            gemini: Boolean(process.env.GEMINI_API_KEY),
+      case 'bootstrap': {
+        const refs = loadReferences();
+        const products = await mergedProducts();
+        return {
+          ok: true,
+          result: {
+            templates: loadTemplates(),
+            references: refs.items,
+            hooks: refs.hooks,
+            collected: refs.collected,
+            scenes: SCENES,
+            products,
+            moods: MOODS,
+            voices: VOICES,
+            keys: {
+              fal: Boolean(process.env.FAL_KEY),
+              replicate: Boolean(process.env.REPLICATE_API_TOKEN),
+              openai: Boolean(process.env.OPENAI_API_KEY),
+              pexels: Boolean(process.env.PEXELS_API_KEY),
+              gemini: Boolean(process.env.GEMINI_API_KEY),
+            },
+            deployHost: Boolean(process.env.VERCEL),
+            engine: 'web',
+            notice: process.env.VERCEL
+              ? '웹 엔진으로 동작합니다. 사진만 모드로 영상을 만들 수 있어요. (AI 장면·모션그래픽은 준비 중)'
+              : undefined,
           },
-          deployHost: true,
-          readOnly: true,
-          notice:
-            '배포 환경에서는 참고 영상·템플릿 조회만 가능합니다. 영상 생성·렌더는 로컬에서 실행하세요.',
-        },
-      };
+        };
+      }
+
+      case 'products':
+        return { ok: true, result: await mergedProducts() };
+
+      case 'product': {
+        const product = await upsertWebProduct(params);
+        return { ok: true, result: product };
+      }
+
+      case 'jobs':
+        return { ok: true, result: await listJobs() };
+
+      case 'job': {
+        const job = await getJob(String(params.id ?? ''));
+        if (!job) return { ok: false, error: '없는 작업', status: 404 };
+        return { ok: true, result: job };
+      }
+
+      case 'jobs_hide': {
+        const id = String(params.job ?? '');
+        const job = await getJob(id);
+        if (!job) return { ok: false, error: '이미 목록에 없는 영상이에요', status: 400 };
+        if (job.status !== 'done' && job.status !== 'error') {
+          return { ok: false, error: '만드는 중인 영상은 뺄 수 없어요. 끝난 뒤에 빼 주세요', status: 400 };
+        }
+        await hideJob(id);
+        return { ok: true, result: { ok: true } };
+      }
+
+      case 'analysis': {
+        const analysis = loadAnalysis(String(params.id ?? ''));
+        if (!analysis) return { ok: false, error: '아직 해부하지 않은 영상이에요', status: 404 };
+        return { ok: true, result: analysis };
+      }
+
+      case 'draft': {
+        const templates = loadTemplates();
+        const tplId = String(params.template ?? '');
+        const tpl = templates[tplId];
+        if (!tpl) return { ok: false, error: '없는 템플릿이에요', status: 400 };
+        const product =
+          (await readWebProduct(String(params.product ?? ''))) ||
+          loadDiskProducts().find((p) => p && p.folder === params.product);
+        if (!product) return { ok: false, error: '상품을 먼저 저장해 주세요', status: 400 };
+        const refs = loadReferences();
+        const ref = refs.items.find((r) => r.id === params.ref) ?? null;
+        const { fields, via } = await draftFields(tplId, tpl, product as Record<string, unknown>, ref, refs.hooks);
+        return { ok: true, result: { fields, via } };
+      }
+
+      case 'clone_draft': {
+        const product = await readWebProduct(String(params.product ?? ''));
+        if (!product) return { ok: false, error: '상품을 먼저 저장해 주세요', status: 400 };
+        const rid = String(params.ref ?? '');
+        const analysis = loadAnalysis(rid);
+        if (!analysis) {
+          return {
+            ok: false,
+            error: '이 레퍼런스는 아직 해부하지 않았어요. 분석된 참고 영상을 골라 주세요.',
+            status: 400,
+          };
+        }
+        const scenes = Array.isArray(analysis.scenes) ? analysis.scenes : [];
+        const lines = scenes.slice(0, 8).map((s: Record<string, unknown>, i: number) => ({
+          say: String(s.say || s.text || `${product.name} 장면 ${i + 1}`),
+          label: String(s.label || ''),
+          role: String(s.role || 'TIP'),
+          source: 'photo:1',
+        }));
+        const fields = {
+          title1: String((analysis.meta as { title?: string } | undefined)?.title || product.name).slice(0, 13),
+          title2: '산지에서 바로',
+          info: `${product.name}, 프로필 링크에`,
+          lines,
+          voice_mode: 'narration',
+        };
+        return { ok: true, result: { fields, via: '규칙', analysis } };
+      }
+
+      case 'render': {
+        const templates = loadTemplates();
+        const tplId = String(params.template ?? '');
+        const tpl = templates[tplId];
+        if (tplId === 'clone') {
+          /* ok */
+        } else if (!tpl || tpl.kind === '촬영') {
+          return { ok: false, error: '이 템플릿은 직접 촬영해야 해요', status: 400 };
+        }
+        const folder = String(params.product ?? '');
+        const product = await readWebProduct(folder);
+        if (!product) return { ok: false, error: '상품을 먼저 저장해 주세요', status: 400 };
+
+        const stamp = new Date();
+        const base = `${tplId}_${String(stamp.getMonth() + 1).padStart(2, '0')}${String(stamp.getDate()).padStart(2, '0')}_${String(stamp.getHours()).padStart(2, '0')}${String(stamp.getMinutes()).padStart(2, '0')}${String(stamp.getSeconds()).padStart(2, '0')}`;
+        let id = base;
+        let n = 1;
+        while (await getJob(id)) {
+          n += 1;
+          id = `${base}_${n}`;
+        }
+
+        const job: SfJob = {
+          id,
+          product: folder,
+          template: tplId,
+          template_name: tplId === 'clone' ? '레퍼런스 복제' : String(tpl?.name ?? tplId),
+          ref: params.ref ? String(params.ref) : null,
+          mode: String(params.mode || 'photo'),
+          fields: (params.fields as Record<string, unknown>) || {},
+          status: 'queued',
+          created: stamp.toISOString().slice(0, 16).replace('T', ' '),
+          log: ['대기열에 넣었어요 (웹 엔진)'],
+          result: null,
+        };
+        await saveJob(job);
+        enqueueWebJob(id, templates);
+        return { ok: true, result: job };
+      }
+
+      case 'chat': {
+        const product = await readWebProduct(String(params.product ?? ''));
+        if (!product) return { ok: false, error: '상품을 먼저 저장해 주세요', status: 400 };
+        const templates = loadTemplates();
+        const tplId = String(params.template ?? '');
+        const kind = tplId === 'clone' ? '레퍼런스 복제' : String(templates[tplId]?.name ?? tplId);
+        const result = await chatEdit(
+          kind,
+          (params.fields as Record<string, unknown>) || {},
+          String(params.message ?? ''),
+          product as Record<string, unknown>,
+          SCENES.map((s) => s.id),
+        );
+        return { ok: true, result };
+      }
+
+      case 'hooks': {
+        const product = await readWebProduct(String(params.product ?? ''));
+        if (!product) return { ok: false, error: '상품을 먼저 저장해 주세요', status: 400 };
+        const hooks = await hookVariants(
+          product as Record<string, unknown>,
+          String(params.kind ?? ''),
+          String(params.hook ?? ''),
+          Array.isArray(params.rest) ? params.rest.map(String) : [],
+        );
+        return { ok: true, result: { hooks } };
+      }
+
+      case 'lint': {
+        const product = params.product ? await readWebProduct(String(params.product)) : null;
+        const texts = Array.isArray(params.texts) ? params.texts.map(String) : [];
+        return { ok: true, result: { hits: lintTexts(texts, product as Record<string, unknown> | null) } };
+      }
+
+      case 'post': {
+        const job = await getJob(String(params.job ?? ''));
+        if (!job?.result) return { ok: false, error: '완성된 영상이 있어야 올릴 글을 쓸 수 있어요', status: 400 };
+        const product = await readWebProduct(job.product);
+        if (!product) return { ok: false, error: '상품을 찾을 수 없어요', status: 400 };
+        const script = String((job.result as { script?: string }).script || '');
+        const pack = await postPack(product as Record<string, unknown>, script, job.template_name);
+        job.post = pack;
+        await saveJob(job);
+        return {
+          ok: true,
+          result: { post: pack, lint: lintTexts(Object.values(pack).flatMap((v) => (typeof v === 'object' && v ? Object.values(v as object).map(String) : [])), product as Record<string, unknown>) },
+        };
+      }
+
+      case 'analyze':
+      case 'plan':
+      case 'plan_run':
+      case 'reshoot':
+        return {
+          ok: false,
+          error: `웹 엔진에서는 아직 '${method}'를 지원하지 않아요. 참고 영상 보기·초안·사진만 렌더는 사용할 수 있어요.`,
+          status: 501,
+        };
+
+      default:
+        return { ok: false, error: `없는 요청이에요: ${method}`, status: 404 };
     }
-    case 'products':
-      return { ok: true, result: loadProducts() };
-    case 'jobs':
-      return { ok: true, result: [] };
-    case 'job':
-      return { ok: false, error: '없는 작업', status: 404 };
-    case 'analysis': {
-      const id = String(params.id ?? '');
-      const analysis = id ? loadAnalysis(id) : null;
-      if (!analysis) return { ok: false, error: '아직 해부하지 않은 영상이에요', status: 404 };
-      return { ok: true, result: analysis };
-    }
-    case 'ping':
-      return { ok: true, result: { pong: true, deployHost: true } };
-    default:
-      return {
-        ok: false,
-        error: `배포 환경에서 지원하지 않는 요청입니다: ${method}`,
-        status: 503,
-      };
+  } catch (err) {
+    console.error('[shortform:web]', method, err);
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : '숏폼 웹 엔진 오류',
+      status: 500,
+    };
   }
 }

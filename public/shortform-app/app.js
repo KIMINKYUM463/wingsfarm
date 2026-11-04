@@ -438,15 +438,15 @@ async function renderMake() {
         <section class="panel step ${M.info ? "" : "locked"}" id="step4">
           <div class="step-head"><span class="step-num">4</span><h2>영상 만들기</h2></div>
           <div class="modes">
-            <div class="mode ${M.mode === "ai" ? "on" : ""} ${aiAvailable() ? "" : "disabled"}" data-mode="ai"><b>AI 장면 + 사진</b><span>장면마다 AI가 사진 속 상품으로 5초 영상을 만들어요. 처음 만드는 장면만 비용이 들어요.</span></div>
-            <div class="mode ${M.mode === "photo" ? "on" : ""}" data-mode="photo"><b>사진만 (무료·빠름)</b><span>올린 사진을 천천히 확대하며 자막·음성을 입혀요. 1분 안팎.</span></div>
+            <div class="mode ${M.mode === "ai" ? "on" : ""} ${aiAvailable() && S.boot.engine !== "web" ? "" : "disabled"}" data-mode="ai"><b>AI 장면 + 사진</b><span>${S.boot.engine === "web" ? "웹 엔진에서는 아직 준비 중이에요. 사진만 모드를 써 주세요." : "장면마다 AI가 사진 속 상품으로 5초 영상을 만들어요. 처음 만드는 장면만 비용이 들어요."}</span></div>
+            <div class="mode ${M.mode === "photo" ? "on" : ""}" data-mode="photo"><b>사진만 ${S.boot.engine === "web" ? "(웹 · 추천)" : "(무료·빠름)"}</b><span>올린 사진을 천천히 확대하며 자막·음성을 입혀요. 1분 안팎.</span></div>
           </div>
           <div class="opts">
             <label>배경음악 <select id="o-music">${S.boot.moods.map((m) => `<option ${M.opts.music === m ? "selected" : ""}>${m}</option>`).join("")}</select></label>
             <label>목소리 <select id="o-voice">${S.boot.voices.map((v) => `<option ${M.opts.voice === v ? "selected" : ""}>${v}</option>`).join("")}</select></label>
             ${isClone() ? `<label>말하기 <select id="o-vmode"><option value="narration" ${M.fields.voice_mode !== "text_only" ? "selected" : ""}>내레이션</option><option value="text_only" ${M.fields.voice_mode === "text_only" ? "selected" : ""}>자막 + 음악만</option></select></label>` : ""}
             <label class="chk"><input type="checkbox" id="o-ailabel" ${M.opts.ai_label ? "checked" : ""}> ‘AI 생성 장면 포함’ 표시</label>
-            ${motionOk(M.tpl) ? `<label class="chk" title="글자가 튀어나오고, 형광펜 강조·배지·X·O 도장·VS·숫자 카운트·가격표 애니메이션이 들어가요"><input type="checkbox" id="o-motion" ${M.opts.motion ? "checked" : ""}> ✨ 모션그래픽 (움직이는 자막·가격표, 베타)</label>` : ""}
+            ${motionOk(M.tpl) && S.boot.engine !== "web" ? `<label class="chk" title="글자가 튀어나오고, 형광펜 강조·배지·X·O 도장·VS·숫자 카운트·가격표 애니메이션이 들어가요"><input type="checkbox" id="o-motion" ${M.opts.motion ? "checked" : ""}> ✨ 모션그래픽 (움직이는 자막·가격표, 베타)</label>` : ""}
           </div>
           <div class="cost" id="cost"></div>
           <button class="btn primary" id="render" style="width:100%;padding:14px">영상 만들기</button>
@@ -886,7 +886,10 @@ async function startRender() {
   const btn = $("#render");
   btn.disabled = true;
   try {
-    const job = await api("/api/render", { product: M.info.folder, template: M.tpl, ref: M.ref, mode: M.mode, fields: collectFields() });
+    const mode = S.boot.engine === "web" ? "photo" : M.mode;
+    const fields = collectFields();
+    if (S.boot.engine === "web") fields.motion = false;
+    const job = await api("/api/render", { product: M.info.folder, template: M.tpl, ref: M.ref, mode, fields });
     M.job = job.id;
     showJob(job.id);
     refreshBadge();
@@ -1225,11 +1228,15 @@ async function boot() {
   const k = S.boot.keys || {};
   $("#keys").innerHTML = [["fal", "AI 영상"], ["replicate", "AI 예비"], ["openai", "AI 문구"], ["pexels", "무료 풍경 영상"], ["gemini", "Gemini 목소리"]]
     .map(([id, n]) => `<span class="key ${k[id] ? "" : "off"}" title="${k[id] ? "연결됨" : "연결 안 됨 (.env 에 키가 없어요)"}">${n}</span>`).join("");
-  if (S.boot.notice || S.boot.deployHost) {
+  if (S.boot.engine === "web") {
+    // 웹 엔진: AI 장면·모션 대신 사진만 모드가 기본
+    if (S.make) S.make.mode = "photo";
+  }
+  if (S.boot.notice) {
     const bar = document.createElement("div");
     bar.className = "deploy-notice";
     bar.setAttribute("role", "status");
-    bar.textContent = S.boot.notice || "배포 환경에서는 참고 영상·템플릿 조회만 가능합니다. 영상 생성은 로컬에서 실행하세요.";
+    bar.textContent = S.boot.notice;
     $("#app")?.prepend(bar);
   }
   window.addEventListener("hashchange", route);

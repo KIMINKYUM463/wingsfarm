@@ -151,7 +151,7 @@ async function ensureEngine() {
 }
 
 export async function shortformCall(method: string, params: Record<string, unknown> = {}, timeoutMs = 300_000): Promise<EngineResult> {
-  // Vercel 등 serverless: Python spawn 불가 → Node 읽기 전용으로 bootstrap 등은 살린다
+  // Vercel / FORCE_NODE: Python 없이 Node 웹 엔진(초안·사진 렌더 포함)
   if (isShortformServerless()) {
     return handleShortformNode(method, params);
   }
@@ -159,16 +159,9 @@ export async function shortformCall(method: string, params: Record<string, unkno
   try {
     await ensureEngine();
   } catch (err) {
-    // 로컬에서도 Python이 없으면 bootstrap만이라도 Node로 열어 UI가 뜨게 한다
-    if (method === 'bootstrap' || method === 'products' || method === 'jobs' || method === 'analysis' || method === 'job') {
-      console.error('[shortform] python engine unavailable, falling back to node', err);
-      return handleShortformNode(method, params);
-    }
-    const message =
-      err instanceof Error
-        ? err.message
-        : '숏폼 엔진에 연결하지 못했어요. Python·requirements 설치를 확인해 주세요.';
-    return { ok: false, error: message, status: 500 };
+    // 로컬에서 Python이 없으면 웹 엔진으로 전부 처리
+    console.error('[shortform] python engine unavailable, falling back to web', err);
+    return handleShortformNode(method, params);
   }
 
   if (!state.child?.stdin) {
