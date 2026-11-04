@@ -257,7 +257,7 @@ textarea { resize: vertical; min-height: 64px; }
 .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: rot .7s linear infinite; }
 @keyframes rot { to { transform: rotate(360deg); } }
 
-/* ---------- 해부·복제·점검·대화 ---------- */
+/* ---------- 분석·복제·점검·대화 ---------- */
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; margin-bottom: 8px; }
 .hero h1 { font-size: 30px; line-height: 1.25; }
 .url-box { padding: 16px 18px; display: grid; gap: 6px; }

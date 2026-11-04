@@ -22,7 +22,7 @@ export const MARKETING_FORMAT_META: Record<
     accent: "from-rose-600 via-orange-500 to-amber-400",
     studio: "숏폼 스튜디오",
     stage: "reach",
-    gets: ["레퍼런스 해부", "템플릿 영상", "올릴 글"],
+    gets: ["레퍼런스 분석", "템플릿 영상", "올릴 글"],
   },
   threads: {
     title: "쓰레드 글",

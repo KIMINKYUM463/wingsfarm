@@ -142,23 +142,22 @@ function renderRefs() {
   $("#app").innerHTML = `
     <div class="hero">
       <div>
-        <h1>잘 된 숏폼을 해부해서, 내 상품으로 다시 만든다</h1>
-        <p class="lead">조회수 높은 농수산물 쇼츠 ${refs.length}개를 모았습니다. 영상을 누르면 Claude가 장면 구성·자막 방식·훅을 해부해 보여 주고, <b>“이 구조 그대로 내 상품으로”</b>를 누르면 같은 흐름으로 내 영상을 만듭니다.</p>
+        <h1>잘 된 숏폼을 분석해서, 내 상품으로 다시 만든다</h1>
+        <p class="lead">조회수 높은 농수산물 쇼츠 ${refs.length}개를 모았습니다. 영상을 누르면 Claude가 장면 구성·자막 방식·훅을 분석해 보여 주고, <b>“이 구조 그대로 내 상품으로”</b>를 누르면 같은 흐름으로 내 영상을 만듭니다.</p>
       </div>
       <form class="url-box panel" id="url-form">
         <b>찾은 영상이 있나요?</b>
-        <span class="muted">유튜브 쇼츠 주소를 붙여 넣으면 바로 해부해 드려요.</span>
-        <div style="display:flex;gap:8px"><input type="text" id="url-in" placeholder="https://youtube.com/shorts/..."><button class="btn primary" id="url-go">해부하기</button></div>
+        <span class="muted">유튜브 쇼츠 주소를 붙여 넣으면 바로 분석해 드려요.</span>
+        <div style="display:flex;gap:8px"><input type="text" id="url-in" placeholder="https://youtube.com/shorts/..."><button class="btn primary" id="url-go">분석하기</button></div>
       </form>
     </div>
     <div class="insight">
       <div class="panel"><b>${refs.length}개</b><span>레퍼런스 (직접 고른 ${count("source", "curated")} · 자동 수집 ${count("source", "auto")} · 내가 추가 ${count("source", "user")})</span></div>
       <div class="panel"><b>${views(infoMed)}회 vs ${views(saleMed)}회</b><span>정보형 vs 판매만 하는 영상의 조회수 중간값 (자동 수집은 1.5만 회 이상만 모아서, 실제 차이는 더 커요)</span></div>
-      <div class="panel"><b>${nAnalyzed}개 해부 완료</b><span>장면 구조를 분석해 둔 영상. 나머지는 열어 볼 때 10~20초 만에 분석해요</span></div>
     </div>
     <div class="filters">
       <div class="filter-row"><b>찾기</b><input type="text" id="ref-q" value="${esc(f.q)}" placeholder="품목이나 제목 (예: 귤, 손질)" style="max-width:280px">
-        <div class="chips">${chip("src", "all", "전체")}${chip("src", "analyzed", "해부 완료", nAnalyzed)}${chip("src", "curated", "직접 고른")}${chip("src", "auto", "자동 수집")}${count("source", "user") ? chip("src", "user", "내가 추가") : ""}</div></div>
+        <div class="chips">${chip("src", "all", "전체")}${chip("src", "analyzed", "분석 완료", nAnalyzed)}${chip("src", "curated", "직접 고른")}${chip("src", "auto", "자동 수집")}${count("source", "user") ? chip("src", "user", "내가 추가") : ""}</div></div>
       <div class="filter-row"><b>형식</b><div class="chips">${chip("tpl", "all", "전체", refs.length)}${tplIds.map((k) => chip("tpl", k, shortName(k), count("template", k))).join("")}</div></div>
       <div class="filter-row"><b>품목</b><div class="chips">${chip("cat", "all", "전체")}${CATS.filter((c) => count("category", c)).map((c) => chip("cat", c, c, count("category", c))).join("")}</div></div>
       <div class="filter-row"><b>훅</b><div class="chips">${chip("hook", "all", "전체")}${hookIds.map((k) => chip("hook", k, hookOf(k).label, count("hook", k))).join("")}</div></div>
@@ -174,14 +173,14 @@ function renderRefs() {
   $("#url-form").onsubmit = async (e) => {
     e.preventDefault();
     const url = $("#url-in").value.trim(); if (!url) return;
-    const b = $("#url-go"); b.disabled = true; b.innerHTML = `<span class="spin"></span> 해부 중…`;
+    const b = $("#url-go"); b.disabled = true; b.innerHTML = `<span class="spin"></span> 분석 중…`;
     try {
       const d = await api("/api/analyze", { url });
       S.analysis[d.analysis.meta.id] = d.analysis;
       S.boot.references = (await api("/api/bootstrap")).references;
       openRef(d.analysis.meta.id);
     } catch (err) { toast(err.message, true); }
-    b.disabled = false; b.textContent = "해부하기";
+    b.disabled = false; b.textContent = "분석하기";
   };
 }
 
@@ -195,7 +194,7 @@ function refCard(r) {
     <div class="thumb">
       <img src="${thumb(r.id)}" onerror="thumbFallback(this,'${esc(r.id)}')" alt="" loading="lazy">
       <span class="views ${r.views >= 1e6 ? "big" : ""}">▶ ${views(r.views)}</span>
-      ${r.analyzed ? `<span class="tag ana shoot-flag">해부 완료</span>` : isShoot(t) ? `<span class="tag shoot shoot-flag">직접 촬영</span>` : ""}
+      ${r.analyzed ? `<span class="tag ana shoot-flag">분석 완료</span>` : isShoot(t) ? `<span class="tag shoot shoot-flag">직접 촬영</span>` : ""}
     </div>
     <div class="body">
       <div class="title">${esc(r.title)}</div>
@@ -231,7 +230,7 @@ function anatomyHtml(a, id) {
     `${a.setting || ""}`, `템포 ${a.pacing || ""}`, `음악 ${a.music || ""}`,
   ].filter((x) => x && x.trim());
   return `<div class="anatomy">
-    <h3>Claude의 장면 해부 <span class="muted">· 장면 사진 ${nFrames}장과 제목으로 추정</span></h3>
+    <h3>Claude의 장면 분석 <span class="muted">· 장면 사진 ${nFrames}장과 제목으로 추정</span></h3>
     <p style="margin:0 0 8px">${esc(a.summary || "")}</p>
     <div class="chips" style="margin-bottom:10px">${chips.map((c) => `<span class="tag">${esc(c)}</span>`).join("")}</div>
     <div class="frames" style="grid-template-columns:repeat(${nFrames},1fr)">${labels.map((l, i) => `<figure>${frameTile(id, i, nFrames)}<figcaption>${esc(l)}</figcaption></figure>`).join("")}</div>
@@ -255,7 +254,7 @@ async function openRef(id) {
       <h2 style="margin:0">${esc(r.title)}</h2>
       <div class="muted">조회수 ${(r.views || 0).toLocaleString()}회 · <a href="https://www.youtube.com/shorts/${esc(r.id)}" target="_blank" rel="noopener">유튜브에서 보기 ↗</a></div>
       <div class="formula"><b>훅 공식 · ${esc(h.label)}</b><p>${esc(h.formula)}</p>${r.why ? `<div class="muted" style="margin-top:4px">${esc(r.why)}</div>` : ""}</div>
-      <div id="anatomy"><div class="anatomy"><span class="spin"></span> 해부 결과 불러오는 중…</div></div>
+      <div id="anatomy"><div class="anatomy"><span class="spin"></span> 분석 결과 불러오는 중…</div></div>
       <div class="cta-row">
         <a class="btn primary big" href="#/make?tpl=clone&ref=${encodeURIComponent(r.id)}">이 구조 그대로 내 상품으로 →</a>
         ${isShoot(t) ? "" : `<a class="btn" href="#/make?tpl=${encodeURIComponent(r.template)}&ref=${encodeURIComponent(r.id)}">‘${esc(shortName(r.template))}’ 템플릿으로</a>`}
@@ -273,11 +272,11 @@ async function openRef(id) {
   const a = await getAnalysis(id);
   if (!box.isConnected) return;
   if (a) { box.innerHTML = anatomyHtml(a, id); return; }
-  box.innerHTML = `<div class="anatomy"><b>아직 해부하지 않은 영상이에요.</b>
+  box.innerHTML = `<div class="anatomy"><b>아직 분석하지 않은 영상이에요.</b>
     <p class="muted" style="margin:4px 0 10px">Claude가 프레임과 제목을 보고 장면 구성·자막 방식·말투를 분석해요 (10~20초).</p>
-    <button class="btn yellow" id="do-ana">지금 해부하기</button></div>`;
+    <button class="btn yellow" id="do-ana">지금 분석하기</button></div>`;
   $("#do-ana", m).onclick = async (e) => {
-    e.target.disabled = true; e.target.innerHTML = `<span class="spin"></span> 해부 중…`;
+    e.target.disabled = true; e.target.innerHTML = `<span class="spin"></span> 분석 중…`;
     try {
       const d = await api("/api/analyze", { id });
       S.analysis[id] = d.analysis;
@@ -348,7 +347,7 @@ async function renderMake() {
   if (isClone()) {
     if (!M.ref) { M.tpl = "고르는법"; }
     else if (!S.analysis[M.ref]) {
-      $("#app").innerHTML = `<div class="loading"><span class="spin"></span> 레퍼런스 해부 결과를 준비하는 중… (처음이면 10~20초)</div>`;
+      $("#app").innerHTML = `<div class="loading"><span class="spin"></span> 레퍼런스 분석 결과를 준비하는 중… (처음이면 10~20초)</div>`;
       try { const d = await api("/api/analyze", { id: M.ref }); S.analysis[M.ref] = d.analysis; const rr = refOf(M.ref); if (rr) rr.analyzed = true; }
       catch (e) { toast(e.message, true); M.tpl = "고르는법"; }
     }
@@ -384,7 +383,7 @@ async function renderMake() {
           ${ref ? `<div class="ref-pick">
               <div class="mini" style="background-image:url('${thumb(ref.id)}'),url('https://i.ytimg.com/vi/${esc(ref.id)}/hqdefault.jpg')"></div>
               <div><b>${esc(ref.title)}</b><span class="muted">${views(ref.views)}회 · ${esc(hookOf(ref.hook).label)} · ${esc(hookOf(ref.hook).formula)}</span></div>
-              <button class="btn small" id="ref-view">영상·해부 보기</button>
+              <button class="btn small" id="ref-view">영상·분석 보기</button>
             </div>` : `<div class="muted">레퍼런스를 고르면 그 영상의 훅 공식으로 문구 초안을 씁니다. 특정 영상의 구조를 그대로 따르려면 <a href="#/">레퍼런스</a>에서 “이 구조 그대로”를 누르세요.</div>`}
           ${isClone() && a ? `<div class="clone-sum">${anatomyMini(a)}</div>
             <div style="margin-top:8px"><a class="btn small ghost" href="#/make?tpl=${encodeURIComponent(ref ? ref.template : "고르는법")}&ref=${encodeURIComponent(M.ref)}">대신 일반 템플릿으로 만들기</a></div>`
@@ -420,7 +419,7 @@ async function renderMake() {
             <span class="muted" id="save-msg"></span>
           </div>
           ${M.info ? `<div class="ident">✓ <b>${esc(M.info.name)}</b> · ${esc(M.info.category)}${M.info.en_name ? ` · AI용 설명: <i>${esc(M.info.en_name)}</i>` : ""}${M.info.look ? `<br>${esc(M.info.look)}` : ""}${M.info.cached.length ? `<br>이미 만든 AI 장면 ${M.info.cached.length}개는 다시 쓰고 비용이 들지 않아요.` : ""}</div>
-          <div class="plan-cta"><div><b>한 편씩 말고, 일주일치를 한 번에</b><div class="muted">Claude가 해부해 둔 레퍼런스 중 이 상품에 맞는 5편을 골라 요일별로 기획하고 모두 만들어요.</div></div>
+          <div class="plan-cta"><div><b>한 편씩 말고, 일주일치를 한 번에</b><div class="muted">Claude가 분석해 둔 레퍼런스 중 이 상품에 맞는 5편을 골라 요일별로 기획하고 모두 만들어요.</div></div>
             <button class="btn yellow" id="plan-btn">✨ 일주일치 기획하기</button></div>
           ${M.info.real_photo === false ? `<div class="lint" style="margin-top:8px"><b>⚠ 올린 이미지가 실제 사진이 아니라 그림(일러스트)으로 보여요.</b><div>AI 장면이 실물과 달라질 수 있어요. 휴대폰으로 찍은 실제 상품 사진을 올리면 훨씬 정확해요.</div></div>` : ""}` : ""}
         </section>
@@ -1109,7 +1108,7 @@ function applyFields(nf) {
 async function openPlan() {
   const M = S.make, m = $("#modal");
   m.innerHTML = `<div class="modal-box plan-box"><button class="modal-close">×</button><div class="modal-info" id="plan-body">
-    <h2>${esc(M.info.name)} · 일주일 숏폼 기획</h2><div class="anatomy"><span class="spin"></span> Claude가 해부해 둔 레퍼런스 중에서 고르는 중… (20~40초)</div></div></div>`;
+    <h2>${esc(M.info.name)} · 일주일 숏폼 기획</h2><div class="anatomy"><span class="spin"></span> Claude가 분석해 둔 레퍼런스 중에서 고르는 중… (20~40초)</div></div></div>`;
   m.hidden = false;
   const close = () => { m.hidden = true; m.innerHTML = ""; };
   $(".modal-close", m).onclick = close;

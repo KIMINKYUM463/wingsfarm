@@ -257,7 +257,7 @@ export async function handleShortformNode(
 
       case 'analysis': {
         const analysis = loadAnalysis(String(params.id ?? ''));
-        if (!analysis) return { ok: false, error: '아직 해부하지 않은 영상이에요', status: 404 };
+        if (!analysis) return { ok: false, error: '아직 분석하지 않은 영상이에요', status: 404 };
         return { ok: true, result: analysis };
       }
 
@@ -284,7 +284,7 @@ export async function handleShortformNode(
         if (!analysis) {
           return {
             ok: false,
-            error: '이 레퍼런스는 아직 해부하지 않았어요. 분석된 참고 영상을 골라 주세요.',
+            error: '이 레퍼런스는 아직 분석하지 않았어요. 분석된 참고 영상을 골라 주세요.',
             status: 400,
           };
         }
