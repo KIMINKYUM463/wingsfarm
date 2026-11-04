@@ -37,16 +37,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
   background: var(--ink); color: var(--accent); font-size: 14px;
 }
-.top nav { display: flex; gap: 4px; }
+.top nav { display: flex; gap: 4px; margin-left: auto; }
 .top nav a {
   text-decoration: none; padding: 7px 14px; border-radius: 999px; font-weight: 600; color: var(--ink-2);
 }
 .top nav a:hover { background: #ece9df; }
 .top nav a.on { background: var(--ink); color: #fff; }
 .badge { display: inline-block; min-width: 18px; padding: 0 6px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font-size: 12px; text-align: center; }
-.keys { margin-left: auto; display: flex; gap: 6px; font-size: 12px; }
-.key { padding: 3px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-weight: 600; }
-.key.off { background: #eee; color: var(--ink-3); text-decoration: line-through; }
+.keys, .key { display: none !important; }
 
 .deploy-notice {
   margin: 0 0 18px;

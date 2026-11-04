@@ -297,6 +297,14 @@ function shootGuide(t) {
 }
 
 /* ---------- 템플릿 ---------- */
+/** output 샘플 mp4는 배포에 없어서, 그 형식 조회수 1위 레퍼런스 썸네일로 대체 */
+function tplSample(t) {
+  if (t.sample) return t.sample;
+  const best = S.boot.references
+    .filter((r) => r.template === t.id)
+    .sort((a, b) => (b.views || 0) - (a.views || 0))[0];
+  return best ? thumb(best.id) : "";
+}
 function renderTemplates() {
   const ts = Object.values(S.boot.templates);
   const nRef = (id) => S.boot.references.filter((r) => r.template === id).length;
@@ -304,9 +312,11 @@ function renderTemplates() {
     <h1>템플릿</h1>
     <p class="lead">레퍼런스를 형식별로 묶어 만든 영상 틀입니다. 특정 영상의 구조를 그대로 따르고 싶으면 레퍼런스에서 “이 구조 그대로”를 쓰세요.</p>
     <div class="tpl-grid">
-      ${ts.map((t) => `<div class="panel tpl">
-        ${t.sample && t.sample.endsWith(".mp4") ? `<video class="sample" src="${t.sample}" muted loop playsinline preload="metadata" onmouseenter="this.play()" onmouseleave="this.pause()"></video>`
-          : t.sample ? `<img class="sample" src="${t.sample}" alt="">` : `<div class="sample">${isShoot(t) ? "직접 촬영" : "샘플 없음"}</div>`}
+      ${ts.map((t) => {
+        const sample = tplSample(t);
+        return `<div class="panel tpl">
+        ${sample && sample.endsWith(".mp4") ? `<video class="sample" src="${sample}" muted loop playsinline preload="metadata" onmouseenter="this.play()" onmouseleave="this.pause()"></video>`
+          : sample ? `<img class="sample" src="${sample}" alt="" onerror="thumbFallback(this,'${esc((S.boot.references.find((r)=>r.template===t.id)||{}).id||'')}')">` : `<div class="sample">${isShoot(t) ? "직접 촬영" : "샘플 없음"}</div>`}
         <div>
           <h3>${esc(t.name)}</h3>
           ${isShoot(t) ? `<span class="tag shoot">직접 촬영</span>` : `<span class="tag tname">자동</span>`}
@@ -318,7 +328,8 @@ function renderTemplates() {
             ${isShoot(t) ? "" : `<a class="btn small primary" href="#/make?tpl=${encodeURIComponent(t.id)}&ref=">만들기</a>`}
           </div>
         </div>
-      </div>`).join("")}
+      </div>`;
+      }).join("")}
     </div>`;
   document.querySelectorAll("[data-reftpl]").forEach((b) => b.addEventListener("click", () => {
     S.filter = { ...S.filter, tpl: b.dataset.reftpl, cat: "all", hook: "all", src: "all", q: "", limit: 60 }; location.hash = "#/";
@@ -1224,9 +1235,6 @@ async function boot() {
     $("#app").innerHTML = `<div class="empty">서버에 연결하지 못했어요: ${esc(e.message)}</div>`;
     return;
   }
-  const k = S.boot.keys || {};
-  $("#keys").innerHTML = [["fal", "AI 영상"], ["replicate", "AI 예비"], ["openai", "AI 문구"], ["pexels", "무료 풍경 영상"], ["gemini", "Gemini 목소리"]]
-    .map(([id, n]) => `<span class="key ${k[id] ? "" : "off"}" title="${k[id] ? "연결됨" : "연결 안 됨 (.env 에 키가 없어요)"}">${n}</span>`).join("");
   if (S.boot.engine === "web") {
     // 웹 엔진: AI 장면·모션 대신 사진만 모드가 기본
     if (S.make) S.make.mode = "photo";

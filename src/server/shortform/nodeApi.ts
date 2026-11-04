@@ -93,6 +93,30 @@ export function loadTemplates(): Record<string, Record<string, unknown>> {
   return Object.fromEntries(entries);
 }
 
+/**
+ * output/ 샘플 mp4는 gitignore라 배포에 없다.
+ * 대신 해당 형식 레퍼런스 중 조회수 1위 썸네일을 미리보기로 붙인다.
+ */
+function attachTemplateSamples(
+  templates: Record<string, Record<string, unknown>>,
+  refs: Array<Record<string, unknown>>,
+) {
+  const best = new Map<string, Record<string, unknown>>();
+  for (const r of refs) {
+    const tpl = String(r.template ?? '');
+    if (!tpl) continue;
+    const prev = best.get(tpl);
+    if (!prev || Number(r.views ?? 0) > Number(prev.views ?? 0)) best.set(tpl, r);
+  }
+  for (const [id, t] of Object.entries(templates)) {
+    if (t.sample) continue;
+    const ref = best.get(id);
+    const rid = ref?.id ? String(ref.id) : '';
+    if (rid) t.sample = `https://i.ytimg.com/vi/${rid}/hqdefault.jpg`;
+  }
+  return templates;
+}
+
 function loadReferences() {
   const raw = readJsonFile<{
     collected?: string;
@@ -203,7 +227,7 @@ export async function handleShortformNode(
         return {
           ok: true,
           result: {
-            templates: loadTemplates(),
+            templates: attachTemplateSamples(loadTemplates(), refs.items),
             references: refs.items,
             hooks: refs.hooks,
             collected: refs.collected,
