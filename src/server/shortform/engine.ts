@@ -56,8 +56,16 @@ function engineEnv(): NodeJS.ProcessEnv {
       if (!line.includes('=') || line.trim().startsWith('#')) continue;
       const i = line.indexOf('=');
       const k = line.slice(0, i).trim();
-      const v = line.slice(i + 1).trim();
+      let v = line.slice(i + 1).trim();
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
       if (k && v && !env[k]) env[k] = v;
+    }
+    // 별칭 → 표준 키
+    if (!env.REPLICATE_API_TOKEN) {
+      env.REPLICATE_API_TOKEN = env.REPLICATE_API_KEY || env.REPLICATE_TOKEN || env.REPLICATE_API_TOKEN;
+    }
+    if (!env.GEMINI_API_KEY && env.GOOGLE_API_KEY) {
+      env.GEMINI_API_KEY = env.GOOGLE_API_KEY;
     }
   }
   return env;

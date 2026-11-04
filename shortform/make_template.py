@@ -274,13 +274,17 @@ def make_video(tpl, video, p, photos, pdir, out_path, bgm, work):
             words = asyncio.run(tts_with_words(say.replace("*", ""), voice, rate, au))
             audio_len = duration(au)
             dur = LEAD + audio_len + PAD
+            # 레퍼런스 장면 실측 초수가 있으면 그 길이에 맞춘다 (짧으면 무음 패딩)
+            target = float(seg.get("target_dur") or 0)
+            if target > dur:
+                dur = target
             # 강조 표시(*)는 원문 어절에 붙어 있어 TTS 단어 수와 어절 수가 같다
             for j, (a, b, text) in enumerate(caption_chunks(say, words, audio_len)):
                 png = str(work / f"{i:02d}_cap{j:02d}.png")
                 make_caption_hl(text, 90 if seg["kind"] == "HOOK" else 80, lay["cap_y"], png, hl_color)
                 layers.append((png, LEAD + a, dur if b >= audio_len else LEAD + b))
         else:
-            dur = float(seg.get("dur") or 3)
+            dur = float(seg.get("dur") or seg.get("target_dur") or 3)
             silence(dur, au)
             if seg.get("text"):
                 png = str(work / f"{i:02d}_cap.png")

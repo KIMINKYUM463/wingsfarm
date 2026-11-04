@@ -482,6 +482,10 @@ class Jobs:
                 config["bgm_file"] = str(bgm)
         if fields.get("voice") in VOICES:
             config["voice"] = VOICES[fields["voice"]]
+        # Gemini 키가 있고 기본(여성/남성)이면 Gemini로 올린다
+        if (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")) and not str(config.get("voice", "")).startswith("gemini:"):
+            label = str(fields.get("voice") or "")
+            config["voice"] = "gemini:Charon" if "남성" in label else "gemini:Kore"
         config["ai_label"] = fields.get("ai_label", True) and job["mode"] != "photo"
         motion = bool(fields.get("motion")) and tpl.get("output") != "cards"
         if motion:  # 모션그래픽 엔진(Remotion): 같은 장면 구성을 움직이는 자막·배지·도장·가격표로 그린다
@@ -634,9 +638,14 @@ class Handler(BaseHTTPRequestHandler):
                     "templates": load_templates(), "references": refs["items"], "hooks": refs["hooks"],
                     "collected": refs.get("collected"), "scenes": SCENES, "products": list_products(),
                     "moods": list(music.MOODS) + ["없음"], "voices": list(VOICES),
-                    "keys": {k: bool(os.environ.get(v)) for k, v in
-                             (("fal", "FAL_KEY"), ("replicate", "REPLICATE_API_TOKEN"), ("openai", "OPENAI_API_KEY"), ("pexels", "PEXELS_API_KEY"),
-                              ("gemini", "GEMINI_API_KEY"))}})
+                    "keys": {
+                        "fal": bool(os.environ.get("FAL_KEY")),
+                        "replicate": bool(os.environ.get("REPLICATE_API_TOKEN") or os.environ.get("REPLICATE_API_KEY") or os.environ.get("REPLICATE_TOKEN")),
+                        "openai": bool(os.environ.get("OPENAI_API_KEY")),
+                        "pexels": bool(os.environ.get("PEXELS_API_KEY")),
+                        "gemini": bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")),
+                        "aiScene": bool(os.environ.get("FAL_KEY") or os.environ.get("REPLICATE_API_TOKEN") or os.environ.get("REPLICATE_API_KEY") or os.environ.get("REPLICATE_TOKEN")),
+                    }})
             if path == "/api/products":
                 return self.send_json(list_products())
             if path == "/api/jobs":

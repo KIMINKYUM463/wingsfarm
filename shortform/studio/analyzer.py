@@ -147,14 +147,47 @@ def load(vid):
 
 
 def analyze(vid, meta=None, force=False):
-    """분석 JSON (캐시 우선). 같은 영상을 동시에 두 번 분석하지 않는다(유료 호출 중복 방지)."""
+    """분석 JSON (캐시 우선). 같은 영상을 동시에 두 번 분석하지 않는다(유료 호출 중복 방지).
+    캐시가 있어도 장면 캡처(실측 초)가 없으면 캡처만 보강한다."""
     vid = video_id(vid)
     with _LOCKS_GUARD:
         lock = _LOCKS.setdefault(vid, threading.Lock())
     with lock:
         if not force and (a := load(vid)):
+            has_cap = bool(a.get("capture")) or any(
+                (s or {}).get("measured") or (s or {}).get("keyframe") for s in (a.get("scenes") or [])
+            )
+            if not has_cap:
+                captured = _try_scene_capture(vid, a.get("meta"), n_hint=max(4, len(a.get("scenes") or [])))
+                if captured:
+                    import scene_capture
+                    a = scene_capture.apply_to_analysis(a, captured)
+                    for i, sc in enumerate(captured):
+                        if i < len(a["scenes"]):
+                            a["scenes"][i]["seconds"] = sc["seconds"]
+                            a["scenes"][i]["t0"] = sc["t0"]
+                            a["scenes"][i]["t1"] = sc["t1"]
+                            a["scenes"][i]["keyframe"] = sc["keyframe"]
+                            a["scenes"][i]["measured"] = True
+                    a["capture"] = {
+                        "mode": "scene_detect",
+                        "count": len(captured),
+                        "total": round(sum(s["seconds"] for s in captured), 2),
+                    }
+                    a["frames"] = frame_labels(vid)
             return a
         return _analyze(vid, meta)
+
+
+def _try_scene_capture(vid, meta=None, n_hint=5):
+    """장면 전환 캡처·초수 실측. 실패하면 None."""
+    try:
+        import scene_capture
+        length = int((meta or {}).get("length") or 0)
+        return scene_capture.capture(vid, length=length, n_hint=n_hint)
+    except Exception as e:
+        print(f"  ! 장면 캡처 실패({vid}): {e}")
+        return None
 
 
 def _analyze(vid, meta):
@@ -167,18 +200,48 @@ def _analyze(vid, meta):
         if not meta.get("title"):
             raise
         print(f"  ! 영상 정보 실패({vid}): {e}")
-    sheet = fetch_frames(vid)
+
+    # 1) 가능하면 영상 받아 장면 전환마다 캡처 + 초수 실측 → 비전용 시트도 장면 키프레임으로
+    captured = _try_scene_capture(vid, meta)
+    sheet = FRAMES / f"{vid}.jpg"
+    if not sheet.exists():
+        sheet = fetch_frames(vid)
+
     hooks = list(json.loads((STUDIO / "references.json").read_text(encoding="utf-8"))["hooks"])
     templates = ["고르는법", "보관경고", "손질법", "물량리빌", "비교", "짧은루프", "판매형", "깎기ASMR", "현장리포트", "기타"]
+    capture_note = ""
+    if captured:
+        capture_note = (
+            f"\n첨부 이미지는 장면이 바뀔 때마다 캡처한 {len(captured)}장입니다. "
+            f"각 칸 길이는 {[s['seconds'] for s in captured]}초(실측)입니다. "
+            "scenes 개수·순서를 이 캡처와 맞추고, seconds는 실측값을 그대로 쓰세요."
+        )
     prompt = PROMPT.format(meta=json.dumps({k: meta.get(k) for k in ("title", "length", "channel", "views", "description")},
                                            ensure_ascii=False),
                            MOODS=MOODS, HOOKS=hooks, ROLES=ROLES, SCENES=SCENE_IDS, TEMPLATES=templates)
+    prompt = prompt + capture_note
     text, via = copywriter.ask(prompt, sheet)
     a = copywriter.parse_json(text)
     a = normalize(a)
     a["meta"] = meta
     a["via"] = via
-    out.write_text(json.dumps(a, ensure_ascii=False, indent=1), encoding="utf-8")
+    if captured:
+        import scene_capture
+        a = scene_capture.apply_to_analysis(a, captured)
+        a = normalize(a)  # role/shot 정리 유지 + measured seconds 보존
+        # normalize 가 keyframe 을 지우지 않게 다시 심기
+        for i, sc in enumerate(captured):
+            if i < len(a["scenes"]):
+                a["scenes"][i]["seconds"] = sc["seconds"]
+                a["scenes"][i]["t0"] = sc["t0"]
+                a["scenes"][i]["t1"] = sc["t1"]
+                a["scenes"][i]["keyframe"] = sc["keyframe"]
+                a["scenes"][i]["measured"] = True
+        a["capture"] = {"mode": "scene_detect", "count": len(captured),
+                        "total": round(sum(s["seconds"] for s in captured), 2)}
+        out.write_text(json.dumps({k: v for k, v in a.items() if k != "frames"}, ensure_ascii=False, indent=1), encoding="utf-8")
+    else:
+        out.write_text(json.dumps(a, ensure_ascii=False, indent=1), encoding="utf-8")
     a["frames"] = frame_labels(vid)
     return a
 
@@ -207,13 +270,20 @@ def normalize(a):
             s = {"purpose": str(s)}
         role = str(s.get("role") or "SHOW").upper()
         shot = str(s.get("shot") or "hero").replace("ai:", "")
-        scenes.append({"role": role if role in ROLES else "SHOW", "label": str(s.get("label") or "")[:12],
-                       "shot": shot if shot in SCENE_IDS else "hero", "text": str(s.get("text") or ""),
-                       "purpose": str(s.get("purpose") or ""),
-                       "seconds": _seconds(s.get("seconds")), "note": str(s.get("note") or "")})
+        row = {"role": role if role in ROLES else "SHOW", "label": str(s.get("label") or "")[:12],
+               "shot": shot if shot in SCENE_IDS else "hero", "text": str(s.get("text") or ""),
+               "purpose": str(s.get("purpose") or ""),
+               "seconds": _seconds(s.get("seconds")), "note": str(s.get("note") or "")}
+        # 장면 캡처 실측 필드 보존
+        for k in ("t0", "t1", "keyframe", "file", "measured"):
+            if k in s and s[k] not in (None, ""):
+                row[k] = s[k]
+        scenes.append(row)
     if not scenes:
         scenes = [{"role": "HOOK", "label": "", "shot": "hook", "text": "", "purpose": "", "seconds": 3, "note": ""}]
     a["scenes"] = scenes[:8]
+    if isinstance(a.get("capture"), dict):
+        a["capture"] = a["capture"]
     return a
 
 
@@ -246,11 +316,25 @@ def build_template(a, lines, mode_voice=None):
         seg = {"kind": ROLE_KIND.get(role, "TIP"), "source": ln.get("source") or source_of(s.get("shot", "hero"))}
         if text_only:
             seg["text"] = ln["say"]
-            # 레퍼런스 템포를 따르되, 자막을 다 읽을 시간(1초에 7자 정도)은 남긴다
+            # 실측 초수가 있으면 그대로, 없으면 읽기시간·추정 초 중 큰 값
             read = len(ln["say"].replace("*", "").replace(" ", "")) / 7 + 0.8
-            seg["dur"] = round(max(2.0, read, min(5.0, _seconds(s.get("seconds")))), 1)
+            measured = _seconds(s.get("seconds"))
+            if s.get("measured"):
+                seg["dur"] = round(max(1.0, measured), 2)
+            else:
+                seg["dur"] = round(max(2.0, read, min(5.0, measured)), 1)
         else:
             seg["say"] = ln["say"]
+            if s.get("measured") and s.get("seconds"):
+                seg["target_dur"] = round(_seconds(s.get("seconds")), 2)
+        # 캡처 키프레임 → 사진 모드에서 구도 참고 / 합성용
+        if s.get("keyframe"):
+            seg["ref_frame"] = s["keyframe"]
+        # clone 사진 모드: 장면마다 상품 사진 (키프레임은 타이밍·프리뷰용)
+        if ln.get("source"):
+            pass
+        elif s.get("measured"):
+            seg["source"] = "photo:1"
         label = ln.get("label", "")
         if role in ("WRONG", "RIGHT"):
             seg["mark"] = "X" if role == "WRONG" else "O"

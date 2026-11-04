@@ -37,12 +37,13 @@ def _sane(pcm, text):
 
 
 def _key():
-    if os.environ.get("GEMINI_API_KEY"):
-        return os.environ["GEMINI_API_KEY"]
+    for k in ("GEMINI_API_KEY", "GOOGLE_API_KEY"):
+        if os.environ.get(k):
+            return os.environ[k]
     env = ROOT / ".env"
     if env.exists():
         for line in env.read_text(encoding="utf-8-sig").splitlines():
-            if line.startswith("GEMINI_API_KEY="):
+            if line.startswith("GEMINI_API_KEY=") or line.startswith("GOOGLE_API_KEY="):
                 return line.split("=", 1)[1].strip()
     raise RuntimeError("GEMINI_API_KEY 가 .env 에 없어요")
 

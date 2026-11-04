@@ -47,6 +47,7 @@ yarn-error.log*
 /shortform/products/
 /shortform/output/
 /shortform/studio/data/tts_cache/
+/shortform/studio/data/cache/
 /shortform/studio/data/bgm/
 /shortform/studio/data/frames/
 /shortform/studio/data/jobs.json

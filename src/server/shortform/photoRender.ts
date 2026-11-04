@@ -11,6 +11,15 @@ import { runInBackground } from '@/server/lever/background';
 import { ffmpeg, withTempDir } from '@/server/lever/media/ffmpeg';
 import { renderCaptionPng } from '@/server/lever/media/captionPng';
 import { CLIP_FPS } from '@/server/lever/media/motion';
+import { existsSync, readFileSync } from 'node:fs';
+import { generateAiClip, hasAiSceneProvider } from '@/server/shortform/aiScene';
+import {
+  geminiApiKey,
+  isGeminiVoiceLabel,
+  resolveGeminiVoice,
+  synthesizeGeminiMp3,
+} from '@/server/shortform/geminiTts';
+import { keyframeAbsPath } from '@/server/shortform/sceneCapture';
 import {
   getJob,
   loadProductPhoto,
@@ -20,6 +29,118 @@ import {
   saveOutputMp4,
   type SfJob,
 } from '@/server/shortform/webStore';
+
+const ROLE_KIND: Record<string, string> = {
+  HOOK: 'HOOK',
+  TIP: 'TIP',
+  STEP: 'TIP',
+  WRONG: 'TIP',
+  RIGHT: 'TIP',
+  COMPARE: 'TIP',
+  REVEAL: 'REVEAL',
+  SHOW: 'TIP',
+  CTA: 'CTA',
+};
+
+function loadAnalysisJson(id: string): Record<string, unknown> | null {
+  const file = path.join(process.cwd(), 'shortform', 'studio', 'data', 'analysis', `${id}.json`);
+  if (!existsSync(file)) return null;
+  try {
+    return JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/** 레퍼런스 키프레임 위에 상품 사진을 크게 올려 한 장의 장면 이미지를 만든다. */
+async function compositeSceneFrame(productBuf: Buffer, keyframePath: string | null, outPath: string) {
+  const canvas = createCanvas(W, H);
+  const ctx = canvas.getContext('2d');
+  if (keyframePath && existsSync(keyframePath)) {
+    const bg = await loadImage(keyframePath);
+    const scale = Math.max(W / bg.width, H / bg.height);
+    const dw = bg.width * scale;
+    const dh = bg.height * scale;
+    ctx.drawImage(bg, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(0, 0, W, H);
+  } else {
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, W, H);
+  }
+  const prod = await loadImage(productBuf);
+  const maxW = W * 0.88;
+  const maxH = H * 0.62;
+  const s = Math.min(maxW / prod.width, maxH / prod.height);
+  const pw = prod.width * s;
+  const ph = prod.height * s;
+  const px = (W - pw) / 2;
+  const py = (H - ph) / 2 - H * 0.04;
+  // 살짝 둥근 느낌의 카드
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = 40;
+  ctx.drawImage(prod, px, py, pw, ph);
+  ctx.restore();
+  const { writeFile: wf } = await import('node:fs/promises');
+  await wf(outPath, canvas.toBuffer('image/jpeg'));
+}
+
+/** clone: fields.lines + analysis.scenes → 장면별 초수 영상 */
+function buildCloneTemplate(
+  analysis: Record<string, unknown> | null,
+  fields: Record<string, unknown>,
+): Template {
+  const scenes = Array.isArray(analysis?.scenes) ? (analysis!.scenes as Array<Record<string, unknown>>) : [];
+  const lines = Array.isArray(fields.lines) ? (fields.lines as Array<Record<string, unknown>>) : [];
+  const textOnly = fields.voice_mode === 'text_only' || analysis?.voice === 'text_only' || analysis?.voice === 'asmr';
+  const segments: Array<Record<string, unknown>> = [];
+  const n = Math.max(lines.length, scenes.length);
+  for (let i = 0; i < n; i++) {
+    const ln = lines[i] || {};
+    const s = scenes[i] || {};
+    const say = String(ln.say || '');
+    if (!say && !textOnly) continue;
+    const role = String(ln.role || s.role || 'TIP');
+    const seconds = Number(ln.seconds || s.seconds) || 3;
+    const measured = Boolean(s.measured || ln.keyframe || s.keyframe);
+    const shot = String(s.shot || 'hero');
+    const src =
+      String(ln.source || '') ||
+      (shot === 'origin' ? 'stock:origin' : shot === 'photo' ? 'photo:1' : `ai:${shot}`);
+    const seg: Record<string, unknown> = {
+      kind: ROLE_KIND[role] || 'TIP',
+      source: src,
+      label: String(ln.label || s.label || ''),
+      ref_frame: String(ln.keyframe || s.keyframe || ''),
+      clone_visual: '1',
+      target_dur: measured ? seconds : undefined,
+    };
+    if (textOnly) {
+      seg.text = say || String(s.purpose || '');
+      seg.dur = measured ? seconds : Math.max(2, Math.min(5, seconds));
+    } else {
+      seg.say = say;
+      if (measured) seg.target_dur = seconds;
+    }
+    segments.push(seg);
+  }
+  if (!segments.length) {
+    segments.push({ kind: 'HOOK', say: String(fields.title1 || '상품을 소개해요'), source: 'photo:1', dur: 3 });
+  }
+  return {
+    name: '레퍼런스 복제',
+    layout: String(analysis?.layout || 'full'),
+    title: ['{title1}', '{title2}'],
+    info: '{info}',
+    segments,
+    fields: [
+      { key: 'title1', type: 'text' },
+      { key: 'title2', type: 'text' },
+      { key: 'info', type: 'text' },
+    ],
+  };
+}
 
 const W = 1080;
 const H = 1920;
@@ -139,8 +260,25 @@ async function probeDuration(filePath: string): Promise<number> {
 }
 
 async function ttsToFile(text: string, outPath: string, voiceLabel: string) {
+  // Gemini 키가 있으면 Gemini TTS 우선 (여성/남성 → Kore/Charon, Gemini * 라벨 → 지정 보이스)
+  if (geminiApiKey()) {
+    const name =
+      resolveGeminiVoice(voiceLabel) || (voiceLabel.includes('남성') ? 'Charon' : 'Kore');
+    try {
+      await synthesizeGeminiMp3(text, name, outPath);
+      return;
+    } catch (err) {
+      if (isGeminiVoiceLabel(voiceLabel)) throw err;
+      console.warn('[shortform] Gemini TTS 실패 → OpenAI 폴백', err);
+    }
+  } else if (isGeminiVoiceLabel(voiceLabel)) {
+    throw new Error('GEMINI_API_KEY가 없어요. .env.local에 넣고 서버를 다시 켜 주세요.');
+  }
+
   const client = openaiClient();
-  if (!client) throw new Error('OPENAI_API_KEY가 없어 음성을 만들 수 없어요. Vercel 환경변수에 키를 넣어 주세요.');
+  if (!client) {
+    throw new Error('GEMINI_API_KEY(권장) 또는 OPENAI_API_KEY를 .env.local에 넣어 주세요.');
+  }
   const voice = voiceLabel.includes('남성') ? 'onyx' : 'nova';
   const res = await client.audio.speech.create({
     model: 'tts-1',
@@ -358,6 +496,36 @@ async function renderCards(
   return cards;
 }
 
+/** AI/일반 클립을 목표 길이·해상도에 맞춘다 */
+async function fitClip(src: string, outPath: string, seconds: number) {
+  const w = even(W);
+  const h = even(H);
+  await ffmpeg(
+    [
+      '-y',
+      '-stream_loop',
+      '-1',
+      '-i',
+      src,
+      '-t',
+      String(Math.max(0.5, seconds)),
+      '-vf',
+      `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${CLIP_FPS},format=yuv420p`,
+      '-an',
+      '-c:v',
+      'libx264',
+      '-preset',
+      'veryfast',
+      '-crf',
+      '20',
+      '-movflags',
+      '+faststart',
+      outPath,
+    ],
+    120_000,
+  );
+}
+
 async function renderVideo(
   tpl: Template,
   product: Record<string, unknown>,
@@ -365,6 +533,7 @@ async function renderVideo(
   photoBuf: Buffer,
   job: SfJob,
   log: (m: string) => Promise<void>,
+  mode: string = 'photo',
 ) {
   return withTempDir(async (dir) => {
     const photoPath = path.join(dir, 'photo.jpg');
@@ -376,6 +545,7 @@ async function renderVideo(
     const clips: string[] = [];
     const scriptLines: string[] = [];
     const voice = String(fields.voice || '여성');
+    let usedAi = false;
 
     for (let i = 0; i < segs.length; i++) {
       const seg = segs[i]!;
@@ -386,15 +556,37 @@ async function renderVideo(
         await ttsToFile(say, au, voice);
         const audioDur = await probeDuration(au);
         dur = LEAD + (audioDur > 0 ? audioDur : Math.max(2.2, say.length * 0.12)) + PAD;
+        const target = Number(seg.target_dur) || 0;
+        if (target > dur) dur = target;
         scriptLines.push(say);
       } else {
-        dur = Number(seg.dur) || 3;
+        dur = Number(seg.dur || seg.target_dur) || 3;
         await silenceMp3(dur, au);
         if (seg.text) scriptLines.push(speakable(seg.text));
       }
 
       const pan = path.join(dir, `${String(i).padStart(2, '0')}_pan.mp4`);
-      await panPhoto(photoPath, pan, dur);
+      let visual = '상품사진';
+      const source = String(seg.source || '');
+      let aiPath: string | null = null;
+      if (mode === 'ai' && source.startsWith('ai:') && hasAiSceneProvider()) {
+        aiPath = await generateAiClip(source, product, job.product, photoBuf, log);
+      }
+      if (aiPath) {
+        await fitClip(aiPath, pan, dur);
+        usedAi = true;
+        visual = `AI:${source.slice(3)}`;
+      } else {
+        const kf = seg.ref_frame ? keyframeAbsPath(String(seg.ref_frame)) : null;
+        if (seg.clone_visual) {
+          const frameJpg = path.join(dir, `${String(i).padStart(2, '0')}_frame.jpg`);
+          await compositeSceneFrame(photoBuf, kf, frameJpg);
+          await panPhoto(frameJpg, pan, dur);
+          visual = kf ? '캡처+상품' : '상품';
+        } else {
+          await panPhoto(photoPath, pan, dur);
+        }
+      }
       const capText = speakable(seg.say || seg.text || '');
       const capBuf = capText ? await renderCaptionPng(capText.slice(0, 22), W) : null;
       const capPath = capBuf ? path.join(dir, `${String(i).padStart(2, '0')}_cap.png`) : null;
@@ -402,7 +594,7 @@ async function renderVideo(
       const clip = path.join(dir, `${String(i).padStart(2, '0')}.mp4`);
       await muxClip(pan, au, capPath, clip, dur);
       clips.push(clip);
-      await log(`[${seg.kind || 'TIP'}] ${say || seg.text || '(무음)'}`);
+      await log(`[${seg.kind || 'TIP'}] ${dur.toFixed(1)}s ${visual} · ${say || seg.text || '(무음)'}`);
     }
 
     const list = path.join(dir, 'list.txt');
@@ -412,7 +604,7 @@ async function renderVideo(
     const mp4 = await readFile(outLocal);
     const fileName = `${String(product.name || job.product)}_${job.id}.mp4`.replace(/[\\/:*?"<>|]+/g, '_');
     const url = await saveOutputMp4(fileName, mp4);
-    return { url, script: scriptLines.join('\n') };
+    return { url, script: scriptLines.join('\n'), usedAi };
   });
 }
 
@@ -435,15 +627,28 @@ export async function runWebJob(jobId: string, templates: Record<string, Templat
     let mode = job.mode;
     const fields = { ...job.fields };
     if (fields.motion) {
-      await log('배포 웹 엔진에서는 모션그래픽 대신 사진 모드로 만들어요');
+      await log('웹 엔진에서는 모션그래픽 대신 기본 자막으로 만들어요');
       delete fields.motion;
     }
-    if (mode !== 'photo') {
-      await log('배포 웹 엔진에서는 AI 장면 대신 사진만 모드로 만들어요');
+    if (mode === 'ai' && !hasAiSceneProvider()) {
+      await log('REPLICATE/FAL 키가 없어 사진만 모드로 만들어요');
       mode = 'photo';
+    } else if (mode === 'ai') {
+      await log('AI 장면 모드 (Replicate)');
     }
 
-    const tpl = templates[job.template] as Template | undefined;
+    let tpl = templates[job.template] as Template | undefined;
+
+    if (job.template === 'clone') {
+      const analysis = job.ref ? loadAnalysisJson(job.ref) : null;
+      tpl = buildCloneTemplate(analysis, fields);
+      await log(
+        analysis?.capture
+          ? `장면 ${tpl.segments?.length ?? 0}개 · 레퍼런스 캡처 초수에 맞춰 상품 영상 생성`
+          : `장면 ${tpl.segments?.length ?? 0}개 · 상품 사진으로 복제 렌더`,
+      );
+    }
+
     if (!tpl) throw new Error('없는 템플릿이에요');
     if ((tpl as { kind?: string }).kind === '촬영') throw new Error('이 템플릿은 직접 촬영해야 해요');
 
@@ -459,23 +664,28 @@ export async function runWebJob(jobId: string, templates: Record<string, Templat
       return;
     }
 
-    if (job.template === 'clone' || tpl.engine === 'short') {
-      // short/clone 도 사진+문장 기반으로 단순 렌더 (segments 없으면 훅·CTA 가짜 세그먼트)
-      if (!tpl.segments?.length) {
-        (tpl as Template).segments = [
-          { kind: 'HOOK', say: '{hook_text}|{hook}|{line1}' },
-          { kind: 'CTA', say: '{cta}|{outro}|{line2}' },
-        ];
-      }
+    if (tpl.engine === 'short' && !tpl.segments?.length) {
+      tpl.segments = [
+        { kind: 'HOOK', say: '{hook_text}|{hook}|{line1}' },
+        { kind: 'CTA', say: '{cta}|{outro}|{line2}' },
+      ];
     }
 
-    const { url, script } = await renderVideo(tpl, product, fields, photo, { ...job, fields }, log);
+    const { url, script, usedAi } = await renderVideo(
+      tpl,
+      product as unknown as Record<string, unknown>,
+      fields,
+      photo,
+      { ...job, fields },
+      log,
+      mode,
+    );
     await patchJob(jobId, {
       status: 'done',
       finished: new Date().toISOString().slice(0, 16).replace('T', ' '),
       result: { type: 'video', file: url, script },
       fidelity: null,
-      used_ai: false,
+      used_ai: usedAi,
     });
   } catch (err) {
     console.error('[shortform] web render failed', err);

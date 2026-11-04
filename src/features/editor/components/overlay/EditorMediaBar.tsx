@@ -235,7 +235,7 @@ function MotionCredits({ motion }: { motion: HeroMotionInfo }) {
           <a href={credit.url} target="_blank" rel="noreferrer" className="underline">
             {credit.author}
           </a>
-          ({STOCK_SITES[credit.source ?? 'pexels']?.label ?? '영상'})
+          ({STOCK_SITES[credit.source ?? 'pexels'].label})
         </span>
       ))}{' '}
       무료 영상

@@ -197,6 +197,112 @@ async function askOpenAI(prompt: string): Promise<string> {
   return text;
 }
 
+/** 레퍼런스 장면 구조 → 내 상품 문장 (clone). */
+export async function cloneDraft(
+  analysis: Record<string, unknown>,
+  product: Record<string, unknown>,
+): Promise<{ fields: Record<string, unknown>; via: string }> {
+  const scenes = Array.isArray(analysis.scenes) ? (analysis.scenes as Array<Record<string, unknown>>) : [];
+  const facts = Object.fromEntries(
+    ['name', 'category', 'look', 'origin', 'price', 'unit', 'memo']
+      .filter((k) => product[k] !== undefined && product[k] !== null && product[k] !== '')
+      .map((k) => [k, product[k]]),
+  );
+  const brief = {
+    summary: analysis.summary,
+    layout: analysis.layout,
+    voice: analysis.voice,
+    copy_style: analysis.copy_style,
+    pacing: analysis.pacing,
+    hook_type: (analysis.hook as { type?: string } | undefined)?.type,
+    has_fixed_title: Boolean(Array.isArray(analysis.title_lines) && analysis.title_lines.length),
+    scenes: scenes.map((s) => ({
+      role: s.role,
+      label: s.label,
+      purpose: s.purpose || s.note || '',
+      seconds: s.seconds,
+      measured: s.measured,
+    })),
+  };
+  const n = scenes.length || 1;
+  const prompt = `당신은 한국 농수산물 산지직송 숏폼 카피라이터입니다.
+아래 '레퍼런스 영상 분석'의 장면 구조와 말투를 그대로 따라, 판매자의 상품으로 장면별 문장을 새로 써 주세요.
+
+[레퍼런스 분석]
+${JSON.stringify(brief, null, 1)}
+
+[판매자 상품 (사실 정보)]
+${JSON.stringify(facts, null, 0)}
+
+${RULES}
+- 장면 수와 순서는 레퍼런스와 같게 ${n}개. 각 장면의 역할(role)·라벨·전달 내용(purpose)을 지킵니다.
+- 각 장면 문장은 그 장면의 purpose를 '내 상품'에 맞게 다시 쓴 완결 문장입니다.
+- 모든 문장은 10자 이상. 채널 홍보·구독 유도는 '저장해 두세요' / '주문은 프로필 링크'로 바꿉니다.
+- voice가 text_only/asmr이면 각 문장 16자 안팎.
+
+JSON 하나로만:
+{"title1":"13자 이내 또는 빈 문자열","title2":"13자 이내 또는 빈 문자열","info":"22자 이내","lines":[{"say":"장면 문장","label":"라벨 또는 빈 문자열"}, ... ${n}개]}`;
+
+  try {
+    const text = await askOpenAI(prompt);
+    const d = parseJsonObject(text);
+    let lines = (Array.isArray(d.lines) ? d.lines : []).map((l) =>
+      typeof l === 'object' && l ? (l as Record<string, unknown>) : { say: String(l) },
+    );
+    while (lines.length < scenes.length) {
+      lines.push({ say: '', label: scenes[lines.length]?.label ?? '' });
+    }
+    lines = lines.slice(0, scenes.length);
+    const caption = analysis.caption as { style?: string } | undefined;
+    const fields = {
+      title1: String(d.title1 || '').slice(0, 16),
+      title2: String(d.title2 || '').slice(0, 16),
+      info: String(d.info || '주문은 프로필 링크').slice(0, 26),
+      voice_mode: analysis.voice === 'text_only' || analysis.voice === 'asmr' ? 'text_only' : 'narration',
+      lines: lines.map((l, i) => {
+        const s = scenes[i] ?? {};
+        let say = String(l.say || '');
+        if (caption?.style !== 'keyword_highlight') say = say.replace(/\*/g, '');
+        const shot = String(s.shot || 'hero');
+        const source =
+          shot === 'origin' ? 'stock:origin' : shot === 'photo' ? 'photo:1' : `ai:${shot}`;
+        return {
+          say,
+          label: String(l.label || s.label || ''),
+          role: String(s.role || 'TIP'),
+          source,
+          seconds: Number(s.seconds) || 3,
+          keyframe: String(s.keyframe || ''),
+        };
+      }),
+    };
+    return { fields, via: 'openai' };
+  } catch (err) {
+    console.error('[shortform] cloneDraft fallback', err);
+    const name = String(product.name || '상품');
+    return {
+      via: '규칙',
+      fields: {
+        title1: name.slice(0, 13),
+        title2: '산지에서 바로',
+        info: '주문은 프로필 링크',
+        voice_mode: analysis.voice === 'text_only' || analysis.voice === 'asmr' ? 'text_only' : 'narration',
+        lines: scenes.map((s, i) => {
+          const shot = String(s.shot || 'hero');
+          return {
+            say: String(s.purpose || `${name} 장면 ${i + 1}`),
+            label: String(s.label || ''),
+            role: String(s.role || 'TIP'),
+            source: shot === 'origin' ? 'stock:origin' : shot === 'photo' ? 'photo:1' : `ai:${shot}`,
+            seconds: Number(s.seconds) || 3,
+            keyframe: String(s.keyframe || ''),
+          };
+        }),
+      },
+    };
+  }
+}
+
 export async function draftFields(
   tplName: string,
   tpl: Template,

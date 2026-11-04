@@ -41,14 +41,6 @@ import {
   uploadVideoPath,
   type StockClipSource,
 } from './stockSources';
-
-type Target = Pick<HeroMotionRecord, 'frameId' | 'elementId' | 'assetId' | 'width' | 'height'>;
-
-/** 무료 영상 컷은 사진과 무관 — 첫 섹션 위에 들어갈 크기만 정한다 */
-const STOCK_TARGET: Target = { frameId: '', elementId: '', assetId: '', ...HERO_CLIP_SIZE };
-
-/** 사진으로 만드는 컷의 원본: 페이지 맨 위 사진 자리의 사진 (클립은 첫 섹션 위에 따로 들어간다) */
-function findHeroPhoto(project: ProjectRecord): Target | null {
   for (const frame of sortFrames(project.frames)) {
     if (frame.status !== 'active') continue;
     const slot = [...walk(asNode(frame.frameData))].find(isImageSlot);
@@ -86,6 +78,14 @@ interface StockInput {
   video: StockClipSource;
 }
 
+/** 고른 영상을 사진 자리를 덮는 크기로 내려받아 임시 폴더에 저장 */
+async function downloadStockInputs(inputs: StockInput[], target: Target, dir: string) {
+  return Promise.all(
+    inputs.map(async ({ pick, video }, i) => {
+      const file = pickVideoFile(video.files, target.width, target.height);
+      if (!file) throw new ApiError(502, `${i + 1}번 영상은 내려받을 수 있는 파일이 없어요. 다른 영상을 골라 주세요.`);
+      const filePath = path.join(dir, `stock-${i}.mp4`);
+      await writeFile(filePath, await downloadStockFile(pick.source, file.link));
 /** 고른 영상을 사진 자리를 덮는 크기로 내려받아 임시 폴더에 저장 (내 영상은 저장소에서 복사) */
 async function downloadStockInputs(inputs: StockInput[], target: Target, dir: string, projectId: string) {
   return Promise.all(
@@ -99,14 +99,6 @@ async function downloadStockInputs(inputs: StockInput[], target: Target, dir: st
       }
       const file = pickVideoFile(video.files, target.width, target.height);
       if (!file) throw new ApiError(502, `${i + 1}번 영상은 내려받을 수 있는 파일이 없어요. 다른 영상을 골라 주세요.`);
-      await writeFile(filePath, await downloadStockFile(pick.source, file.link));
-      return filePath;
-    }),
-  );
-}
-
-/** 영상에서 AI가 볼 장면 JPG를 뽑는다. 한 영상이 실패해도 나머지는 이어 간다. */
-async function grabPlanFrames(files: string[], clips: MontageClip[], dir: string) {
   const times = clips.map((clip) => sampleTimes(clip.duration, Math.min(4, MONTAGE.framesPerClip)));
   const frames: { mimeType: string; data: string }[] = [];
   const labels: string[] = [];
@@ -167,6 +159,14 @@ async function planMontage(files: string[], clips: MontageClip[], productName: s
  * 무료 영상 1~3개 → AI가 고른 장면·자막으로 컷 편집 + 모션그래픽
  * 배포에서는 컷을 하나씩 렌더한 뒤 전환으로 이어, 로컬과 같은 고급 편집 결과를 만든다.
  */
+async function makeStockMontage(inputs: StockInput[], target: Target, productName: string) {
+  return withTempDir(async (dir) => {
+    const files = await downloadStockInputs(inputs, target, dir);
+    const clips = inputs.map(({ video }) => ({ duration: video.duration }));
+    const plan = await planMontage(files, clips, productName, dir);
+    if (!plan.cuts.length) throw new ApiError(400, '고른 영상이 너무 짧아요. 2초 넘는 영상을 골라 주세요.');
+
+    // 배포 ffmpeg에 drawtext가 없어 자막·태그는 PNG로 그려 overlay 한다
 async function makeStockMontage(inputs: StockInput[], target: Target, productName: string, projectId: string) {
   return withTempDir(async (dir) => {
     const files = await downloadStockInputs(inputs, target, dir, projectId);
@@ -231,14 +231,6 @@ async function runStockMotion(projectId: string, inputs: StockInput[], target: T
   const base = { ...target, kind: 'stock' as const, credits: inputs.map(({ video }) => video.credit), applied };
   try {
     const { clip, summary, captions, notice } = await makeStockMontage(inputs, target, productName, projectId);
-    const clipPath = `assets/motion-${projectId}-${Date.now()}.mp4`;
-    await saveFile(clipPath, clip);
-    await setMotion(projectId, { ...base, status: 'ready', clipPath, summary, captions, notice, updatedAt: nowIso() });
-  } catch (err) {
-    console.error('[lever] stock motion failed', err);
-    const notice =
-      err instanceof ApiError
-        ? err.message
         : `무료 영상으로 컷을 만들지 못했어요. 잠시 뒤 다시 만들어 보고, 계속 안 되면 다른 영상을 골라 주세요. (${summarizeUnknownError(err)})`;
     await setMotion(projectId, { ...base, status: 'failed', clipPath: null, notice, updatedAt: nowIso() }).catch(() => null);
   }
@@ -324,12 +316,7 @@ export async function startHeroMotion(projectId: string, kind: HeroMotionKind, o
     const target = STOCK_TARGET;
     const picks = parseStockPicks(options);
     if (!picks) throw badRequest(`가져올 영상을 1~${MAX_STOCK_PICKS}개 골라 주세요.`);
-    const inputs = await Promise.all(
-      picks.map(async (pick) => ({ pick, video: await getStockClipSource(pick.source, pick.videoId, projectId) })),
-    );
-    for (const { video } of inputs) {
-      if (video.duration < 2) throw badRequest('2초보다 짧은 영상은 쓸 수 없어요. 더 긴 영상을 골라 주세요.');
-    }
+    const inputs = await Promise.all(picks.map(async (pick) => ({ pick, video: await getStockClipSource(pick.source, pick.videoId) })));
     const credits = inputs.map(({ video }) => video.credit);
     const pending = await setMotion(projectId, { ...target, kind, credits, applied, status: 'pending', clipPath: null, notice: null, updatedAt: nowIso() });
     runInBackground('stock motion', () => runStockMotion(projectId, inputs, target, project.productName, applied));
@@ -337,7 +324,12 @@ export async function startHeroMotion(projectId: string, kind: HeroMotionKind, o
   }
 
   if (kind === 'video') {
-    await requireGemini();
+    const inputs = await Promise.all(
+      picks.map(async (pick) => ({ pick, video: await getStockClipSource(pick.source, pick.videoId, projectId) })),
+    );
+    for (const { video } of inputs) {
+      if (video.duration < 2) throw badRequest('2초보다 짧은 영상은 쓸 수 없어요. 더 긴 영상을 골라 주세요.');
+    }
     const pending = await setMotion(projectId, {
       ...STOCK_TARGET,
       kind,
@@ -376,6 +368,14 @@ export async function searchHeroStock(projectId: string, query: string | null) {
   return searchStockVideos(q, stockOrientation(HERO_CLIP_SIZE.width, HERO_CLIP_SIZE.height));
 }
 
+// ===== 다운로드: 상세페이지 맨 위에 올릴 GIF =====
+
+/** POST /projects/{id}/hero-motion/gif { outWidth } — 클립 → GIF (용량 맞춰 단계적으로 줄임) */
+export async function buildHeroGif(projectId: string, body: { outWidth?: unknown }) {
+  const { heroMotion } = await getProject(projectId);
+  if (heroMotion?.status !== 'ready' || !heroMotion.clipPath) throw badRequest('움직이는 컷이 아직 준비되지 않았어요.');
+  const clip = await loadFile(heroMotion.clipPath);
+  if (!clip) throw badRequest('움직이는 컷 파일이 없어요. 다시 만들어 주세요.');
 const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 const UPLOAD_TYPES = new Set(['video/mp4', 'video/webm', 'video/quicktime', 'video/x-m4v']);
 
@@ -415,14 +415,6 @@ export async function uploadHeroStockVideo(projectId: string, req: Request) {
   });
 }
 
-// ===== 다운로드: 상세페이지 맨 위에 올릴 GIF =====
-
-/** POST /projects/{id}/hero-motion/gif { outWidth } — 클립 → GIF (용량 맞춰 단계적으로 줄임) */
-export async function buildHeroGif(projectId: string, body: { outWidth?: unknown }) {
-  const { heroMotion } = await getProject(projectId);
-  if (heroMotion?.status !== 'ready' || !heroMotion.clipPath) throw badRequest('움직이는 컷이 아직 준비되지 않았어요.');
-  const clip = await loadFile(heroMotion.clipPath);
-  if (!clip) throw badRequest('움직이는 컷 파일이 없어요. 다시 만들어 주세요.');
   const outWidth = Number(body.outWidth);
   if (!Number.isFinite(outWidth) || outWidth < 200 || outWidth > 1600) throw badRequest('GIF 폭이 올바르지 않아요.');
 

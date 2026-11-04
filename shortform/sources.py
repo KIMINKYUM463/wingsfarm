@@ -201,7 +201,9 @@ REPLICATE_VIDEO = "kwaivgi/kling-v2.5-turbo-pro"
 
 
 def _replicate(model, inp):
-    tok = os.environ["REPLICATE_API_TOKEN"]
+    tok = _replicate_token()
+    if not tok:
+        raise RuntimeError("REPLICATE_API_TOKEN 이 없어요")
     auth = {"Authorization": f"Bearer {tok}"}
     pred = json.loads(_http(f"https://api.replicate.com/v1/models/{model}/predictions",
                             {"input": inp}, {**auth, "Prefer": "wait=60"}, timeout=90))
@@ -214,11 +216,15 @@ def _replicate(model, inp):
     return out[0] if isinstance(out, list) else out
 
 
+def _replicate_token():
+    return os.environ.get("REPLICATE_API_TOKEN") or os.environ.get("REPLICATE_API_KEY") or os.environ.get("REPLICATE_TOKEN")
+
+
 def _providers():
     ps = []
     if os.environ.get("FAL_KEY"):
         ps.append("fal")
-    if os.environ.get("REPLICATE_API_TOKEN"):
+    if _replicate_token():
         ps.append("replicate")
     return ps
 

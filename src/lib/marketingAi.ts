@@ -91,10 +91,10 @@ export const MARKETING_FORMAT_META: Record<
 
 export const SHORTS_DURATIONS = [15, 30, 45] as const;
 export const SHORTS_HOOKS = [
-  { id: "curiosity", label: "궁금증", hint: "왜? 어떻게?로 멈추게" },
-  { id: "emotion", label: "감성", hint: "제철·산지 정서로 공감" },
-  { id: "problem", label: "문제제기", hint: "실패·고민을 먼저 짚기" },
-  { id: "asmr", label: "비주얼 ASMR", hint: "자르고·즙나고·담는 컷" },
+  { id: "curiosity", label: "궁금증", hint: "왜? 어떻게?로 3초 안에 멈추게" },
+  { id: "emotion", label: "감성", hint: "제철·산지 정서로 바로 공감" },
+  { id: "problem", label: "문제제기", hint: "실패·고민을 첫 문장에 지목" },
+  { id: "asmr", label: "비주얼 ASMR", hint: "자르고·즙나고·담는 컷으로 스크롤 스톱" },
 ] as const;
 
 export const THREAD_STYLES = [
@@ -403,6 +403,15 @@ export const SYSTEM_BY_FORMAT: Record<MarketingFormat, string> = {
   shorts: `당신은 농수산물 숏폼(릴스/숏츠/틱톡) 전문 영상 감독자이자 스크립트 라이터입니다.
 초 단위로 시청자를 붙잡는 대본을 씁니다. 장면마다 화면·대사·자막·효과음을 분리합니다.
 얼굴 출연 여부와 목표 길이를 반영해 템포를 설계하세요.
+
+[3초 후킹 · 다각도 작문]
+- 첫 3초가 전부다. 인사·자기소개·채널 소개는 넣지 않는다.
+- 같은 상품·같은 메시지를 여러 각도로 바꾼 뒤 가장 센 훅 하나만 고른다.
+  각도 예: 궁금증 / 문제·실패 지목 / 통념 반전 / 숫자·리스트 / 손실 회피 / 결과 선공개.
+- 후킹은 도입부만이 아니라 전 구간의 기획 기초다. 중간·마무리도 “왜 더 봐야 하는지”가 이어지게 쓴다.
+- 첫 장면의 화면·대사·자막이 같은 한 문장을 가리키게 맞춘다(소리 끄고 봐도 이해).
+- 훅이 건 약속은 본편에서 반드시 지킨다. 과장·낚시 제목 금지.
+- 자막은 한 화면에 5~12자 안팎으로 짧게 쪼개고, 장면은 1~1.5초마다 리듬을 준다.
 ${COMMON_RULES}`,
   threads: `당신은 Threads(스레드)에서 농수산물 스토리로 팔로워를 모으는 카피라이터입니다.
 1번 포스트가 피드에서 멈추게 하고, 이후는 한 포스트에 한 포인트만. 말투는 대화체·호흡이 짧게.
@@ -448,9 +457,11 @@ export function buildMarketingPrompt(body: MarketingRequestBody & { today: strin
       ...base,
       `형식: 숏폼 영상 대본`,
       `목표 길이: ${o.duration}초`,
-      `후킹 스타일: ${hook?.label ?? o.hookStyle} (${hook?.hint ?? ""})`,
+      `후킹 스타일(최종 선택): ${hook?.label ?? o.hookStyle} (${hook?.hint ?? ""})`,
       `얼굴 출연: ${o.onCamera ? "출연(토킹헤드 가능)" : "얼굴 없이 손·상품·산지 컷 위주"}`,
-      "첫 3초 후킹 → 본문 정보/감각 → CTA. 장면 타임라인이 이어지게 작성.",
+      "작성 순서: (1) 같은 메시지로 훅 후보 3~4개를 다각도(궁금증·문제·반전·숫자 등)로 머릿속에 만든 뒤 (2) 선택한 스타일에 맞는 최강 1개만 0~3초에 배치 (3) 본문이 그 약속을 지킴 (4) CTA.",
+      "0~3초: 화면+대사+자막이 같은 한 문장. 예측을 깨거나 결과/문제를 바로 보여 스크롤을 멈춘다.",
+      "이후: 정보·감각·근거 → 짧은 CTA. 장면 타임라인이 끊기지 않게 작성.",
     ]
       .filter(Boolean)
       .join("\n");

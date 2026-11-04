@@ -22,7 +22,7 @@ function freshMake() {
     product: { name: "", category: "", origin: "", price: "", unit: "", memo: "", photoData: null },
     info: null,            // 서버에 저장된 상품 정보
     fields: {}, drafted: false, via: null,
-    opts: { music: "밝은", voice: "여성", ai_label: true, motion: false },
+    opts: { music: "밝은", voice: "Gemini 여성 · 또렷한", ai_label: true, motion: false },
     mode: "ai", job: null, scene: 0, sceneLocked: false,
     chat: [], lint: [],
   };
@@ -142,18 +142,19 @@ function renderRefs() {
   $("#app").innerHTML = `
     <div class="hero">
       <div>
-        <h1>잘 된 숏폼을 분석해서, 내 상품으로 다시 만든다</h1>
-        <p class="lead">조회수 높은 농수산물 쇼츠 ${refs.length}개를 모았습니다. 영상을 누르면 Claude가 장면 구성·자막 방식·훅을 분석해 보여 주고, <b>“이 구조 그대로 내 상품으로”</b>를 누르면 같은 흐름으로 내 영상을 만듭니다.</p>
+        <p class="kicker">REFERENCE LIBRARY</p>
+        <h1>잘 된 숏폼을 분석해서,<br>내 상품으로 다시 만든다</h1>
+        <p class="lead">조회수 높은 농수산물 쇼츠 ${refs.length}개를 모았습니다. 영상을 누르면 장면·자막·훅을 분석하고, <b>“이 구조 그대로 내 상품으로”</b>로 같은 흐름의 영상을 만듭니다.</p>
       </div>
       <form class="url-box panel" id="url-form">
         <b>찾은 영상이 있나요?</b>
-        <span class="muted">유튜브 쇼츠 주소를 붙여 넣으면 바로 분석해 드려요.</span>
-        <div style="display:flex;gap:8px"><input type="text" id="url-in" placeholder="https://youtube.com/shorts/..."><button class="btn primary" id="url-go">분석하기</button></div>
+        <span class="muted">유튜브 쇼츠 주소를 붙여 넣으면 바로 분석해요.</span>
+        <div class="url-row"><input type="text" id="url-in" placeholder="https://youtube.com/shorts/..."><button class="btn primary" id="url-go">분석하기</button></div>
       </form>
     </div>
     <div class="insight">
-      <div class="panel"><b>${refs.length}개</b><span>레퍼런스 (직접 고른 ${count("source", "curated")} · 자동 수집 ${count("source", "auto")} · 내가 추가 ${count("source", "user")})</span></div>
-      <div class="panel"><b>${views(infoMed)}회 vs ${views(saleMed)}회</b><span>정보형 vs 판매만 하는 영상의 조회수 중간값 (자동 수집은 1.5만 회 이상만 모아서, 실제 차이는 더 커요)</span></div>
+      <div class="panel"><small>라이브러리</small><b>${refs.length}</b><span>직접 고른 ${count("source", "curated")} · 자동 ${count("source", "auto")} · 내가 추가 ${count("source", "user")}</span></div>
+      <div class="panel"><small>조회수 중간값</small><b>${views(infoMed)} <em>vs</em> ${views(saleMed)}</b><span>정보형 vs 판매형 · 자동 수집은 1.5만 회 이상</span></div>
     </div>
     <div class="filters">
       <div class="filter-row"><b>찾기</b><input type="text" id="ref-q" value="${esc(f.q)}" placeholder="품목이나 제목 (예: 귤, 손질)" style="max-width:280px">
@@ -213,30 +214,43 @@ function structure(t) {
 }
 const structureHtml = (t) => `<div class="structure">${structure(t).map((s) => `<span>${esc(s)}</span>`).join("<i>→</i>")}</div>`;
 
-/* 프레임 묶음(가로로 붙인 5장)에서 i번째 칸을 잘라 보여 준다 */
-function frameTile(id, i, n = 5, cls = "ftile") {
+/* 프레임 묶음(가로로 붙인 장)에서 i번째 칸 / 또는 장면별 키프레임 */
+function frameTile(id, i, n = 5, cls = "ftile", keyframe) {
+  if (keyframe) {
+    return `<div class="${cls}" style="background-image:url('${API}/media/frames/${esc(keyframe)}');background-size:cover;background-position:center"></div>`;
+  }
   return `<div class="${cls}" style="background-image:url('${API}/media/frames/${esc(id)}.jpg');background-size:${n * 100}% 100%;background-position:${n > 1 ? (i / (n - 1)) * 100 : 0}% 0"></div>`;
+}
+
+function sceneFrame(id, scene, i, n, cls) {
+  return frameTile(id, i, n, cls, scene && scene.keyframe);
 }
 
 function anatomyHtml(a, id) {
   const sc = a.scenes || [];
-  const labels = a.frames && a.frames.length ? a.frames : ["시작", "25%", "50%", "75%", "표지"];
-  const nFrames = labels.length;
+  const measured = !!(a.capture && a.capture.mode === "scene_detect") || sc.some((s) => s.measured);
+  const labels = a.frames && a.frames.length ? a.frames : (measured ? sc.map((s, i) => `${s.seconds}초`) : ["시작", "25%", "50%", "75%", "표지"]);
+  const nFrames = measured && sc.length ? sc.length : labels.length;
   const cap = a.caption || {};
   const chips = [
+    measured ? `장면 전환 캡처 ${a.capture ? a.capture.count : sc.length}컷 · 총 ${a.capture ? a.capture.total : sc.reduce((t, s) => t + Number(s.seconds || 0), 0)}초` : null,
     LAYOUT_KO[a.layout] || a.layout, VOICE_KO[a.voice] || a.voice,
     cap.style === "keyword_highlight" ? `핵심어 강조 자막(${{ yellow: "노랑", green: "초록", red: "빨강" }[cap.color] || cap.color})` : cap.style === "none" ? "자막 없음" : "기본 자막",
     a.presenter === "face" ? "얼굴 출연" : a.presenter === "hands" ? "손만 등장" : "사람 없음",
     `${a.setting || ""}`, `템포 ${a.pacing || ""}`, `음악 ${a.music || ""}`,
-  ].filter((x) => x && x.trim());
+  ].filter((x) => x && String(x).trim());
   return `<div class="anatomy">
-    <h3>Claude의 장면 분석 <span class="muted">· 장면 사진 ${nFrames}장과 제목으로 추정</span></h3>
+    <h3>${measured ? "장면 전환 캡처 · 구조 분석" : "장면 분석"} <span class="muted">· ${measured ? "컷마다 캡처·초수 실측 후 역할 분석" : "장면 사진과 제목으로 추정"}</span></h3>
     <p style="margin:0 0 8px">${esc(a.summary || "")}</p>
     <div class="chips" style="margin-bottom:10px">${chips.map((c) => `<span class="tag">${esc(c)}</span>`).join("")}</div>
-    <div class="frames" style="grid-template-columns:repeat(${nFrames},1fr)">${labels.map((l, i) => `<figure>${frameTile(id, i, nFrames)}<figcaption>${esc(l)}</figcaption></figure>`).join("")}</div>
+    <div class="frames" style="grid-template-columns:repeat(${nFrames},1fr)">${(measured ? sc : labels).map((l, i) => {
+      const scene = measured ? l : sc[i];
+      const capLabel = measured ? `${Number(l.seconds).toFixed(1)}초` : labels[i];
+      return `<figure>${sceneFrame(id, scene, i, nFrames)}<figcaption>${esc(capLabel)}</figcaption></figure>`;
+    }).join("")}</div>
     <ol class="timeline">${sc.map((s) => `<li><span class="role r-${esc(s.role)}">${esc(s.label || ROLE_KO[s.role] || s.role)}</span>
       <div><b>${esc(s.purpose || s.text || "—")}</b>${s.text && s.purpose ? ` <span class="muted">“${esc(s.text)}”</span>` : ""}
-      <div class="muted">${esc(SHOT_KO[s.shot] || s.shot)} · ${esc(s.seconds)}초 · ${esc(s.note || "")}</div></div></li>`).join("")}</ol>
+      <div class="muted">${esc(SHOT_KO[s.shot] || s.shot)} · <b>${esc(s.seconds)}초</b>${s.measured ? " (실측)" : ""} · ${esc(s.note || "")}</div></div></li>`).join("")}</ol>
     ${(a.why || []).length ? `<h3 style="margin-top:12px">잘 된 이유</h3><ul class="why">${a.why.map((w) => `<li>${esc(w)}</li>`).join("")}</ul>` : ""}
     ${a.copy_style ? `<div class="muted">말투: ${esc(a.copy_style)}</div>` : ""}
   </div>`;
@@ -273,10 +287,10 @@ async function openRef(id) {
   if (!box.isConnected) return;
   if (a) { box.innerHTML = anatomyHtml(a, id); return; }
   box.innerHTML = `<div class="anatomy"><b>아직 분석하지 않은 영상이에요.</b>
-    <p class="muted" style="margin:4px 0 10px">Claude가 프레임과 제목을 보고 장면 구성·자막 방식·말투를 분석해요 (10~20초).</p>
-    <button class="btn yellow" id="do-ana">지금 분석하기</button></div>`;
+    <p class="muted" style="margin:4px 0 10px">영상을 받아 <b>장면이 바뀔 때마다 캡처</b>하고 구간 초수를 잰 뒤, 역할·말투를 분석해요. 처음이면 30~90초 걸릴 수 있어요.</p>
+    <button class="btn yellow" id="do-ana">장면 캡처 · 분석하기</button></div>`;
   $("#do-ana", m).onclick = async (e) => {
-    e.target.disabled = true; e.target.innerHTML = `<span class="spin"></span> 분석 중…`;
+    e.target.disabled = true; e.target.innerHTML = `<span class="spin"></span> 캡처·분석 중…`;
     try {
       const d = await api("/api/analyze", { id });
       S.analysis[id] = d.analysis;
@@ -357,10 +371,23 @@ async function renderMake() {
   const M = S.make;
   if (isClone()) {
     if (!M.ref) { M.tpl = "고르는법"; }
-    else if (!S.analysis[M.ref]) {
-      $("#app").innerHTML = `<div class="loading"><span class="spin"></span> 레퍼런스 분석 결과를 준비하는 중… (처음이면 10~20초)</div>`;
-      try { const d = await api("/api/analyze", { id: M.ref }); S.analysis[M.ref] = d.analysis; const rr = refOf(M.ref); if (rr) rr.analyzed = true; }
-      catch (e) { toast(e.message, true); M.tpl = "고르는법"; }
+    else {
+      const prev = S.analysis[M.ref];
+      const needCapture = !prev || (!(prev.capture && prev.capture.count) && !(prev.scenes || []).some((s) => s.measured || s.keyframe));
+      if (needCapture) {
+        $("#app").innerHTML = `<div class="loading"><span class="spin"></span> 레퍼런스 장면을 캡처하고 초수를 재는 중… (처음이면 30~90초)</div>`;
+        try {
+          const d = await api("/api/analyze", { id: M.ref, force: !S.analysis[M.ref] });
+          S.analysis[M.ref] = d.analysis;
+          const rr = refOf(M.ref); if (rr) rr.analyzed = true;
+        } catch (e) {
+          if (!S.analysis[M.ref]) {
+            toast(e.message, true); M.tpl = "고르는법";
+          } else {
+            toast("장면 캡처는 못 했지만, 기존 분석으로 진행해요. " + e.message, true);
+          }
+        }
+      }
     }
   }
   if (!isClone() && (!M.tpl || !tplOf(M.tpl) || isShoot(tplOf(M.tpl)))) M.tpl = "고르는법";
@@ -369,8 +396,14 @@ async function renderMake() {
   const a = isClone() ? S.analysis[M.ref] : null;
   if (a && !M.drafted && !M.fields.lines) {
     M.fields = { title1: "", title2: "", info: "", voice_mode: a.voice === "text_only" || a.voice === "asmr" ? "text_only" : "narration",
-      lines: a.scenes.map((s) => ({ say: "", label: s.label, role: s.role, source: s.shot === "origin" ? "stock:origin" : s.shot === "photo" ? "photo:1" : "ai:" + s.shot })) };
+      lines: a.scenes.map((s) => ({
+        say: "", label: s.label, role: s.role,
+        source: s.shot === "origin" ? "stock:origin" : s.shot === "photo" ? "photo:1" : (aiAvailable() ? "ai:" + s.shot : "photo:1"),
+        seconds: s.seconds,
+        keyframe: s.keyframe || "",
+      })) };
     M.opts.music = a.music && a.music !== "없음" ? a.music : (M.fields.voice_mode === "text_only" ? "밝은" : M.opts.music);
+    if (!aiAvailable()) M.mode = "photo";
   }
   const refs = isClone() ? S.boot.references.filter((r) => r.id === M.ref) : S.boot.references.filter((r) => r.template === M.tpl).slice(0, 40);
   if (!isClone() && M.ref && !refs.some((r) => r.id === M.ref)) { const rr = refOf(M.ref); if (rr) refs.unshift(rr); else M.ref = null; }
@@ -378,8 +411,8 @@ async function renderMake() {
   const products = S.boot.products;
 
   $("#app").innerHTML = `
-    <h1>${isClone() ? "레퍼런스 구조 그대로 만들기" : "만들기"}</h1>
-    <p class="lead">${isClone() ? "레퍼런스의 장면 순서·자막 방식·말투를 그대로 따라, 내 상품 사진으로 장면을 새로 만들어요." : "템플릿 고르기 → 상품명과 사진 한 장 → AI 문구 초안 확인 → 영상 만들기."} 문구는 초안이니 사실과 다른 부분은 꼭 고쳐 주세요.</p>
+    <h1>${isClone() ? "레퍼런스 구조 그대로 만들기" : "영상 제작"}</h1>
+    <p class="lead">${isClone() ? "레퍼런스에서 장면이 바뀔 때마다 캡처·초수를 재 둔 구조를 그대로 씁니다. 상품 사진만 넣으면 그 초수·순서에 맞춰 내 상품 영상이 나와요." : "템플릿 고르기 → 상품명과 사진 한 장 → AI 문구 초안 확인 → 영상 만들기."} 문구는 초안이니 사실과 다른 부분은 꼭 고쳐 주세요.</p>
     <div class="make">
       <div class="steps">
         <section class="panel step">
@@ -448,12 +481,12 @@ async function renderMake() {
         <section class="panel step ${M.info ? "" : "locked"}" id="step4">
           <div class="step-head"><span class="step-num">4</span><h2>영상 만들기</h2></div>
           <div class="modes">
-            <div class="mode ${M.mode === "ai" ? "on" : ""} ${aiAvailable() && S.boot.engine !== "web" ? "" : "disabled"}" data-mode="ai"><b>AI 장면 + 사진</b><span>${S.boot.engine === "web" ? "웹 엔진에서는 아직 준비 중이에요. 사진만 모드를 써 주세요." : "장면마다 AI가 사진 속 상품으로 5초 영상을 만들어요. 처음 만드는 장면만 비용이 들어요."}</span></div>
-            <div class="mode ${M.mode === "photo" ? "on" : ""}" data-mode="photo"><b>사진만 ${S.boot.engine === "web" ? "(웹 · 추천)" : "(무료·빠름)"}</b><span>올린 사진을 천천히 확대하며 자막·음성을 입혀요. 1분 안팎.</span></div>
+            <div class="mode ${M.mode === "ai" ? "on" : ""} ${aiAvailable() ? "" : "disabled"}" data-mode="ai"><b>AI 장면 + 사진</b><span>${aiAvailable() ? "장면마다 Replicate/FAL이 상품 사진으로 5초 영상을 만들어요. 같은 장면은 캐시되어 처음만 비용이 들어요." : "REPLICATE_API_TOKEN(또는 FAL_KEY)을 .env.local에 넣으면 켤 수 있어요."}</span></div>
+            <div class="mode ${M.mode === "photo" ? "on" : ""}" data-mode="photo"><b>사진만 (무료·빠름)</b><span>${isClone() ? "캡처한 장면 초수대로 상품 사진을 영상으로 이어 붙여요." : "올린 사진을 천천히 확대하며 자막·음성을 입혀요. 1분 안팎."}</span></div>
           </div>
           <div class="opts">
             <label>배경음악 <select id="o-music">${S.boot.moods.map((m) => `<option ${M.opts.music === m ? "selected" : ""}>${m}</option>`).join("")}</select></label>
-            <label>목소리 <select id="o-voice">${S.boot.voices.map((v) => `<option ${M.opts.voice === v ? "selected" : ""}>${v}</option>`).join("")}</select></label>
+            <label>목소리 <select id="o-voice">${voiceOptions().map((v) => `<option ${M.opts.voice === v ? "selected" : ""}>${v}</option>`).join("")}</select></label>
             ${isClone() ? `<label>말하기 <select id="o-vmode"><option value="narration" ${M.fields.voice_mode !== "text_only" ? "selected" : ""}>내레이션</option><option value="text_only" ${M.fields.voice_mode === "text_only" ? "selected" : ""}>자막 + 음악만</option></select></label>` : ""}
             <label class="chk"><input type="checkbox" id="o-ailabel" ${M.opts.ai_label ? "checked" : ""}> ‘AI 생성 장면 포함’ 표시</label>
             ${motionOk(M.tpl) && S.boot.engine !== "web" ? `<label class="chk" title="글자가 튀어나오고, 형광펜 강조·배지·X·O 도장·VS·숫자 카운트·가격표 애니메이션이 들어가요"><input type="checkbox" id="o-motion" ${M.opts.motion ? "checked" : ""}> ✨ 모션그래픽 (움직이는 자막·가격표, 베타)</label>` : ""}
@@ -474,7 +507,7 @@ async function renderMake() {
           <div class="ailabel" id="pv-ai">AI 생성 장면 포함</div>
         </div>
         <div class="scene-tabs" id="pv-tabs"></div>
-        <div class="note">미리보기는 화면 배치만 보여 줘요. 실제 영상은 장면마다 다른 AI 영상이 들어가요.</div>
+        <div class="note">${isClone() ? "미리보기는 배치만 보여 줘요. 실제 영상은 캡처 초수대로 상품 사진이 이어져요." : "미리보기는 화면 배치만 보여 줘요. 실제 영상은 장면마다 다른 AI 영상이 들어가요."}</div>
       </aside>
     </div>`;
 
@@ -495,16 +528,27 @@ function frameInfo(a) {
 
 function anatomyMini(a) {
   const fi = frameInfo(a);
+  const measured = !!(a.capture && a.capture.count) || (a.scenes || []).some((s) => s.measured);
+  const n = measured ? a.scenes.length : fi.scenesN;
   return `<div class="mini-ana">
-    <div class="frames small">${Array.from({ length: fi.scenesN }, (_, i) => frameTile(a.meta.id, i, fi.n)).join("")}</div>
+    <div class="frames small">${Array.from({ length: n }, (_, i) => sceneFrame(a.meta.id, a.scenes[i], i, measured ? n : fi.n, "ftile sm")).join("")}</div>
     <div><b>${esc(a.summary || "")}</b>
-      <div class="muted">${esc(LAYOUT_KO[a.layout] || "")} · ${esc(VOICE_KO[a.voice] || "")} · 장면 ${a.scenes.length}개 · 템포 ${esc(a.pacing || "")}</div>
-      <div class="structure" style="margin-top:6px">${a.scenes.map((s) => `<span>${esc(s.label || ROLE_KO[s.role] || s.role)}</span>`).join("<i>→</i>")}</div></div>
+      <div class="muted">${measured ? `캡처 ${n}컷 · 총 ${(a.capture && a.capture.total) || a.scenes.reduce((t, s) => t + Number(s.seconds || 0), 0)}초` : `${esc(LAYOUT_KO[a.layout] || "")} · ${esc(VOICE_KO[a.voice] || "")} · 장면 ${a.scenes.length}개`} · 템포 ${esc(a.pacing || "")}</div>
+      <div class="structure" style="margin-top:6px">${a.scenes.map((s) => `<span>${esc(s.label || ROLE_KO[s.role] || s.role)} ${s.seconds ? `(${s.seconds}s)` : ""}</span>`).join("<i>→</i>")}</div></div>
   </div>`;
 }
 
 function photoUrl() { return S.make.product.photoData || (S.make.info && S.make.info.photo) || ""; }
-function aiAvailable() { return S.boot.keys.fal || S.boot.keys.replicate; }
+function aiAvailable() { return !!(S.boot.keys && (S.boot.keys.aiScene || S.boot.keys.fal || S.boot.keys.replicate)); }
+
+/** Gemini 키가 있으면 Gemini 목소리를 앞에 둔다 */
+function voiceOptions() {
+  const all = S.boot.voices || ["여성", "남성"];
+  if (!(S.boot.keys && S.boot.keys.gemini)) return all;
+  const gem = all.filter((v) => String(v).startsWith("Gemini"));
+  const rest = all.filter((v) => !String(v).startsWith("Gemini"));
+  return gem.concat(rest);
+}
 
 function fieldsHtml(t) {
   const F = S.make.fields;
@@ -539,16 +583,17 @@ function fieldsHtml(t) {
   if (isClone()) {
     const a = S.analysis[S.make.ref];
     const n = a.scenes.length, fr = frameInfo(a);
-    html += `<div class="field full"><label>장면 (레퍼런스 ↔ 내 영상)</label>
+    html += `<div class="field full"><label>장면 (캡처 초수 ↔ 내 상품 문장)</label>
       ${(F.lines || []).map((ln, i) => {
         const s = a.scenes[i];
         const role = ln.role || (s && s.role) || "TIP";
         const fi = n > 1 ? Math.min(fr.scenesN - 1, Math.round((i / (n - 1)) * (fr.scenesN - 1))) : 0;
+        const sec = (s && s.seconds) || ln.seconds || "";
         return `<div class="clone-row">
-          <div class="ref-side">${s ? frameTile(a.meta.id, fi, fr.n, "ftile sm") : `<div class="ftile sm"></div>`}<div><span class="role r-${esc(role)}">${esc(ln.label || ROLE_KO[role] || role)}</span><div class="muted">${esc(s ? s.purpose || s.text || "" : "말로 고치기에서 추가한 장면")}</div></div></div>
+          <div class="ref-side">${s ? sceneFrame(a.meta.id, s, fi, fr.n, "ftile sm") : `<div class="ftile sm"></div>`}<div><span class="role r-${esc(role)}">${esc(ln.label || ROLE_KO[role] || role)}</span><div class="muted">${sec ? `<b>${esc(sec)}초</b> · ` : ""}${esc(s ? s.purpose || s.text || "" : "말로 고치기에서 추가한 장면")}</div></div></div>
           <div class="my-side">
             <input type="text" data-cl="${i}" value="${esc(ln.say)}" placeholder="이 장면에서 할 말">
-            <div class="row2"><input type="text" data-cll="${i}" value="${esc(ln.label)}" placeholder="라벨 (예: TIP 1)">${sceneSelect(`data-cls="${i}"`, ln.source)}</div>
+            <div class="row2"><input type="text" data-cll="${i}" value="${esc(ln.label)}" placeholder="라벨 (예: TIP 1)">${sceneSelect(`data-cls="${i}"`, ln.source || "photo:1")}</div>
           </div></div>`;
       }).join("")}</div>`;
   }
@@ -896,7 +941,7 @@ async function startRender() {
   const btn = $("#render");
   btn.disabled = true;
   try {
-    const mode = S.boot.engine === "web" ? "photo" : M.mode;
+    const mode = M.mode === "ai" && aiAvailable() ? "ai" : "photo";
     const fields = collectFields();
     if (S.boot.engine === "web") fields.motion = false;
     const job = await api("/api/render", { product: M.info.folder, template: M.tpl, ref: M.ref, mode, fields });
@@ -1141,7 +1186,7 @@ async function openPlan() {
       <div class="mode ${aiAvailable() ? "" : "disabled"}" data-pm="ai"><b>AI 장면</b><span>새 장면만 비용. 같은 상품끼리 장면을 함께 써요</span></div>
     </div>
     <button class="btn primary big" id="plan-run" style="width:100%">선택한 영상 모두 만들기</button>
-    <div class="muted">문구는 Claude가 자동으로 쓰고, 다 만든 뒤 ‘만든 영상’에서 열어 고칠 수 있어요. 광고 문구 점검 결과도 함께 표시돼요.</div>`;
+    <div class="muted">문구는 Claude가 자동으로 쓰고, 다 만든 뒤 ‘완성된 영상’에서 열어 고칠 수 있어요. 광고 문구 점검 결과도 함께 표시돼요.</div>`;
   let pm = "photo";
   body.querySelectorAll("[data-pm]").forEach((el) => el.onclick = () => {
     if (el.classList.contains("disabled")) return;
@@ -1153,7 +1198,7 @@ async function openPlan() {
     try {
       await api("/api/plan/run", { product: M.info.folder, items, mode: pm });
       S.planUntil = Date.now() + 60000;
-      close(); toast(`${items.length}편을 만들기 시작했어요. ‘만든 영상’에서 진행 상황을 볼 수 있어요.`);
+      close(); toast(`${items.length}편을 만들기 시작했어요. ‘완성된 영상’에서 진행 상황을 볼 수 있어요.`);
       location.hash = "#/jobs";
     } catch (e) { toast(e.message, true); }
   };
@@ -1161,7 +1206,7 @@ async function openPlan() {
 
 /* ---------- 만든 영상 ---------- */
 async function renderJobs() {
-  $("#app").innerHTML = `<h1>만든 영상</h1><p class="lead">스튜디오에서 만든 영상과 카드입니다. 파일은 shortform/output 폴더에도 저장돼요.</p><div class="jobs" id="jobs"><div class="loading">불러오는 중…</div></div>`;
+  $("#app").innerHTML = `<h1>완성된 영상</h1><p class="lead">스튜디오에서 만든 영상과 카드입니다. 파일은 shortform/output 폴더에도 저장돼요.</p><div class="jobs" id="jobs"><div class="loading">불러오는 중…</div></div>`;
   const el = $("#jobs");
   try { S.jobs = await api("/api/jobs"); }
   catch (e) { el.innerHTML = `<div class="empty panel">목록을 불러오지 못했어요: ${esc(e.message)} <button class="btn small" onclick="renderJobs()">다시 시도</button></div>`; return; }
@@ -1235,9 +1280,14 @@ async function boot() {
     $("#app").innerHTML = `<div class="empty">서버에 연결하지 못했어요: ${esc(e.message)}</div>`;
     return;
   }
-  if (S.boot.engine === "web") {
-    // 웹 엔진: AI 장면·모션 대신 사진만 모드가 기본
-    if (S.make) S.make.mode = "photo";
+  if (S.make && !aiAvailable()) S.make.mode = "photo";
+  // Gemini 키가 있으면 기본 목소리를 Gemini로, 없으면 무료 edge/OpenAI 여성
+  if (S.make) {
+    if (S.boot.keys && S.boot.keys.gemini) {
+      if (!String(S.make.opts.voice || "").startsWith("Gemini")) S.make.opts.voice = "Gemini 여성 · 또렷한";
+    } else if (String(S.make.opts.voice || "").startsWith("Gemini")) {
+      S.make.opts.voice = "여성";
+    }
   }
   if (S.boot.notice) {
     const bar = document.createElement("div");

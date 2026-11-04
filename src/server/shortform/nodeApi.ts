@@ -2,10 +2,17 @@
  * 숏폼 웹형(Node) API — Vercel 등에서 Python 없이 bootstrap·상품·초안·렌더까지 처리한다.
  * 렌더는 사진만 모드(OpenAI TTS + ffmpeg-static). AI 장면·Remotion은 이후 확장.
  */
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { chatEdit, draftFields, hookVariants, lintTexts, postPack } from '@/server/shortform/copywriter';
+import { chatEdit, cloneDraft, draftFields, hookVariants, lintTexts, postPack } from '@/server/shortform/copywriter';
 import { enqueueWebJob } from '@/server/shortform/photoRender';
+import { hasAiSceneProvider, replicateToken } from '@/server/shortform/aiScene';
+import { geminiApiKey } from '@/server/shortform/geminiTts';
+import {
+  captureScenes,
+  loadCapturedScenes,
+  mergeCaptureIntoAnalysis,
+} from '@/server/shortform/sceneCapture';
 import {
   getJob,
   hideJob,
@@ -237,15 +244,18 @@ export async function handleShortformNode(
             voices: VOICES,
             keys: {
               fal: Boolean(process.env.FAL_KEY),
-              replicate: Boolean(process.env.REPLICATE_API_TOKEN),
+              replicate: Boolean(replicateToken()),
               openai: Boolean(process.env.OPENAI_API_KEY),
               pexels: Boolean(process.env.PEXELS_API_KEY),
-              gemini: Boolean(process.env.GEMINI_API_KEY),
+              gemini: Boolean(geminiApiKey()),
+              aiScene: hasAiSceneProvider(),
             },
             deployHost: Boolean(process.env.VERCEL),
             engine: 'web',
             notice: process.env.VERCEL
-              ? '웹 엔진으로 동작합니다. 사진만 모드로 영상을 만들 수 있어요. (AI 장면·모션그래픽은 준비 중)'
+              ? hasAiSceneProvider()
+                ? '웹 엔진 · Replicate/FAL로 AI 장면·사진만 모드를 쓸 수 있어요.'
+                : '웹 엔진입니다. REPLICATE_API_TOKEN을 넣으면 AI 장면 모드가 켜져요. 사진만 모드는 바로 쓸 수 있어요.'
               : undefined,
           },
         };
@@ -304,7 +314,7 @@ export async function handleShortformNode(
         const product = await readWebProduct(String(params.product ?? ''));
         if (!product) return { ok: false, error: '상품을 먼저 저장해 주세요', status: 400 };
         const rid = String(params.ref ?? '');
-        const analysis = loadAnalysis(rid);
+        let analysis = loadAnalysis(rid);
         if (!analysis) {
           return {
             ok: false,
@@ -312,21 +322,24 @@ export async function handleShortformNode(
             status: 400,
           };
         }
-        const scenes = Array.isArray(analysis.scenes) ? analysis.scenes : [];
-        const lines = scenes.slice(0, 8).map((s: Record<string, unknown>, i: number) => ({
-          say: String(s.say || s.text || `${product.name} 장면 ${i + 1}`),
-          label: String(s.label || ''),
-          role: String(s.role || 'TIP'),
-          source: 'photo:1',
-        }));
-        const fields = {
-          title1: String((analysis.meta as { title?: string } | undefined)?.title || product.name).slice(0, 13),
-          title2: '산지에서 바로',
-          info: `${product.name}, 프로필 링크에`,
-          lines,
-          voice_mode: 'narration',
-        };
-        return { ok: true, result: { fields, via: '규칙', analysis } };
+        // 장면 캡처가 없으면 한 번 시도 (이미 있으면 캐시)
+        if (!(analysis as { capture?: unknown }).capture) {
+          try {
+            const captured = await captureScenes(rid);
+            analysis = mergeCaptureIntoAnalysis(analysis, captured);
+            const analysisDir = path.join(studioRoot(), 'data', 'analysis');
+            mkdirSync(analysisDir, { recursive: true });
+            writeFileSync(
+              path.join(analysisDir, `${rid}.json`),
+              JSON.stringify(analysis, null, 1),
+              'utf8',
+            );
+          } catch (e) {
+            console.warn('[shortform] capture on clone_draft', e);
+          }
+        }
+        const { fields, via } = await cloneDraft(analysis, product as unknown as Record<string, unknown>);
+        return { ok: true, result: { fields, via, analysis } };
       }
 
       case 'render': {
@@ -418,7 +431,88 @@ export async function handleShortformNode(
         };
       }
 
-      case 'analyze':
+      case 'analyze': {
+        const rid = String(params.id || params.url || '').trim();
+        const m = rid.match(/(?:shorts\/|v=|youtu\.be\/|embed\/)?([\w-]{11})/);
+        const vid = m?.[1] || rid;
+        if (!/^[\w-]{11}$/.test(vid)) {
+          return { ok: false, error: '유튜브 쇼츠 주소나 영상 id를 넣어 주세요', status: 400 };
+        }
+        let analysis = loadAnalysis(vid);
+        const force = Boolean(params.force);
+        let captured = force ? null : loadCapturedScenes(vid);
+        try {
+          if (!captured || force) captured = await captureScenes(vid, force);
+        } catch (e) {
+          console.warn('[shortform] analyze capture', e);
+          if (!analysis) {
+            return {
+              ok: false,
+              error: e instanceof Error ? e.message : '장면 캡처에 실패했어요. yt-dlp·ffmpeg를 확인해 주세요.',
+              status: 500,
+            };
+          }
+        }
+        if (captured?.length) {
+          analysis = mergeCaptureIntoAnalysis(
+            analysis || {
+              summary: '장면 전환을 캡처해 구조를 잡았어요',
+              layout: 'full',
+              voice: 'narration',
+              music: '밝은',
+              pacing: '보통',
+              caption: { style: 'keyword_highlight', color: 'yellow', size: 'big' },
+              hook: { text: '', type: '' },
+              title_lines: [],
+              why: ['장면 전환 시점과 초수를 실측했어요'],
+              copy_style: '',
+              template: '기타',
+              item: '',
+              category: '',
+              relevant: true,
+              meta: { id: vid, title: '', length: 0, channel: '', views: 0, description: '' },
+              scenes: [],
+              via: 'scene_capture',
+            },
+            captured,
+          );
+          const analysisDir = path.join(studioRoot(), 'data', 'analysis');
+          mkdirSync(analysisDir, { recursive: true });
+          const body = { ...analysis };
+          delete body.frames;
+          writeFileSync(path.join(analysisDir, `${vid}.json`), JSON.stringify(body, null, 1), 'utf8');
+          analysis.frames = captured.map((s) => `${s.t0.toFixed(1)}–${s.t1.toFixed(1)}s`);
+        }
+        if (!analysis) {
+          return { ok: false, error: '분석을 만들지 못했어요', status: 500 };
+        }
+        // references 에 없으면 user_refs 에 추가
+        try {
+          const refs = loadReferences();
+          if (!refs.items.some((r) => String(r.id) === vid)) {
+            const userPath = path.join(studioRoot(), 'data', 'user_refs.json');
+            const list = readJsonFile<Array<Record<string, unknown>>>(userPath, []);
+            if (!list.some((r) => String(r.id) === vid)) {
+              list.push({
+                id: vid,
+                title: String((analysis.meta as { title?: string } | undefined)?.title || vid),
+                views: Number((analysis.meta as { views?: number } | undefined)?.views || 0),
+                template: String(analysis.template || '기타'),
+                hook: String((analysis.hook as { type?: string } | undefined)?.type || ''),
+                item: String(analysis.item || ''),
+                category: String(analysis.category || ''),
+                source: 'user',
+              });
+              mkdirSync(path.dirname(userPath), { recursive: true });
+              writeFileSync(userPath, JSON.stringify(list, null, 1), 'utf8');
+            }
+          }
+        } catch {
+          /* ignore */
+        }
+        return { ok: true, result: { analysis, id: vid } };
+      }
+
       case 'plan':
       case 'plan_run':
       case 'reshoot':

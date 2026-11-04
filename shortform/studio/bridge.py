@@ -86,14 +86,21 @@ def handle(req: dict):
                 "moods": list(server.music.MOODS) + ["없음"],
                 "voices": list(server.VOICES),
                 "keys": {
-                    k: bool(os.environ.get(v))
-                    for k, v in (
-                        ("fal", "FAL_KEY"),
-                        ("replicate", "REPLICATE_API_TOKEN"),
-                        ("openai", "OPENAI_API_KEY"),
-                        ("pexels", "PEXELS_API_KEY"),
-                        ("gemini", "GEMINI_API_KEY"),
-                    )
+                    "fal": bool(os.environ.get("FAL_KEY")),
+                    "replicate": bool(
+                        os.environ.get("REPLICATE_API_TOKEN")
+                        or os.environ.get("REPLICATE_API_KEY")
+                        or os.environ.get("REPLICATE_TOKEN")
+                    ),
+                    "openai": bool(os.environ.get("OPENAI_API_KEY")),
+                    "pexels": bool(os.environ.get("PEXELS_API_KEY")),
+                    "gemini": bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")),
+                    "aiScene": bool(
+                        os.environ.get("FAL_KEY")
+                        or os.environ.get("REPLICATE_API_TOKEN")
+                        or os.environ.get("REPLICATE_API_KEY")
+                        or os.environ.get("REPLICATE_TOKEN")
+                    ),
                 },
             })
 
