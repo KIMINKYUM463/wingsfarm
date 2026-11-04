@@ -68,7 +68,7 @@ export function ChoiceCard({
       disabled={disabled}
       onClick={onClick}
       className={clsx(
-        'flex flex-1 flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left font-normal transition-colors',
+        'flex w-full flex-1 flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left font-normal transition-colors',
         selected ? 'border-(--color-point) bg-[#F3F9FE]' : 'border-gray-100 bg-white hover:border-gray-300',
         disabled && 'cursor-not-allowed opacity-50',
       )}

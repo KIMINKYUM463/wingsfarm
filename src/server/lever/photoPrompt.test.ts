@@ -2,7 +2,7 @@ import '../testing/resolveHook.ts';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { distinctFrom, productPhotoPrompt, sceneForIndex } = await import('./photoPrompt.ts');
+const { distinctFrom, keywordPhotoPrompt, photoPromptFor, productPhotoPrompt, sceneForIndex } = await import('./photoPrompt.ts');
 const { sceneIdeas } = await import('../../shared/lib/draftMedia.ts');
 
 describe('AI 상품 사진 프롬프트', () => {
@@ -15,6 +15,15 @@ describe('AI 상품 사진 프롬프트', () => {
     assert.ok(lines.includes('Product name (Korean): 성주 참외'));
     assert.ok(!lines.some((l) => l === 'false' || l === '0' || l === ''));
     assert.doesNotMatch(prompt, /for a Korean e-commerce detail page/);
+  });
+
+  it('사진이 없으면 키워드만으로 장면을 만들라고 한다', () => {
+    const prompt = keywordPhotoPrompt('Product name (Korean): 영덕 과메기', 'Keywords (Korean): 청어, 그늘 건조');
+    assert.match(prompt, /no reference photos/i);
+    assert.match(prompt, /영덕 과메기/);
+    assert.match(prompt, /Absolutely no added text/);
+    assert.equal(photoPromptFor(false, 'Scene: 산지'), keywordPhotoPrompt('Scene: 산지'));
+    assert.equal(photoPromptFor(true, 'Scene: 산지'), productPhotoPrompt('Scene: 산지'));
   });
 
   it('다른 사진 장면은 중복·빈 값을 빼고 알려 준다', () => {

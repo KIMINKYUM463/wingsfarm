@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { findUnsupportedClaims } from './factGuard.ts';
-import { countPaletteNodes, derivePalette, luminance, normalizePalette, recolorTree, tintNeutralBackgrounds, TONE_PRESETS } from '../../../shared/lib/palette.ts';
+import { countPaletteNodes, derivePalette, luminance, normalizePalette, recolorTree, resolveProductToneId, suggestProductTones, tintNeutralBackgrounds, TONE_PRESETS } from '../../../shared/lib/palette.ts';
 import { defaultFlow, fitLength, LENGTH_TARGET, sectionTypesFor, suggestableTypes, withAiNotice } from './sections.ts';
 import { estimateLines } from '../templates/nodes.ts';
 
@@ -64,6 +64,22 @@ describe('색 팔레트', () => {
     assert.equal(countPaletteNodes(frame), 2);
   });
 
+  it('바탕은 대표색을 연하게 푼 분홍이 아니라 종이색에 가깝다', () => {
+    const coral = derivePalette('#A24B32');
+    const n = parseInt(coral.bgLight.slice(1), 16);
+    const rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    assert.ok(Math.max(...rgb) - Math.min(...rgb) < 28, coral.bgLight);
+    assert.ok(luminance(coral.bgLight) > 0.8);
+  });
+
+  it('상품명으로 톤을 고르고, 안 맞는 파스텔은 되돌린다', () => {
+    assert.equal(suggestProductTones('햇사과 5kg', 'agri')[0], 'forest');
+    assert.equal(suggestProductTones('제주 고등어', 'agri')[0], 'ocean');
+    assert.equal(suggestProductTones('아카시아 벌꿀', 'food')[0], 'amber');
+    assert.equal(resolveProductToneId('rose', '제주 고등어', 'agri'), 'ocean');
+    assert.equal(resolveProductToneId('mocha', '햇사과 5kg', 'agri'), 'mocha');
+  });
+
   it('테두리(strokeVar)·그림자(shadowVar)도 팔레트를 따라 바뀐다', () => {
     const palette = derivePalette('#1F5C99');
     const frame = { fill: '#FFFFFF', children: [{ fill: '#FFFFFF', stroke: '#000000', strokeVar: 'point', shadowColor: '#000000', shadowVar: 'main' }] };
@@ -76,6 +92,14 @@ describe('색 팔레트', () => {
 });
 
 describe('섹션 카탈로그', () => {
+  it('농수산물은 맨 뒤에 배송·교환환불·상품상세정보가 있다', () => {
+    for (const length of ['short', 'long', 'extra'] as const) {
+      const flow = defaultFlow('agri', length, () => true);
+      const tail = flow.filter((id) => id !== 'notice_ai').slice(-3);
+      assert.deepEqual(tail, ['shipping_method', 'return_policy', 'product_notice'], length);
+    }
+  });
+
   it('근거 없는 섹션은 기본 흐름에서 빠지고 길이 기준을 채운다', () => {
     const flow = defaultFlow('agri', 'short', (t) => !t.evidence);
     assert.equal(flow[0], 'hero');
@@ -92,7 +116,7 @@ describe('섹션 카탈로그', () => {
 
   it('기본 흐름은 길이 상한을 넘지 않는다', () => {
     for (const categoryId of ['agri', 'electronics', 'beauty']) {
-      for (const length of ['short', 'long'] as const) {
+      for (const length of ['short', 'long', 'extra'] as const) {
         assert.ok(defaultFlow(categoryId, length, () => true).length <= LENGTH_TARGET[length][1], `${categoryId} ${length}`);
       }
     }
@@ -102,6 +126,14 @@ describe('섹션 카탈로그', () => {
     const ids = ['hero', 'concept', 'quality', 'detail', 'usage', 'shipping_method', 'faq', 'contact'];
     assert.deepEqual(fitLength(ids, 'agri', 5), ['hero', 'concept', 'shipping_method', 'faq', 'contact']);
     assert.equal(fitLength(ids, 'agri', 20), ids);
+  });
+
+  it('길이를 줄여도 구매 유도는 남긴다', () => {
+    const ids = ['hero', 'concept', 'quality', 'detail', 'usage', 'recommend', 'conversion', 'shipping_method', 'faq', 'contact'];
+    const trimmed = fitLength(ids, 'agri', 6);
+    assert.ok(trimmed.includes('conversion'));
+    assert.ok(trimmed.includes('shipping_method'));
+    assert.equal(trimmed[0], 'hero');
   });
 
   it('명절·선물 섹션은 근거가 있어야 하고, 농산물에는 사용 방법을 먼저 고르지 않는다', () => {

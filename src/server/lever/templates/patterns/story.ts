@@ -158,17 +158,30 @@ export const STORY: PatternGroup = {
       },
     },
     {
-      key: 'secret',
-      name: '맛의 비밀 한 단어',
-      guide: `"맛의 비밀은" 다음 한 단어 (6자 이내, 사실인 것)\n사진: 그 비밀이 보이는 장면\n설명 2문장 ${FACT_NOTE}`,
+      key: 'harvestship',
+      name: '수확에서 출고까지',
+      guide: `메인 카피 (12자 이내)\n단계 3개: 수확 → 선별 → 출고 (각 제목 8자 + 실제 기준 1문장) ${FACT_NOTE}\n아래 사진: 수확·포장 중 한 장면`,
       draw: (c) => {
-        c.header('SECRET', '맛의 비밀은');
-        const bg = c.badge('[한 단어]', c.alignX(480), c.y, 480, 120, { radius: c.t.radius.chip, size: 52, name: 'main_copy' });
-        c.space(Number(bg.height) + 56);
-        c.slot(X, c.y, CW, 600);
-        c.space(600 + 48);
-        c.text('그 한 단어가 왜 맛을 좌우하는지 두 문장으로 설명해 주세요.', SIZE.body, { lineHeight: 1.7, name: 'list_item', gap: 0 });
-        return 110;
+        c.header('FRESH PATH', '수확한 그날\n바로 보내요');
+        const steps = [
+          ['수확', '[수확 시각·방식]'],
+          ['선별', '[선별 기준]'],
+          ['출고', '[출고·택배 기준]'],
+        ];
+        steps.forEach(([title, text], i) => {
+          const top = c.y;
+          disc(c, String(i + 1), X, top, 72, 28);
+          const end = titledAt(c, title, text, X + 100, top + 8, CW - 100, { titleSize: 36, textSize: SIZE.small });
+          c.y = Math.max(top + 72, end) + 28;
+          if (i < steps.length - 1) {
+            c.box(X + 34, c.y - 20, 4, 28, c.line, { name: 'divider' });
+            c.space(12);
+          }
+        });
+        c.space(36);
+        c.slot(X, c.y, CW, 480);
+        c.space(480);
+        return 90;
       },
     },
     {

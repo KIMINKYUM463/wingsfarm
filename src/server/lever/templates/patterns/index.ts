@@ -17,8 +17,9 @@ import { PURCHASE } from './purchase';
 /**
  * 패턴 템플릿 (구성 8개 × 배치 10종 × 스킨 2종 = 160개)
  *
- * 시중 상세페이지에서 반복되는 구성 패턴(후킹→공감→해결→증거→불안 해소→구매 유도, 농산물의 산지·당도·크기·수확·포장 안내)을
- * 직접 다시 그린 것이다. 특정 서비스의 디자인을 옮기지 않았다.
+ * 시중 농수산물 상세(제작사 포트폴리오·7컷 AI템플릿·CS 가이드)에서 반복되는 역할만 뽑아 변형한 배치.
+ * 당도·등급·박스구성·보냉·구매전확인 등 농수산 전용 블록 포함. 특정 템플릿 복제 없음.
+ * 근거: docs/농수산물-상세템플릿-시중분석.md
  */
 export const PATTERN_GROUPS: PatternGroup[] = [HERO, PROBLEM, STORY, POINTS_GROUP, FEATURES, INFO, TRUST, PURCHASE];
 

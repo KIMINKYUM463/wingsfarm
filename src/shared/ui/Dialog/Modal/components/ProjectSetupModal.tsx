@@ -91,7 +91,7 @@ const ProjectSetupModal = ({ data, onClose }: ModalComponentProps) => {
             <Input
               {...register('productName')}
               className="input-single w-full placeholder:text-gray-300"
-              placeholder="예: 맨투맨 / 무선 이어폰 / 립스틱"
+              placeholder="예: 햇사과 5kg / 영덕 과메기 / 아카시아 벌꿀"
               autoFocus
             />
           )}
@@ -130,7 +130,7 @@ const ProjectSetupModal = ({ data, onClose }: ModalComponentProps) => {
             {/* 페이지 길이 + 안내 문구 */}
             {hasCategories && (
               <div className="flex w-full flex-col gap-3">
-                <div className="flex w-full gap-2" role="radiogroup" aria-label="페이지 길이">
+                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3" role="radiogroup" aria-label="페이지 길이">
                   {TEMPLATE_START_LENGTHS.map((option) => (
                     <ChoiceCard
                       key={option.id}

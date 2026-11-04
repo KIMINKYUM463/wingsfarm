@@ -32,7 +32,7 @@ export function useHeroMotion(projectId: string) {
     const element = state.flatElements.get(motion.elementId);
     return element && 'assetId' in element ? (element.assetId as string | undefined) : undefined;
   });
-  const stale = Boolean(motion && motion.kind !== 'stock' && motion.status === 'ready' && currentAssetId !== motion.assetId);
+  const stale = Boolean(motion && motion.kind === 'pan' && motion.status === 'ready' && currentAssetId !== motion.assetId);
   const ready = Boolean(motion?.status === 'ready' && motion.clipUrl && !stale);
   const applied = ready && isMotionApplied(motion!);
 

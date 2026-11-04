@@ -1,8 +1,14 @@
 import 'server-only';
 import type { TemplateListData } from '@/features/editor/types';
-import { LONG_TEMPLATE_COUNTS, type TemplateStartLength } from '@/shared/constants/templateStart';
-import { CATEGORIES } from '../catalog/categories';
+import {
+  TEMPLATE_START_LENGTH_LABEL,
+  part2sForLength,
+  templateCountFor,
+  type TemplateStartLength,
+} from '@/shared/constants/templateStart';
+import { CATEGORIES, findCategory } from '../catalog/categories';
 import { renderFrameSvg } from '../frames/svgRender';
+import { hasBakedTemplatePhotos } from '../frames/photoSlots';
 import {
   cloneWithNewIds,
   countImageSlots,
@@ -14,6 +20,8 @@ import { notFound } from '../http';
 import { publicUrl, saveFile } from '../storage';
 import { nowIso, readJson, removeData, withLock, writeJson } from '../store';
 import { BUILTIN_VERSION, buildBuiltinTemplates } from './builtin';
+import { withAgriClosing } from './agriClosing';
+import { DRAFT_PART2_ORDER, normalizePart2, part2SortKeyOf } from './part2Taxonomy';
 
 export interface TemplateRecord {
   id: string;
@@ -26,6 +34,8 @@ export interface TemplateRecord {
   source: 'builtin' | 'figma';
   thumbnailPath: string;
   imageCount: number;
+  /** 상품 사진 자리가 아닌 큰 사진이 박혀 있으면 초안·교체에 쓰지 않는다 */
+  hasBakedPhotos?: boolean;
   excludedCategoryIds: string[];
   width: number;
   height: number;
@@ -69,6 +79,7 @@ async function seedBuiltins(index: TemplateIndex): Promise<TemplateIndex> {
       source: 'builtin',
       thumbnailPath: thumbnailPathOf(id, 'svg'),
       imageCount: countImageSlots(frame),
+      hasBakedPhotos: hasBakedTemplatePhotos(frame),
       excludedCategoryIds: previous.get(id)?.excludedCategoryIds ?? [],
       width: Number(frame.width) || 860,
       height: Number(frame.height) || 1000,
@@ -95,11 +106,26 @@ const updateIndex = <R>(mutate: (index: TemplateIndex) => Promise<TemplateIndex>
     return pick(index);
   });
 
+async function withBakedPhotoFlags(templates: TemplateRecord[]) {
+  return Promise.all(
+    templates.map(async (template) => {
+      if (template.hasBakedPhotos !== undefined) return template;
+      const frame = await readJson<FrameNode | null>(framePath(template.id), null);
+      return { ...template, hasBakedPhotos: frame ? hasBakedTemplatePhotos(frame) : false };
+    }),
+  );
+}
+
 /** 읽기 전용 (기본 템플릿을 심어야 할 때만 쓰기) */
 export async function loadTemplates() {
   const index = await readJson<TemplateIndex>(INDEX, EMPTY_INDEX);
-  if (index.builtinVersion === BUILTIN_VERSION) return index.templates;
-  return updateIndex((current) => current, (current) => current.templates);
+  if (index.builtinVersion === BUILTIN_VERSION && index.templates.every((t) => t.hasBakedPhotos !== undefined)) {
+    return index.templates;
+  }
+  return updateIndex(
+    async (current) => ({ ...current, templates: await withBakedPhotoFlags(current.templates) }),
+    (current) => current.templates,
+  );
 }
 
 export async function getTemplate(id: string) {
@@ -109,7 +135,9 @@ export async function getTemplate(id: string) {
 }
 
 const isUsable = (template: TemplateRecord, categoryId?: string | null) =>
-  template.status === 'active' && !(categoryId && template.excludedCategoryIds.includes(categoryId));
+  template.status === 'active' &&
+  !template.hasBakedPhotos &&
+  !(categoryId && template.excludedCategoryIds.includes(categoryId));
 
 /** GET /templates (part2별 그룹) */
 export async function listTemplateGroups(query: URLSearchParams): Promise<TemplateListData> {
@@ -160,19 +188,141 @@ const shuffled = <T,>(items: T[]) => {
 
 /**
  * 구성(part2)마다 고르되, 한 페이지 안에서는 같은 디자인 스타일을 우선한다
- * 긴 구성은 LONG_TEMPLATE_COUNTS만큼 서로 다른 템플릿을 같은 구성 자리에 이어 붙인다
+ * 긴·더 긴 구성은 templateCountFor만큼 서로 다른 템플릿을 같은 구성 자리에 이어 붙인다
+ * (Figma 참고용 구성·전체 페이지는 초안에서 제외 — 짧은·긴은 DRAFT_PART2_ORDER, 더 긴은 EXTRA_DRAFT_PART2S)
  */
-export async function pickDraftTemplates(categoryId: string | null, length: TemplateStartLength = 'short') {
-  const usable = (await loadTemplates()).filter((t) => isUsable(t, categoryId)).sort(byOrder);
-  const part2List = [...new Set(usable.map((t) => t.part2))];
-  const group = randomOf([...new Set(usable.map(styleGroupOf))]);
-  return part2List.flatMap((part2) => {
+export function pickDraftTemplatesRandom(
+  usable: TemplateRecord[],
+  length: TemplateStartLength = 'short',
+  preferredStyle?: string,
+  categoryId?: string | null,
+) {
+  const styles = [...new Set(usable.map(styleGroupOf))];
+  const group = preferredStyle && styles.includes(preferredStyle) ? preferredStyle : randomOf(styles);
+  const picked = part2sForLength(length, DRAFT_PART2_ORDER).flatMap((part2) => {
     const candidates = usable.filter((t) => t.part2 === part2);
-    const count = length === 'long' ? (LONG_TEMPLATE_COUNTS[part2] ?? 1) : 1;
+    if (!candidates.length) return [];
+    const count = templateCountFor(part2, length);
     const sameStyle = candidates.filter((t) => styleGroupOf(t) === group);
     const others = candidates.filter((t) => styleGroupOf(t) !== group);
     return [...shuffled(sameStyle), ...shuffled(others)].slice(0, count);
   });
+  return withAgriClosing(usable, picked, categoryId, group, styleGroupOf);
+}
+
+/** 구성별 후보 요약 (AI 프롬프트용, 너무 길지 않게 자름) */
+function candidateSummaries(usable: TemplateRecord[], part2: string, limit = 14) {
+  const pool = shuffled(usable.filter((t) => t.part2 === part2));
+  const builtin = pool.filter((t) => t.source === 'builtin').slice(0, 5);
+  const figma = pool.filter((t) => t.source === 'figma').slice(0, 9);
+  const mixed = [...builtin, ...figma];
+  const rest = pool.filter((t) => !mixed.includes(t));
+  return [...mixed, ...rest].slice(0, limit).map((t) => ({
+    id: t.id,
+    name: t.name.slice(0, 48),
+    source: t.source,
+    style: styleGroupOf(t),
+  }));
+}
+
+const withTimeout = async <T,>(promise: Promise<T>, ms: number) => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('template pick timeout')), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
+/**
+ * 상품명·카테고리에 어울리는 템플릿을 AI가 고른다. 실패 시 스타일 통일 랜덤으로 폴백.
+ */
+export async function pickDraftTemplates(
+  categoryId: string | null,
+  length: TemplateStartLength = 'short',
+  productName = '',
+) {
+  const usable = (await loadTemplates()).filter((t) => isUsable(t, categoryId)).sort(byOrder);
+  const byId = new Map(usable.map((t) => [t.id, t]));
+  const part2s = part2sForLength(length, DRAFT_PART2_ORDER);
+  const needed = part2s.map((part2) => ({
+    part2,
+    count: templateCountFor(part2, length),
+    options: candidateSummaries(usable, part2),
+  })).filter((row) => row.options.length > 0);
+
+  if (!productName.trim() || !needed.length) {
+    return pickDraftTemplatesRandom(usable, length, undefined, categoryId);
+  }
+
+  try {
+    const { requireGemini } = await import('../gemini');
+    const gemini = await requireGemini();
+    const categoryName = findCategory(categoryId)?.name ?? categoryId ?? '';
+    const result = await withTimeout(
+      gemini.generateJson<{ preferredStyle?: string; picks?: { part2?: string; templateIds?: string[] }[] }>(
+        `너는 한국 이커머스 상세페이지 디자이너다. 상품에 어울리는 템플릿을 구성(part2)마다 골라라.
+
+[상품] ${productName.slice(0, 80)}
+[카테고리] ${categoryName}
+[길이] ${TEMPLATE_START_LENGTH_LABEL[length]}
+
+[구성별 후보] (이 목록의 id만 사용)
+${needed
+  .map(
+    (row) =>
+      `## ${row.part2} (정확히 ${row.count}개)
+${row.options.map((o) => `- ${o.id} | ${o.name} | ${o.source} | style:${o.style}`).join('\n')}`,
+  )
+  .join('\n\n')}
+
+규칙:
+- 각 part2마다 templateIds를 정확히 필요한 개수만큼, 후보에 있는 id만.
+- 페이지 전체 톤이 맞도록 preferredStyle(style 값 중 하나)을 정하고, 가능하면 그 style 템플릿을 우선.
+- 농수산·식품이면 내추럴·산지 느낌(classic/natural 계열 이름·figma)을, 선물·고급이면 premium 느낌을 선호.
+- 같은 템플릿 id를 두 번 쓰지 말 것.
+JSON: {"preferredStyle":"classic","picks":[{"part2":"메인 비주얼","templateIds":["..."]},{"part2":"문제 제기","templateIds":["..."]}]}`,
+      ),
+      12_000,
+    );
+
+    const preferredStyle = typeof result.preferredStyle === 'string' ? result.preferredStyle : undefined;
+    const picked: TemplateRecord[] = [];
+    const used = new Set<string>();
+    for (const row of needed) {
+      const aiRow = (result.picks ?? []).find((p) => p.part2 === row.part2);
+      const ids = Array.isArray(aiRow?.templateIds) ? aiRow!.templateIds!.map(String) : [];
+      for (const id of ids) {
+        if (picked.filter((p) => p.part2 === row.part2).length >= row.count) break;
+        const t = byId.get(id);
+        if (!t || used.has(t.id) || t.part2 !== row.part2) continue;
+        used.add(t.id);
+        picked.push(t);
+      }
+      // 부족분은 같은 스타일 우선으로 채움
+      const pool = shuffled(usable.filter((t) => t.part2 === row.part2 && !used.has(t.id)));
+      const same = preferredStyle ? pool.filter((t) => styleGroupOf(t) === preferredStyle) : pool;
+      for (const t of [...same, ...pool.filter((x) => !same.includes(x))]) {
+        if (picked.filter((p) => p.part2 === row.part2).length >= row.count) break;
+        used.add(t.id);
+        picked.push(t);
+      }
+    }
+
+    const ordered = part2s.flatMap((part2) => picked.filter((t) => t.part2 === part2));
+    if (ordered.length >= Math.min(5, needed.length)) {
+      return withAgriClosing(usable, ordered, categoryId, preferredStyle, styleGroupOf);
+    }
+  } catch (err) {
+    console.warn('[lever] pickDraftTemplates AI fallback', err instanceof Error ? err.message : err);
+  }
+
+  return pickDraftTemplatesRandom(usable, length, undefined, categoryId);
 }
 
 /** 템플릿 → 프로젝트 프레임 데이터 (새 id 발급 + 템플릿 이미지 연결) */
@@ -212,6 +362,7 @@ export async function adminListTemplates(query: URLSearchParams) {
       status: t.status,
       thumbnailUrl: publicUrl(t.thumbnailPath),
       imageCount: t.imageCount,
+      hasBakedPhotos: Boolean(t.hasBakedPhotos),
       excludedCategoryIds: t.excludedCategoryIds,
       createdAt: t.createdAt,
       updatedAt: t.updatedAt,
@@ -249,30 +400,40 @@ export interface SyncedTemplate {
   thumbnail?: Buffer;
 }
 
-/** Figma 동기화 결과 반영: figmaId 기준으로 갱신, 파일에서 사라진 템플릿은 삭제 */
-export function replaceFigmaTemplates(synced: SyncedTemplate[]) {
+/**
+ * Figma 동기화 결과 반영
+ * - replaceAll true(기본): figma 템플릿을 synced로 통째 교체
+ * - replaceAll false: synced만 upsert, 다른 figma 템플릿은 유지
+ */
+export function replaceFigmaTemplates(synced: SyncedTemplate[], options: { replaceAll?: boolean } = {}) {
+  const replaceAll = options.replaceAll !== false;
   return updateIndex(
     async (index) => {
-      const previous = new Map(index.templates.filter((t) => t.source === 'figma').map((t) => [t.figmaId, t]));
+      const previous = new Map(index.templates.filter((t) => t.source === 'figma').map((t) => [t.figmaId!, t]));
       const records: TemplateRecord[] = [];
       for (const item of synced) {
+        const frame = sanitizeTemplateFrame(item.frame);
+        if (hasBakedTemplatePhotos(frame)) continue;
         const old = previous.get(item.figmaId);
         const id = old?.id ?? `figma-${item.figmaId.replace(/[^\w-]/g, '-')}`;
-        const frame = sanitizeTemplateFrame(item.frame);
+        const width = Number(frame.width) || 860;
+        const height = Number(frame.height) || 1000;
+        const part2 = normalizePart2({ part2: item.part2, name: item.name, height });
         const record: TemplateRecord = {
           id,
           figmaId: item.figmaId,
           name: item.name,
           part1: item.part1,
-          part2: item.part2,
-          part2SortKey: item.part2SortKey,
+          part2,
+          part2SortKey: part2SortKeyOf(part2),
           status: old?.status ?? 'active',
           source: 'figma',
           thumbnailPath: thumbnailPathOf(id, item.thumbnail ? 'png' : 'svg'),
           imageCount: countImageSlots(frame),
+          hasBakedPhotos: false,
           excludedCategoryIds: old?.excludedCategoryIds ?? [],
-          width: Number(frame.width) || 860,
-          height: Number(frame.height) || 1000,
+          width,
+          height,
           createdAt: old?.createdAt ?? nowIso(),
           updatedAt: nowIso(),
         };
@@ -280,8 +441,15 @@ export function replaceFigmaTemplates(synced: SyncedTemplate[]) {
         records.push(record);
         previous.delete(item.figmaId);
       }
-      for (const removed of previous.values()) await removeData(framePath(removed.id));
-      return { ...index, templates: [...index.templates.filter((t) => t.source !== 'figma'), ...records] };
+      if (replaceAll) {
+        for (const removed of previous.values()) await removeData(framePath(removed.id));
+        return { ...index, templates: [...index.templates.filter((t) => t.source !== 'figma'), ...records] };
+      }
+      const upsertIds = new Set(records.map((r) => r.figmaId!));
+      return {
+        ...index,
+        templates: [...index.templates.filter((t) => t.source !== 'figma' || !upsertIds.has(t.figmaId!)), ...records],
+      };
     },
     (index) => index.templates.filter((t) => t.source === 'figma').length,
   );

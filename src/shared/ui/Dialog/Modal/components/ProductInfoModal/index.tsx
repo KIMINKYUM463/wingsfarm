@@ -69,7 +69,7 @@ const ProductInfoModal = ({ data }: ModalComponentProps) => {
     if (step === 1) return '업체명(브랜드명)을 알려주세요.';
     if (step === 2) return '어떤 방식으로 상세페이지를 만들고 싶으신가요?';
     if (step === 3) return '상세 정보를 입력해주세요.';
-    if (step === 4) return '상품 이미지를 업로드해주세요.';
+    if (step === 4) return '상품 이미지가 있으면 올려주세요.';
     return '';
   };
 

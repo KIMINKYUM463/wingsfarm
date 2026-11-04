@@ -113,16 +113,30 @@ export const HERO: PatternGroup = {
       },
     },
     {
-      key: 'spotlight',
-      name: '원형 상품 사진',
-      guide: `${GUIDE}\n가운데 원형 사진: 배경 없이 상품만 보이는 컷`,
+      key: 'specbanner',
+      name: '원물 + 스펙 한 줄',
+      guide: `대표 원물 사진 (흰·단색 바탕)\n메인 카피: 산지·품종·결과가 한눈에 (2줄)\n스펙 한 줄: 산지 · 중량 · 출고 기준 (사실만)\n${GUIDE}`,
       draw: (c) => {
-        c.header('BRAND NAME', '한 알 한 알\n골라 담았어요', SUB, SIZE.heroTitle);
-        const d = 600;
-        c.slot((W - d) / 2, c.y, d, d, d / 2);
-        c.space(d + 64);
-        chips(c, BENEFITS);
-        return 110;
+        c.y = 0;
+        c.slot(0, 0, W, 920, 0);
+        c.y = 920 + 56;
+        c.text('BRAND NAME', SIZE.caption, { weight: 700, ...c.accent(), letterSpacing: 2, name: 'label', gap: 24 });
+        c.heading('산지에서 고른\n오늘의 제철', SIZE.heroTitle, { name: 'main_copy', gap: 28 });
+        c.text(SUB, SIZE.small, { color: c.muted, lineHeight: 1.6, name: 'sub_copy', gap: 40 });
+        cardRow(
+          c,
+          1,
+          (_, x, w, top) =>
+            bottomOf(
+              c.textAt('[산지]  ·  [중량]  ·  [출고 기준]', x, top, w, SIZE.small, {
+                weight: 700,
+                align: 'left',
+                name: 'list_item',
+              }),
+            ),
+          { pad: 28, after: 0 },
+        );
+        return 80;
       },
     },
     {

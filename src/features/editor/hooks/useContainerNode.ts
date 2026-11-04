@@ -112,6 +112,8 @@ export const useContainerNode = ({ element, ref }: UseContainerNodeOptions) => {
     groupRef,
     currentX,
     currentY,
+    /** 이 컨테이너로 그룹 모드 진입함 → 자식 단독 드래그/변형 허용 */
+    isInGroupMode,
     allowInternalClick,
     onClick: allowInternalClick ? undefined : onClick,
     onDblClick: allowInternalClick ? undefined : onDblClick,

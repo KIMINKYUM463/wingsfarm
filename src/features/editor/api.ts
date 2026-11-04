@@ -347,6 +347,8 @@ export type HeroMotionRequest = { kind: Exclude<HeroMotionKind, 'stock'> } | { k
 
 export interface HeroStockResult {
   query: string;
+  /** 실제로 스톡에 넣은 영어 검색어 */
+  searches?: string[];
   videos: StockVideo[];
   /** 한 사이트만 실패했을 때의 안내 */
   notices: string[];

@@ -13,8 +13,12 @@ import { useActiveFrames } from '@/features/editor/store/useCanvasDataStore';
 import { useStageRefStore } from '@/features/editor/store/useStageRefStore';
 import { useHeroVideoStore } from '@/features/editor/store/useHeroVideoStore';
 
-/** 돋보기 단계 (1 = 실제 크기) */
+/** 돋보기 단계 (버튼 ± 용, 1 = 실제 크기) */
 const ZOOM_STEPS = [0.25, 0.33, 0.5, 0.67, 0.75, 0.9, 1, 1.25, 1.5, 2];
+const ZOOM_MIN = ZOOM_STEPS[0];
+const ZOOM_MAX = ZOOM_STEPS.at(-1)!;
+/** Ctrl+휠 한 칸당 배율 변화 (0.1 = 10%p) */
+const WHEEL_ZOOM_STEP = 0.1;
 /** 200%까지 확대해도 흐리지 않으면서 메모리를 아끼는 배율 */
 const PREVIEW_PIXEL_RATIO = 1.5;
 /** 맞춤 배율을 계산할 때 좌우 여백 */
@@ -126,18 +130,22 @@ function PagePreviewModal({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, zoomBy]);
 
-  // Ctrl(⌘) + 휠 = 돋보기 (브라우저 확대를 막으려면 passive가 아닌 리스너가 필요)
+  // Ctrl(⌘) + 휠 = 10%씩 확대·축소
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
     const onWheel = (e: WheelEvent) => {
       if (!e.ctrlKey && !e.metaKey) return;
+      if (e.deltaY === 0) return;
       e.preventDefault();
-      zoomBy(e.deltaY < 0 ? 1 : -1);
+      e.stopImmediatePropagation(); // 아래 에디터 줌 핸들러와 겹치지 않게
+      const step = e.deltaY < 0 ? WHEEL_ZOOM_STEP : -WHEEL_ZOOM_STEP;
+      setZoom((z) => {
+        const current = z ?? fitZoomRef.current;
+        return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((current + step) * 100) / 100));
+      });
     };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, [zoomBy]);
+    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
+    return () => window.removeEventListener('wheel', onWheel, { capture: true });
+  }, []);
 
   const skipped = done ? frames.length - pages.length : 0;
 

@@ -35,7 +35,7 @@ export interface ProductImageItem {
   groupName?: string;
   /** 샘플 이미지 URL 목록 (스타일 프리셋 호버 프리뷰용) */
   sampleImageUrls?: string[];
-  /** 템플릿 미리보기 URL (2초 호버 프리뷰용) */
+  /** 템플릿 미리보기 URL (돋보기 버튼 → 팝업) */
   previewUrl?: string;
   /** 원본 API 데이터 (계층 구조 등 추가 정보 필요시) */
   data?: unknown;

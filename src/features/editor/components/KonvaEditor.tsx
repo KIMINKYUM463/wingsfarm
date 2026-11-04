@@ -16,6 +16,7 @@ import { useAutoSave } from '@/features/editor/hooks/useAutoSave';
 import { useBeforeUnload } from '@/features/editor/hooks/useBeforeUnload';
 import { useAiGuideModal } from '@/features/editor/hooks/useAiGuideModal';
 import { useEditorKeyboard } from '@/features/editor/hooks/useEditorKeyboard';
+import { useCtrlWheelZoom } from '@/features/editor/hooks/useCtrlWheelZoom';
 import { FrameLoadingPlaceholder } from '@/features/editor/components/FrameLoadingPlaceholder';
 import { TEMPLATE_COPY_LOADING } from '@/features/editor/lib/templateCopy';
 import { EditorMediaBar } from '@/features/editor/components/overlay/EditorMediaBar';
@@ -78,6 +79,8 @@ export function KonvaEditor({
   useBeforeUnload();
   // 에디터 키보드 단축키 (Escape, Delete 등)
   useEditorKeyboard();
+  // Ctrl(⌘) + 휠로 화면 확대·축소
+  useCtrlWheelZoom();
 
   // 렌더링할 프레임 데이터 (active만)
   const activeFrames = storeFrames.filter((f) => f.status === 'active');

@@ -56,7 +56,7 @@ const ZoomControl = ({ className }: ZoomControlProps) => {
 
   return (
     <div className={clsx('btn-editor-wrap', className)}>
-      <ActionTooltip content="화면 축소" direction="top">
+      <ActionTooltip content="화면 축소 (Ctrl + 휠 · 10%)" direction="top">
         <IconButton
           type="button"
           className="btn-editor min-w-(--btn-h)"
@@ -80,7 +80,7 @@ const ZoomControl = ({ className }: ZoomControlProps) => {
         />
         <span className="pointer-events-none absolute right-2 text-gray-400">%</span>
       </div>
-      <ActionTooltip content="화면 확대" direction="top">
+      <ActionTooltip content="화면 확대 (Ctrl + 휠 · 10%)" direction="top">
         <IconButton
           type="button"
           className="btn-editor min-w-(--btn-h)"

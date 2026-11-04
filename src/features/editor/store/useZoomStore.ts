@@ -23,7 +23,7 @@ import { devtools } from 'zustand/middleware';
 export const ZOOM_LIMITS = {
   MIN: 30, // 최소 30%
   MAX: 100, // 최대 100% (원본 크기)
-  STEP: 5, // 조절 단위 5%
+  STEP: 10, // 조절 단위 10% (휠·버튼 공통)
 } as const;
 
 interface ZoomState {

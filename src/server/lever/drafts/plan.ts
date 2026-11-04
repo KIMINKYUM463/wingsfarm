@@ -4,8 +4,9 @@ import { defaultCutSource, sceneIdeas, spreadOwnCuts } from '@/shared/lib/draftM
 import type { DraftAnalysis, DraftInput, DraftPlan, DraftProgress, DraftRecord, DraftSection, PhotoAnalysis } from '@/shared/types/draft';
 import { CATEGORIES, findCategory } from '../catalog/categories';
 import { DETAIL_COPY_RULES } from '../copyStyle';
-import { derivePalette, normalizePalette, palettePresets, tintNeutralBackgrounds, TONE_PRESETS } from '../catalog/palette';
-import { defaultFlow, findSectionType, fitLength, LENGTH_TARGET, suggestableTypes, withAiNotice, type SectionType } from '../catalog/sections';
+import { derivePalette, normalizePalette, palettePresets, suggestProductTones, tintNeutralBackgrounds, TONE_PRESETS } from '../catalog/palette';
+import { defaultFlow, ensureAgriClosing, findSectionType, fitLength, LENGTH_TARGET, sectionTypesFor, suggestableTypes, withAiNotice, type SectionType } from '../catalog/sections';
+import { ensureSalesAnchors, orderBySalesFunnel } from './compositionLogic';
 import {
   allocatableFacts,
   defaultOwners,
@@ -42,6 +43,7 @@ const COPY_RULES = `규칙:
 - 형용사보다 숫자·지명·방법을 앞에 둔다("신선한 사과"보다 "새벽 수확 후 당일 발송").
 - 다른 상품을 깎아내리지 않는다. 의학적 효능을 단정하지 않는다.
 - 메인 문구는 짧고 구체적으로(공백 포함 22자 이내, 필요하면 \\n으로 두 줄). 픽셀·글꼴은 지정하지 않는다.
+- [페이지 흐름]에 나온 이웃 섹션과 **같은 메인 문구·같은 역할 제목**을 쓰지 않는다. 특히 "이런 분께 추천" / "추천해요" 류는 섹션 id가 recommend일 때만 쓰고, 핵심 특징·활용 섹션에는 쓰지 않는다. 각 섹션은 자기 역할(품질/산지/활용/추천/구매 등)만 맡는다.
 
 ${DETAIL_COPY_RULES}`;
 
@@ -74,7 +76,25 @@ interface AnalysisResponse {
 
 const strings = (value: unknown, max = 12) => (Array.isArray(value) ? value.map(String).filter(Boolean).slice(0, max) : []);
 
+function emptyAnalysis(input: DraftInput, coverageNotes: string[] = []): { analysis: DraftAnalysis; palette: DraftPlan['palette']; paletteReason: string } {
+  const fallback = palettePresets(input.categoryId, input.productName)[0];
+  return {
+    analysis: {
+      identity: { scale: '', usage: '', material: '', structure: '', colorFinish: '' },
+      photos: [],
+      confirmedFacts: [],
+      coverageNotes,
+      reviewQuotes: [],
+    },
+    palette: fallback.palette,
+    paletteReason: fallback.reason,
+  };
+}
+
 async function analyzeProduct(gemini: GeminiClient, input: DraftInput, evidence: string) {
+  if (!input.productImagePaths.length) {
+    return emptyAnalysis(input, ['상품 사진을 올리면 장면에 맞춰 더 구체적으로 쓸 수 있어요']);
+  }
   const photos = await loadInlineImages(input.productImagePaths, 10);
   const references = input.referenceMode === 'reference' ? await loadInlineImages(input.referenceImagePaths, 4) : [];
   const result = await gemini.generateJson<AnalysisResponse>(
@@ -91,7 +111,7 @@ ${evidence}
  "palette":{"main":"#RRGGBB","point":"#RRGGBB","bgLight":"#RRGGBB","bgDark":"#RRGGBB"},
  "paletteReason":"이 색을 고른 이유 한 문장(30자 내외, ~했어요 체)"}
 
-색 규칙: main은 버튼·배지에 쓰는 진한 색(흰 글씨가 잘 보이게), point는 main보다 한 단계 연하게, bgLight는 흰색에 가까운 바탕, bgDark는 bgLight보다 조금 짙은 바탕. 상품 사진${references.length ? '과 참고 디자인' : ''}의 색감에서 고른다.
+색 규칙: main은 버튼·배지에 쓰는 진하고 차분한 색(흰 글씨가 잘 보이게). 상품 빛깔에서 고른다(사과=짙은 초록, 꿀=앰버, 생선=네이비, 한우=모카). 파스텔 핑크·코랄로 페이지 전체를 물들이지 말 것. point는 main보다 조금만 연하게, bgLight는 거의 흰색인 따뜻한 종이색, bgDark는 그보다 한 단계만 짙게.
 사진·입력으로 확인할 수 없는 내용은 쓰지 않는다.`,
     [...photos, ...references],
   );
@@ -111,7 +131,7 @@ ${evidence}
     coverageNotes: strings(result.coverageNotes, 5),
     reviewQuotes: [],
   };
-  const fallback = palettePresets(input.categoryId)[0];
+  const fallback = palettePresets(input.categoryId, input.productName)[0];
   return {
     analysis,
     palette: tintNeutralBackgrounds(normalizePalette(result.palette, fallback.palette)),
@@ -146,8 +166,14 @@ function settleOutline(ids: string[], owners: FactOwners, facts: FactEntry[], ca
   const taken = new Set(Object.values(owners).flat());
   const extra = defaultOwners(ids, facts.filter((f) => !taken.has(f.id)));
   const merged = Object.fromEntries(ids.map((id) => [id, [...(owners[id] ?? []), ...(extra[id] ?? [])]]));
-  const kept = fitLength(pruneOutline(ids, merged), categoryId, max);
-  return { ids: kept, owners: Object.fromEntries(kept.map((id) => [id, merged[id]])) };
+  const kept = ensureAgriClosing(
+    orderBySalesFunnel(
+      fitLength(ensureSalesAnchors(pruneOutline(ids, merged), ['summary', 'concept', 'conversion']), categoryId, max),
+    ),
+    categoryId,
+    sectionTypesFor(categoryId).map((t) => t.id),
+  );
+  return { ids: kept, owners: Object.fromEntries(kept.map((id) => [id, merged[id] ?? []])) };
 }
 
 async function planOutline(gemini: GeminiClient, input: DraftInput, available: SectionType[], fallback: string[], facts: FactEntry[]): Promise<Outline> {
@@ -168,6 +194,8 @@ ${available.map((t) => `${t.id}: ${t.name} — ${t.description}`).join('\n')}
 
 규칙:
 - 첫 섹션은 hero. 같은 id는 한 번만. 최대 ${max}개. 판매자 기획안이 있으면 그 흐름을 우선한다.
+- 세일즈 순서: hero → 소개/컨셉 → 신뢰(후기·인증) → 상품 근거 → 산지/농부 → 먹는법/보관 → 옵션 → 구매유도 → 배송/FAQ.
+- 농수산물이면 맨 끝에 shipping_method, return_policy, product_notice를 꼭 넣는다.
 - 사실 하나는 한 섹션에만 맡긴다. 섹션마다 facts에 맡은 사실 id를 단다.
 - 맡을 사실이 없는 섹션은 넣지 않는다. 단 다음 섹션은 사실 없이도 된다: ${factFree.join(', ')}.
 - 사실이 적으면 섹션 수를 줄인다. 같은 사실을 여러 섹션으로 나눠 늘리지 않는다(예: 산지 하나로 산지 섹션 두 개 X).
@@ -235,7 +263,7 @@ function focusRules(ctx: SectionContext, type: SectionType, outline: Outline, av
   const flexible = !FACT_FREE_SECTIONS.has(type.id);
   return [
     type.id === 'hero'
-      ? '[첫 화면] 페이지에서 가장 강한 사실 2~3개를 짧은 키워드로만 쓴다. 자세한 설명은 뒤 섹션이 한다.'
+      ? '[첫 화면] 상품명을 제목으로 쓰지 말고, 가장 센 맛·식감·수치 한 줄을 쓴다. 항목 3개는 짧은 키워드. 자세한 설명은 뒤 섹션이 한다.'
       : owned.length
         ? `[이 섹션이 맡은 사실] ${owned.join(', ')} — 이 사실을 중심으로, 손님이 장면을 떠올릴 만큼 구체적으로 쓴다.`
         : '[이 섹션이 맡은 사실] 없음 — 사진에서 보이는 것과 일반 정보(먹는 법·보관·고객이 실제로 궁금한 점)로 쓰고, 상품 사실은 꼭 필요할 때 한 번 짧게만.',
@@ -417,7 +445,23 @@ async function runPlan(draftId: string) {
 
     const facts = allocatableFacts(evidenceEntries(input, reviewQuotes));
     const reuseIds = reuse?.sectionTypeIds.filter((id) => available.some((t) => t.id === id));
-    const planned = reuseIds ? { ids: reuseIds, owners: defaultOwners(reuseIds, facts) } : await planOutline(gemini, input, available, fallback, facts);
+    const picked = draft.selectedCandidateId
+      ? draft.candidates?.find((c) => c.id === draft.selectedCandidateId) ?? null
+      : null;
+    const fromCandidate =
+      picked &&
+      settleOutline(
+        picked.sectionTypeIds.filter((id) => available.some((t) => t.id === id) || id === 'notice_ai'),
+        {},
+        facts,
+        input.categoryId,
+        LENGTH_TARGET[picked.lengthHint ?? input.length][1],
+      );
+    const planned = reuseIds
+      ? { ids: reuseIds, owners: defaultOwners(reuseIds, facts) }
+      : fromCandidate && fromCandidate.ids.length >= MIN_OUTLINE
+        ? fromCandidate
+        : await planOutline(gemini, input, available, fallback, facts);
     const outline = { ...planned, ids: withAiNotice(planned.ids, input.imageMode === 'ai') };
     const types = outline.ids.map((id) => findSectionType(input.categoryId, id)).filter((t): t is SectionType => Boolean(t));
     await setProgress(draftId, {
@@ -434,9 +478,13 @@ async function runPlan(draftId: string) {
     const sections = spreadSectionCuts(await reviseRepeats(gemini, ctx, types, outline, written, facts), input.productImagePaths.length);
     const plan: DraftPlan = {
       sections,
-      palette: reuse?.palette ?? analyzed.palette,
-      paletteReason: reuse ? '기존 페이지의 색 조합을 그대로 가져왔어요' : analyzed.paletteReason,
-      designStyle: reuse?.designStyle ?? previousStyle,
+      palette: reuse?.palette ?? picked?.palette ?? analyzed.palette,
+      paletteReason: reuse
+        ? '기존 페이지의 색 조합을 그대로 가져왔어요'
+        : picked
+          ? `${picked.title} 구성에 맞춘 색이에요`
+          : analyzed.paletteReason,
+      designStyle: reuse?.designStyle ?? picked?.designStyle ?? previousStyle,
       analysis: analyzed.analysis,
     };
     await updateDraft(draftId, (d) => ({
@@ -455,7 +503,7 @@ async function runPlan(draftId: string) {
 
 export function validateForPlan(input: DraftInput) {
   if (!input.productName.trim()) throw badRequest('상품명을 입력해주세요.');
-  if (!input.productImagePaths.length) throw badRequest('상품 사진을 1장 이상 올려주세요.');
+  if (!input.productImagePaths.length && input.imageMode !== 'blank') throw badRequest('상품 사진을 1장 이상 올려주세요.');
   if (!findCategory(input.categoryId)) throw badRequest('카테고리를 선택해주세요.');
   if (!input.features.trim()) throw badRequest('제품 주요 특징을 입력해주세요.');
 }
@@ -463,7 +511,9 @@ export function validateForPlan(input: DraftInput) {
 /** POST /drafts/{id}/plan */
 export async function startPlan(draftId: string) {
   const draft = await getDraft(draftId);
-  if (draft.status === 'planning' || draft.status === 'generating') throw badRequest('이미 진행 중인 작업이 있습니다.');
+  if (draft.status === 'composing' || draft.status === 'planning' || draft.status === 'generating') {
+    throw badRequest('이미 진행 중인 작업이 있습니다.');
+  }
   validateForPlan(draft.input);
   await requireGemini();
   const updated = await updateDraft(draftId, (d) => ({
@@ -559,7 +609,12 @@ JSON: {"categoryId":"목록의 id","features":["사진과 상품명으로 확인
 export async function shufflePalettes(draftId: string) {
   const draft = await getDraft(draftId);
   const current = draft.plan?.palette.main;
-  const pool = TONE_PRESETS.filter((t) => derivePalette(t.main).main !== current).sort(() => Math.random() - 0.5);
+  const home = new Set(suggestProductTones(draft.input.productName, draft.input.categoryId));
+  const pool = TONE_PRESETS.filter((t) => derivePalette(t.main).main !== current).sort((a, b) => {
+    const rank = (id: string) => (home.has(id) ? 0 : 1);
+    const byHome = rank(a.id) - rank(b.id);
+    return byHome !== 0 ? byHome : Math.random() - 0.5;
+  });
   return pool.slice(0, 4).map((t) => ({ palette: derivePalette(t.main), reason: `${t.name} 톤으로 바꿔 봤어요` }));
 }
 

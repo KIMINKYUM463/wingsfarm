@@ -147,9 +147,7 @@ export const EditorTransformer = ({
     };
   }, [transformerRef, selectedDimensionsKey, selectedGroupChildrenKey]);
 
-  // 다중 선택 또는 컨테이너 모드일 때 shouldOverdrawWholeArea 활성화
-  // → 다중 선택: 전체 영역 드래그 지원
-  // → 컨테이너 모드: 내부 요소 드래그 방지 (Transformer가 내부 요소 드래그하지 않도록)
+  // 다중 선택 또는 컨테이너(그룹) 모드: 선택 박스 전체 영역을 잡아 드래그할 수 있게 함
   const shouldOverdraw = selectedInThisFrame.length > 1 || groupMode.active;
 
   // Line/Arrow 타입 요소가 선택되었을 때

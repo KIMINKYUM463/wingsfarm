@@ -34,14 +34,15 @@ export default function FigmaSyncPanel({ onSynced }: FigmaSyncPanelProps) {
       .catch(() => setOpen(true));
   }, []);
 
-  const handleSync = async () => {
+  const handleSync = async (syncAll = false) => {
     setSyncing(true);
     setError(null);
     setResult(null);
     try {
       const response = await syncFigmaTemplates({
         token: token.trim() || undefined,
-        fileKey: fileKey.trim() || undefined,
+        fileKey: syncAll ? undefined : fileKey.trim() || undefined,
+        syncAll,
         hideBuiltin,
       });
       setResult(response);
@@ -55,7 +56,8 @@ export default function FigmaSyncPanel({ onSynced }: FigmaSyncPanelProps) {
     }
   };
 
-  const canSync = !syncing && (Boolean(token.trim()) || Boolean(status?.hasToken)) && Boolean(fileKey.trim());
+  const canSync = !syncing && (Boolean(token.trim()) || Boolean(status?.hasToken));
+  const canSyncOne = canSync && Boolean(fileKey.trim());
 
   return (
     <div className="border-b bg-white px-4 py-3">
@@ -76,11 +78,19 @@ export default function FigmaSyncPanel({ onSynced }: FigmaSyncPanelProps) {
           </button>
           <button
             type="button"
-            onClick={handleSync}
-            disabled={!canSync}
+            onClick={() => handleSync(false)}
+            disabled={!canSyncOne}
             className="rounded-md bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-600 disabled:opacity-40"
           >
-            {syncing ? '불러오는 중… (수 분 걸릴 수 있음)' : 'Figma에서 동기화'}
+            {syncing ? '불러오는 중…' : '이 파일만 동기화'}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSync(true)}
+            disabled={!canSync}
+            className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-40"
+          >
+            {syncing ? '불러오는 중… (여러 파일·중복 제거)' : '계획된 파일 전부 + 중복 제거'}
           </button>
         </div>
       </div>
@@ -107,7 +117,7 @@ export default function FigmaSyncPanel({ onSynced }: FigmaSyncPanelProps) {
               placeholder="https://www.figma.com/design/XXXXXXXX/..."
               className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm"
             />
-            <span className="text-gray-400">페이지 = 대분류(part1), 섹션 = 구성(part2, 예: &quot;2-3 핵심 포인트&quot;), 섹션 안 프레임 = 템플릿</span>
+            <span className="text-gray-400">페이지 = 대분류, 섹션 = 구성(예: &quot;2-3 핵심 포인트&quot;). 연출·사진 레퍼런스 페이지와 작은 사진 프레임은 자동으로 제외합니다.</span>
           </label>
           <label className="flex items-center gap-2 md:col-span-2">
             <input type="checkbox" checked={hideBuiltin} onChange={(e) => setHideBuiltin(e.target.checked)} />

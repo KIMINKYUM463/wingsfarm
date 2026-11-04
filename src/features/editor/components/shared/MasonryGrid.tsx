@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState } from 'react';
 import Button from '@/shared/ui/Button/Button';
+import Icon from '@/shared/ui/Icon';
 import Spinner from '@/shared/ui/Spinner/Spinner';
 import Skeleton from '@/shared/ui/Skeleton/Skeleton';
+import { DialogBase, CloseButton } from '@/shared/ui/Dialog/shared';
 import { clsx } from 'clsx';
-import { useDelayedHover } from '@/shared/hooks/useDelayedHover';
 
 // Placeholder image URLs for fallback
 const PLACEHOLDER_IMAGES = [
@@ -42,107 +42,118 @@ interface MasonryGridItemProps {
   itemClassName?: string;
 }
 
-/** 개별 아이템 컴포넌트 (호버 프리뷰 지원) */
+/** 개별 템플릿 썸네일 — 클릭은 적용, 돋보기는 큰 미리보기 팝업 */
 const MasonryGridItem: React.FC<MasonryGridItemProps> = ({
   item,
   imageUrl,
   onItemClick,
   itemClassName,
 }) => {
-  const containerRef = useRef<HTMLButtonElement>(null);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const hasPreview = !!item.previewUrl;
-
-  const {
-    isActive: showPreview,
-    data: previewPosition,
-    onMouseEnterWithRef,
-    onMouseLeave,
-  } = useDelayedHover<{ x: number; y: number }>({ enabled: hasPreview });
-
-  const handleMouseEnter = () => {
-    if (hasPreview) {
-      onMouseEnterWithRef(containerRef);
-    }
-  };
-
-  // 클릭 시 프리뷰 닫기 (다이얼로그 열릴 때 onMouseLeave 안 되는 문제 방지)
-  const handleClick = () => {
-    onMouseLeave();
-    onItemClick(item);
-  };
 
   return (
     <>
-      <Button
-        ref={containerRef}
-        onClick={handleClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={onMouseLeave}
-        className={clsx(
-          'hover-border-point overflow-hidden rounded-lg',
-          itemClassName,
-          'w-full',
-          'mb-3.5',
-          'break-inside-avoid',
-        )}
-      >
-        {imageUrl ? (
-          <>
-            {!isImageLoaded && <Skeleton className="aspect-3/4 w-full" bg="gray-100" />}
-            <img
-              src={imageUrl}
-              alt={item.name ?? ''}
-              className={clsx('h-auto w-full', !isImageLoaded && 'hidden')}
-              onLoad={() => setIsImageLoaded(true)}
-            />
-          </>
-        ) : (
-          item.preview || <div className="h-6 w-6 bg-gray-300" />
-        )}
-      </Button>
+      <div className={clsx('group relative mb-3.5 w-full break-inside-avoid', itemClassName)}>
+        <Button
+          onClick={() => onItemClick(item)}
+          className="hover-border-point w-full overflow-hidden rounded-lg"
+        >
+          {imageUrl ? (
+            <>
+              {!isImageLoaded && <Skeleton className="aspect-3/4 w-full" bg="gray-100" />}
+              <img
+                src={imageUrl}
+                alt={item.name ?? ''}
+                className={clsx('h-auto w-full', !isImageLoaded && 'hidden')}
+                onLoad={() => setIsImageLoaded(true)}
+              />
+            </>
+          ) : (
+            item.preview || <div className="h-6 w-6 bg-gray-300" />
+          )}
+        </Button>
 
-      {/* 1초 호버 후 미리보기 */}
-      {showPreview && previewPosition && item.previewUrl && (
-        <TemplatePreview position={previewPosition} name={item.name ?? ''} previewUrl={item.previewUrl} />
+        {/* 우측 상단 돋보기 — 누르면 큰 미리보기 팝업 (호버로 안 띄움: 떠있는 오류 방지) */}
+        {hasPreview && (
+          <Button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPreviewOpen(true);
+            }}
+            className="absolute top-1.5 right-1.5 z-10 flex size-7 items-center justify-center rounded-full bg-black/55 text-white shadow-sm transition-colors hover:bg-black/70"
+            aria-label="템플릿 크게 보기"
+          >
+            <Icon name="search" width={16} />
+          </Button>
+        )}
+      </div>
+
+      {previewOpen && item.previewUrl && (
+        <TemplatePreviewModal
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          name={item.name ?? '템플릿 미리보기'}
+          previewUrl={item.previewUrl}
+        />
       )}
     </>
   );
 };
 
-interface TemplatePreviewProps {
-  position: { x: number; y: number };
+interface TemplatePreviewModalProps {
+  open: boolean;
+  onClose: () => void;
   name: string;
   previewUrl: string;
 }
 
-// 템플릿 프리뷰 상수
-const PREVIEW_WIDTH = 250; // w-62.5 = 250px
-const TEMPLATE_ASPECT_RATIO = 860 / 1080; // 템플릿 기본 비율 (width / height)
-const PREVIEW_HEIGHT = Math.round(PREVIEW_WIDTH / TEMPLATE_ASPECT_RATIO); // ≈ 314px
-
-/** 템플릿 미리보기 (1초 호버 후 표시) */
-const TemplatePreview: React.FC<TemplatePreviewProps> = ({ position, name, previewUrl }) => {
+/** 돋보기 클릭 시 템플릿을 크게 보여주는 팝업 (DialogBase는 전체 화면 flex — 안쪽 카드에 스타일) */
+const TemplatePreviewModal: React.FC<TemplatePreviewModalProps> = ({
+  open,
+  onClose,
+  name,
+  previewUrl,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
 
-  return createPortal(
-    <div
-      className="fixed z-9999 overflow-hidden rounded-xl bg-white shadow-(--shadow-1)"
-      style={{ left: position.x, top: position.y, width: PREVIEW_WIDTH, minHeight: PREVIEW_HEIGHT }}
+  return (
+    <DialogBase
+      isOpen={open}
+      onClose={onClose}
+      closeOnBackdrop
+      ariaLabelledBy="template-preview-title"
     >
-      {isLoading && (
-        <div className="flex-center" style={{ height: PREVIEW_HEIGHT }}>
-          <Spinner className="text-(--color-point)" />
+      {/* dialog-base가 flex row라 헤더·이미지가 옆으로 붙지 않도록 카드 하나로 감싼다 */}
+      <div
+        className="relative flex max-h-[90vh] w-[min(520px,92vw)] flex-col overflow-hidden rounded-2xl bg-white shadow-(--shadow-1)"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p id="template-preview-title" className="sr-only">
+          {name || '템플릿 미리보기'}
+        </p>
+        {/* X는 카드 우측 상단 고정 (이미지 위에 겹침) */}
+        <CloseButton
+          onClick={onClose}
+          className="rounded-full bg-white/90 text-gray-500 shadow-sm hover:bg-white hover:text-gray-800"
+        />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {isLoading && (
+            <div className="flex-center min-h-[70vh]">
+              <Spinner className="text-(--color-point)" />
+            </div>
+          )}
+          <img
+            src={previewUrl}
+            alt={name || '템플릿 미리보기'}
+            className={clsx('block h-auto w-full', isLoading && 'hidden')}
+            onLoad={() => setIsLoading(false)}
+          />
         </div>
-      )}
-      <img
-        src={previewUrl}
-        alt={name}
-        className={clsx('h-auto w-full', isLoading && 'hidden')}
-        onLoad={() => setIsLoading(false)}
-      />
-    </div>,
-    document.body,
+      </div>
+    </DialogBase>
   );
 };
 

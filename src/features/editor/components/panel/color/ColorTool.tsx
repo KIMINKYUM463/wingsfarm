@@ -16,7 +16,7 @@ import type { DraftPalette } from '@/shared/types/draft';
 const SAVE_DELAY_MS = 800;
 
 /**
- * 색상 탭 — 색상 무드 4색 + 추천 톤 11종
+ * 색상 탭 — 색상 무드 4색 + 추천 톤
  * - 팔레트 역할(colorVar)이 연결된 바탕·배지·강조 문구를 한 번에 다시 칠한다 (실행 취소 가능)
  * - AI 초안으로 만든 페이지에서만 쓸 수 있다 (템플릿 페이지에는 역할 정보가 없음)
  */

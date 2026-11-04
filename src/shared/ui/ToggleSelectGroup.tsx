@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import Icon from '@/shared/ui/Icon';
 import Button from '@/shared/ui/Button/Button';
@@ -14,8 +14,10 @@ interface ToggleSelectGroupProps {
   title?: string;
   options: Option[];
   maxSelectCount?: number;
-  /** 초기 선택 값 (리마운트 시 상태 복원용) */
+  /** 비제어 초기값 (리마운트 시 복원) */
   defaultValue?: string[];
+  /** 제어 선택값 — AI 판단 등으로 외부에서 바꿀 때 사용 */
+  value?: string[];
   onChange?: (selectedIds: string[]) => void;
 }
 
@@ -24,24 +26,35 @@ const ToggleSelectGroup = ({
   options,
   maxSelectCount,
   defaultValue = [],
+  value,
   onChange,
 }: ToggleSelectGroupProps) => {
-  const [selectedIds, setSelectedIds] = useState<string[]>(defaultValue);
-  const [isExpanded, setIsExpanded] = useState(defaultValue.length > 0);
+  const isControlled = value !== undefined;
+  const [internalSelected, setInternalSelected] = useState<string[]>(defaultValue);
+  const selectedIds = isControlled ? value : internalSelected;
+  const [isExpanded, setIsExpanded] = useState((value ?? defaultValue).length > 0);
+
+  // 제어 모드: 외부에서 선택이 들어오면(AI 판단) 펼쳐서 보여 줌
+  useEffect(() => {
+    if (isControlled && value.length > 0) setIsExpanded(true);
+  }, [isControlled, value]);
 
   const handleToggle = (id: string) => {
-    const newSelectedIds = selectedIds.includes(id)
+    const next = selectedIds.includes(id)
       ? selectedIds.filter((selectedId) => selectedId !== id)
-      : [...selectedIds, id];
+      : maxSelectCount && !selectedIds.includes(id) && selectedIds.length >= maxSelectCount
+        ? selectedIds
+        : [...selectedIds, id];
 
-    setSelectedIds(newSelectedIds);
-    onChange?.(newSelectedIds);
+    if (!isControlled) setInternalSelected(next);
+    onChange?.(next);
   };
 
   return (
     <div className="space-y-3">
       {/* Header */}
       <Button
+        type="button"
         justify="between"
         onClick={() => setIsExpanded(!isExpanded)}
         className={clsx(

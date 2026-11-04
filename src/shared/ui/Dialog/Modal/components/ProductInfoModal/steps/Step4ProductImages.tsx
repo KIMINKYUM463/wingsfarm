@@ -12,7 +12,7 @@ const Step4ProductImages = ({
 }: Step4Props) => {
   return (
     <div>
-      <LabelInput title="상품 이미지를 올려주세요." isEssential>
+      <LabelInput title="상품 이미지를 올려주세요." hint="선택 · 없으면 키워드를 보고 에디터에서 AI가 사진을 만들어요">
         <FileInput
           id="productImageUrls"
           onChange={createUrlUpdateHandler('productImageUrls')}

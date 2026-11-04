@@ -104,6 +104,10 @@ export const findVisibleLeaves = (elements: KonvaElement[], match: (element: Kon
 export const findBlankImageSlots = (elements: KonvaElement[]): KonvaElement[] =>
   findVisibleLeaves(elements, (element) => isImageElement(element) && !('assetId' in element && element.assetId));
 
+/** 활성 프레임의 빈 사진 자리. 생성 API가 섹션을 찾도록 rootId를 붙인다 */
+export const collectBlankImageSlots = (frames: KonvaFrameElement[]): KonvaElement[] =>
+  frames.flatMap((frame) => findBlankImageSlots(frame.children).map((element) => ({ ...element, rootId: frame.id })));
+
 /** 판매자가 채워야 할 문구([입력 필요]·[키워드 1]·~적어 주세요)가 남은 텍스트 — 다운로드 전 안내·이동에 사용 */
 export const findPlaceholderTexts = (elements: KonvaElement[]): KonvaElement[] =>
   findVisibleLeaves(elements, (element) => element.type === 'text' && 'text' in element && hasPlaceholder(element.text));

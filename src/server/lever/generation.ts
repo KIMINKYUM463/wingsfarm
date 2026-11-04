@@ -87,15 +87,18 @@ async function buildContext(gemini: GeminiClient, project: ProjectRecord, reques
       ? await loadInlineImages(request.generationData.imageUpload.detailPageUrls, 4)
       : [];
 
+  const photoGuide = productImages.length
+    ? `아래 상품 정보와 첨부 사진(앞쪽 ${productImages.length}장은 상품 사진)을 분석해`
+    : '상품 사진은 없다. 아래 상품명·업체명·키워드만으로';
   const context = await gemini.generateJson<ProductContext>(
-    `너는 한국 이커머스 상세페이지 기획자다. 아래 상품 정보와 첨부 사진(앞쪽 ${productImages.length}장은 상품 사진)을 분석해 상세페이지 기획용 정보를 JSON으로 정리하라.
+    `너는 한국 이커머스 상세페이지 기획자다. ${photoGuide} 상세페이지 기획용 정보를 JSON으로 정리하라.
 
 ${describeRequest(project, request)}
 
 JSON 형식:
 {"summary":"상품 한 줄 요약","target":"핵심 타깃 고객","tone":"문구 톤앤매너","sellingPoints":["핵심 장점 5개"],"keywords":["강조 키워드 8개"]}
 
-규칙: 사진과 입력에서 확인할 수 없는 성분·수치·인증·수상 이력은 지어내지 않는다.`,
+규칙: 사진과 입력에서 확인할 수 없는 성분·수치·인증·수상 이력은 지어내지 않는다. 사진이 없으면 키워드에 없는 수치·인증을 만들지 않는다.`,
     [...productImages, ...references],
   );
   return {

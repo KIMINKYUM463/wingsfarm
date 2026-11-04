@@ -52,6 +52,9 @@ export interface SyncFigmaRequest {
   token?: string;
   /** Figma 파일 키 또는 파일 URL (비우면 저장된 값 사용) */
   fileKey?: string;
+  fileKeys?: string[];
+  /** 계획된 여러 파일을 병합하고 중복 제거 */
+  syncAll?: boolean;
   /** true면 기본 템플릿을 숨기고 Figma 템플릿만 사용 */
   hideBuiltin?: boolean;
 }
@@ -59,6 +62,8 @@ export interface SyncFigmaRequest {
 export interface SyncFigmaResponse {
   message: string;
   syncedCount?: number;
+  droppedDuplicates?: number;
+  perFile?: { label: string; count: number }[];
   errors?: string[];
 }
 

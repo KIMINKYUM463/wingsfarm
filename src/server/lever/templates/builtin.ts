@@ -1,6 +1,7 @@
 import type { FrameNode } from '../frames/tree';
 import { buildDesignTemplates, type DesignTemplate } from './designTemplates';
 import { buildPatternTemplates } from './patterns';
+import { PART2_ORDER, part1Of, part2SortKeyOf } from './part2Taxonomy';
 
 /**
  * 기본 제공 템플릿 — 모두 초안 생성과 같은 레이아웃 엔진(canvas.ts)으로 그린다
@@ -16,30 +17,21 @@ export interface TemplateSeed {
   frame: FrameNode;
 }
 
-/** 구성 순서 (초안 프로젝트는 part2별로 1개씩 이 순서대로 만든다) */
-export const PART2_ORDER = [
-  { part1: '도입', part2: '메인 비주얼' },
-  { part1: '공감', part2: '문제 제기' },
-  { part1: '공감', part2: '호기심 유발' },
-  { part1: '설득', part2: '핵심 포인트' },
-  { part1: '설득', part2: '상품 특징' },
-  { part1: '정보', part2: '상세 정보' },
-  { part1: '신뢰', part2: '고객 후기' },
-  { part1: '마무리', part2: '구매 안내' },
-] as const;
-
-const sortKeyOf = (part2: string) => PART2_ORDER.findIndex((p) => p.part2 === part2) + 1;
+export { PART2_ORDER, DRAFT_PART2_ORDER } from './part2Taxonomy';
 
 /** 레이아웃 엔진으로 만든 템플릿 → 구성 순서 정보를 붙인 시드 */
 function toSeeds(templates: DesignTemplate[]): TemplateSeed[] {
-  return templates.map(({ slug, part2, frame }) => {
-    const part = PART2_ORDER.find((p) => p.part2 === part2) ?? PART2_ORDER[3];
-    return { slug, ...part, part2SortKey: sortKeyOf(part.part2), frame };
-  });
+  return templates.map(({ slug, part2, frame }) => ({
+    slug,
+    part1: part1Of(part2),
+    part2,
+    part2SortKey: part2SortKeyOf(part2),
+    frame,
+  }));
 }
 
 /** 기본 템플릿 구성이 바뀌면 올려서 저장소에 다시 반영한다 */
-export const BUILTIN_VERSION = 7;
+export const BUILTIN_VERSION = 8;
 
 export function buildBuiltinTemplates(): TemplateSeed[] {
   return [

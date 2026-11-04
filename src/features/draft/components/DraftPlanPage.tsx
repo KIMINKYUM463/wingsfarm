@@ -16,6 +16,7 @@ import type { CutSource, DraftPlan, DraftProgress, HeroMotion, PalettePreset } f
 import { draftApi, type DraftDto } from '../api';
 import { draftKey, errorMessage, useAutosave, useDraft, useDraftMutation } from '../hooks';
 import { AddSectionModal } from './AddSectionModal';
+import { CompositionPicker } from './CompositionPicker';
 import { PalettePanel } from '@/shared/ui/PalettePanel';
 import { designStyleOption } from '@/shared/lib/designStyles';
 import { DesignStylePanel } from './DesignStylePanel';
@@ -25,14 +26,19 @@ import { Modal, SaveStatus } from './ui';
 
 const MOTION_LABELS: Record<Exclude<HeroMotion, 'off'>, string> = { pan: '줌·이동', video: 'AI 영상' };
 
-/** /detail-page/drafts/[id] — 기획 중 진행 표시 → 섹션 카드 편집 → 생성 진행 */
+/** /detail-page/drafts/[id] — 구성 후보 → 기획 → 섹션 편집 → 생성 */
 export default function DraftPlanPage({ id }: { id: string }) {
   const { data: draft, isLoading, isError } = useDraft(id);
 
   let body;
   if (isLoading) body = <Centered>불러오는 중…</Centered>;
   else if (isError || !draft) body = <Centered>초안을 찾을 수 없어요.</Centered>;
-  else if (draft.status === 'planning' || (draft.status === 'plan_failed' && !draft.plan)) body = <PlanProgress draft={draft} />;
+  else if (draft.status === 'composing') body = <ComposeProgress draft={draft} />;
+  else if (draft.status === 'choosing' || (draft.candidates?.length && !draft.plan && draft.status !== 'planning'))
+    body = <CompositionPicker draft={draft} />;
+  else if (draft.status === 'planning' || (draft.status === 'plan_failed' && !draft.plan && !draft.candidates?.length))
+    body = <PlanProgress draft={draft} />;
+  else if (draft.status === 'plan_failed' && draft.candidates?.length) body = <CompositionPicker draft={draft} />;
   else if (draft.status === 'generating' || draft.status === 'completed') body = <GenerateProgress draft={draft} />;
   else if (draft.plan) body = <PlanEditor key={draft.id} draft={draft} initialPlan={draft.plan} />;
   else body = <Centered>아직 기획 초안이 없어요. <Link className="text-(--color-point) underline" href={ROUTES.DRAFT_CREATE_FROM({ draft: id })}>입력 화면으로</Link></Centered>;
@@ -47,6 +53,51 @@ export default function DraftPlanPage({ id }: { id: string }) {
 
 const Centered = ({ children }: { children: React.ReactNode }) => <div className="py-24 text-center text-sm text-gray-500">{children}</div>;
 
+// ===== 구성 후보 만드는 중 =====
+
+function ComposeProgress({ draft }: { draft: DraftDto }) {
+  const elapsed = useElapsed();
+  const retry = useDraftMutation(() => draftApi.compositions(draft.id));
+  const backdrop = <DraftBackdrop sectionNames={['전환형', '신뢰형', '스토리형', '정보형', '프리미엄']} />;
+
+  if (draft.status === 'plan_failed') {
+    return (
+      <>
+        {backdrop}
+        <ProgressDialog failed title="구성 후보를 만들지 못했어요" percent={null}>
+          <p className="text-sm leading-6 text-gray-500">{draft.errorMessage}</p>
+          <div className="flex justify-end gap-2">
+            <Link className="btn-outline flex items-center text-sm" href={ROUTES.DRAFT_CREATE_FROM({ draft: draft.id })}>
+              입력 수정하기
+            </Link>
+            <button type="button" className="btn-primary text-sm" disabled={retry.isPending} onClick={() => retry.mutate(undefined)}>
+              다시 시도
+            </button>
+          </div>
+        </ProgressDialog>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {backdrop}
+      <ProgressDialog
+        title="구성 후보 고르는 중"
+        meta={`최대 1분 · ${elapsed}`}
+        percent={45}
+        footer="상품에 맞는 구성 5안을 먼저 보여 드려요. 고르면 그다음 문구를 씁니다."
+      >
+        <ul className="flex flex-col gap-2.5">
+          <ProgressStep state="done" label={`사진 ${draft.input.productImagePaths.length}장을 올렸어요`} />
+          <ProgressStep state="active" label={draft.progress?.message || '전환·신뢰·스토리·정보·프리미엄 흐름을 비교하고 있어요'} />
+          <ProgressStep state="todo" label="구성 5안을 보여 드릴게요" />
+        </ul>
+      </ProgressDialog>
+    </>
+  );
+}
+
 // ===== 기획 중 =====
 
 const PLAN_STEPS: { step: DraftProgress['step']; label: (d: DraftDto) => string }[] = [
@@ -59,7 +110,11 @@ const PLAN_STEPS: { step: DraftProgress['step']; label: (d: DraftDto) => string 
 
 function PlanProgress({ draft }: { draft: DraftDto }) {
   const elapsed = useElapsed();
-  const retry = useDraftMutation(() => draftApi.plan(draft.id));
+  const retry = useDraftMutation(() =>
+    draft.selectedCandidateId
+      ? draftApi.selectComposition(draft.id, draft.selectedCandidateId)
+      : draftApi.compositions(draft.id),
+  );
   const progress = draft.progress;
   const activeIndex = progress?.step === 'done' ? PLAN_STEPS.length : PLAN_STEPS.findIndex((s) => s.step === progress?.step);
   const copyFraction = progress?.step === 'copy' && progress.total ? progress.current / progress.total : 0.3;
@@ -150,10 +205,18 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
   );
   const replan = useDraftMutation(async () => {
     await flush();
-    return draftApi.plan(draft.id);
+    return draftApi.compositions(draft.id);
   });
-  const generate = useDraftMutation(async () => {
-    await flush();
+  /** planOverride: 「만들지 않기」로 AI 컷을 비운 뒤 바로 생성할 때 저장·생성에 쓴다 */
+  const generate = useDraftMutation(async (planOverride?: DraftPlan) => {
+    if (planOverride) {
+      setPlan(planOverride);
+      const saved = await draftApi.patch(draft.id, { plan: planOverride });
+      queryClient.setQueryData(draftKey(draft.id), saved);
+      markSaved(planOverride);
+    } else {
+      await flush();
+    }
     return draftApi.generate(draft.id);
   });
 
@@ -313,14 +376,34 @@ function PlanEditor({ draft, initialPlan }: { draft: DraftDto; initialPlan: Draf
               if (warningCount && !window.confirm(`근거를 확인해야 하는 문구가 ${warningCount}건 있어요. 그대로 만들까요?`)) return;
               const withVideo = estimate.heroMotion === 'video';
               const aiCuts = plan.sections.flatMap((s) => s.cuts).filter((c) => c.source === 'ai').length;
-              const ok = aiCuts
-                ? await confirmAiImages({
-                    count: aiCuts,
-                    extraUsd: withVideo ? HERO_VIDEO_USD : 0,
-                    hint: withVideo ? '맨 위 AI 영상 비용이 포함돼 있어요.' : '만들지 않으면 아래 버튼으로 사진 컷을 "비워두기"로 바꿀 수 있어요.',
-                  })
-                : !withVideo || window.confirm(`AI 영상이 포함돼 ${formatCost(HERO_VIDEO_USD)} 정도가 Gemini 키로 청구돼요. 만들까요?`);
-              if (ok) generate.mutate(undefined);
+              if (aiCuts) {
+                const ok = await confirmAiImages({
+                  count: aiCuts,
+                  extraUsd: withVideo ? HERO_VIDEO_USD : 0,
+                  hint: withVideo
+                    ? '맨 위 AI 영상 비용이 포함돼 있어요. 만들지 않으면 사진·영상 없이 바로 만들어요.'
+                    : '만들지 않으면 사진 자리는 비워 두고 바로 만들어요.',
+                });
+                if (ok) {
+                  generate.mutate(undefined);
+                  return;
+                }
+                // 「만들지 않기」→ AI 컷을 빈 자리로 두고(영상도 끄고) 생성 진행
+                generate.mutate({
+                  ...plan,
+                  heroMotion: withVideo ? 'off' : plan.heroMotion,
+                  sections: plan.sections.map((s) => ({
+                    ...s,
+                    cuts: s.cuts.map((c) => (c.source === 'ai' ? { ...c, source: 'blank' as const } : c)),
+                  })),
+                });
+                return;
+              }
+              if (withVideo && !window.confirm(`AI 영상이 포함돼 ${formatCost(HERO_VIDEO_USD)} 정도가 Gemini 키로 청구돼요. 만들까요?`)) {
+                generate.mutate({ ...plan, heroMotion: 'off' });
+                return;
+              }
+              generate.mutate(undefined);
             }}
           >
             {generate.isPending ? '시작하는 중…' : '✦ 이대로 만들기'}

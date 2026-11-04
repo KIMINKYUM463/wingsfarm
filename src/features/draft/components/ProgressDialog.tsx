@@ -140,3 +140,75 @@ export function DraftBackdrop({ sectionNames }: { sectionNames: string[] }) {
     </div>
   );
 }
+
+const BUILD_STEPS = [
+  '상품에 맞는 설득 흐름을 고르고 있어요',
+  '섹션 블록을 위에서 아래로 쌓고 있어요',
+  '색·톤과 디자인 스타일을 맞추고 있어요',
+  '상세페이지 샘플을 이어 붙이고 있어요',
+  '비교할 구성 후보를 정리하고 있어요',
+] as const;
+
+const BUILD_SECTIONS = ['히어로', '핵심 포인트', '상품 특징', '고객 후기', '배송 안내', 'FAQ', '구매 안내'] as const;
+
+/**
+ * 재조합·구성 생성 중 — 뒤에 상세페이지가 쌓이는 애니메이션 + 중앙 진행 팝업
+ */
+export function ComposeBuildingOverlay({ productName, mode = 'reshuffle' }: { productName: string; mode?: 'reshuffle' | 'compose' }) {
+  const elapsed = useElapsed();
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTick((n) => n + 1), 1600);
+    return () => clearInterval(timer);
+  }, []);
+
+  const active = tick % BUILD_STEPS.length;
+  const visibleCount = Math.min(BUILD_SECTIONS.length, 3 + (tick % 5));
+  const sectionNames = BUILD_SECTIONS.slice(0, visibleCount).map(String);
+  const percent = Math.min(94, 8 + tick * 11);
+  const title = mode === 'reshuffle' ? 'AI가 상세페이지 구성을 다시 짜고 있어요' : 'AI가 상세페이지 구성을 만들고 있어요';
+
+  return (
+    <>
+      <div className="pointer-events-none fixed inset-0 z-[10000] overflow-y-auto bg-gray-50/95" aria-hidden>
+        <div className="min-h-full py-8">
+          <DraftBackdrop sectionNames={sectionNames} />
+          {/* 가운데에 쌓이는 폰 목업 — 섹션이 하나씩 떨어지는 느낌 */}
+          <div className="pointer-events-none fixed right-6 bottom-8 hidden w-[140px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl lg:block">
+            <div className="bg-(--color-point)/10 px-2 py-1.5 text-center text-[10px] font-medium text-(--color-point)">미리보기 구성 중</div>
+            <div className="flex max-h-72 flex-col gap-1 overflow-hidden p-2">
+              {sectionNames.map((name, i) => (
+                <div
+                  key={`${name}-${i}-${visibleCount}`}
+                  className="animate-rise-in rounded-md bg-gray-50 px-2 py-2 text-[10px] text-gray-600"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <div className="mb-1 h-1.5 w-10 rounded bg-gray-200" />
+                  {name}
+                  <div className="mt-1.5 h-8 rounded bg-gray-100" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <ProgressDialog
+        title={title}
+        meta={elapsed}
+        percent={percent}
+        footer={
+          productName.trim()
+            ? `「${productName.trim()}」에 어울리는 새 구성 5안을 만드는 중이에요.`
+            : '상품에 어울리는 새 구성 5안을 만드는 중이에요.'
+        }
+      >
+        <ul className="flex flex-col gap-2.5">
+          {BUILD_STEPS.map((label, i) => (
+            <ProgressStep key={label} state={i < active ? 'done' : i === active ? 'active' : 'todo'} label={label} />
+          ))}
+        </ul>
+      </ProgressDialog>
+    </>
+  );
+}

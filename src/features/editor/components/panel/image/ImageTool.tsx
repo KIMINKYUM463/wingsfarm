@@ -9,9 +9,11 @@ import {
 import Spinner from '@/shared/ui/Spinner/Spinner';
 import Empty from '@/shared/ui/Empty';
 import AssetGrid from '@/features/editor/components/panel/file/AssetGrid';
+import { useFillBlankSlots } from '@/features/editor/hooks/useFillBlankSlots';
 import { useGenerateAIImageV2 } from '@/features/editor/hooks/useGenerateAIImageV2';
 import { useSelectedElement } from '@/features/editor/hooks/useSelectedElement';
 import { isImageElement } from '@/features/editor/lib/element-finder';
+import { formatCost, MEDIA_COST } from '@/shared/lib/draftMedia';
 import { useAssets } from '@/features/assets';
 import FileInput from '@/shared/ui/FileInput/FileInput';
 import { useAssetUpload } from '@/features/editor/hooks/useAssetUpload';
@@ -77,6 +79,7 @@ const ImageTool = () => {
   const { assets, total, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useAssets({
     limit: 45,
   });
+  const { count: blankCount, fill: fillBlanks, isPending: isFillingBlanks } = useFillBlankSlots();
 
   // 단일 파일 업로드 (플러스 버튼용 - 업로드 후 자동 선택)
   const {
@@ -196,6 +199,17 @@ const ImageTool = () => {
         }
         infiniteScroll={{ hasNextPage, isFetchingNextPage, fetchNextPage }}
       >
+        {blankCount > 0 && (
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-xl border border-(--color-point)/20 bg-(--color-point)/5 px-3 py-2.5 text-left text-sm font-semibold text-(--color-point) disabled:opacity-60"
+            disabled={isFillingBlanks}
+            onClick={() => void fillBlanks()}
+          >
+            <span>{isFillingBlanks ? '빈 자리에 AI 사진 넣는 중…' : `빈 자리 ${blankCount}곳을 AI로 한 번에 넣기`}</span>
+            {!isFillingBlanks && <span className="text-xs font-medium opacity-80">{formatCost(blankCount * MEDIA_COST.aiImageUsd)}</span>}
+          </button>
+        )}
         {photoElements.length > 0 && <ImageAdjustSection elements={photoElements} />}
         <StyleSelector selected={selectedStyleDisplay} onClick={openStyleSelector} />
         <ResultDescription

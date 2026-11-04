@@ -9,7 +9,7 @@ import { asNode, collectEditableTexts, collectPromptGuides, findNode, isImageSlo
 import { DETAIL_COPY_RULES } from './copyStyle';
 import { PLACEHOLDER_RULES } from './copywriter';
 import { copyBrief } from './productFacts';
-import { distinctFrom, productPhotoPrompt, sceneForIndex } from './photoPrompt';
+import { distinctFrom, photoPromptFor, sceneForIndex } from './photoPrompt';
 import { closestAspectRatio, loadInlineImage, loadInlineImages, requireGemini, type InlineImage } from './gemini';
 import { badRequest, notFound } from './http';
 import { getProject, updateProject } from './projects';
@@ -51,17 +51,20 @@ export async function generateSlotImage(projectId: string, body: GenerateAIImage
   const variant = Number.isInteger(body.variantIndex) ? Number(body.variantIndex) : slotIndex;
   const scene = sceneForIndex(project.categoryId, variant);
 
+  const gemini = await requireGemini();
+  const references = await loadInlineImages(project.productImagePaths, 3);
   // 섹션 문구·작성 가이드는 넣지 않는다 (글씨를 그려 넣는 원인)
-  const prompt = productPhotoPrompt(
+  const prompt = photoPromptFor(
+    references.length > 0,
     `Product name (Korean): ${project.productName}`,
     project.context?.summary && `About the product (Korean): ${project.context.summary}`,
+    project.context?.keywords?.length && `Keywords (Korean): ${project.context.keywords.join(', ')}`,
+    project.context?.sellingPoints?.length && `Selling points (Korean): ${project.context.sellingPoints.join(', ')}`,
     `Scene (Korean): ${scene}`,
     distinctFrom(sceneIdeas(project.categoryId).filter((s) => s !== scene)),
     `Compose for a ${width}x${height} area.`,
   );
 
-  const gemini = await requireGemini();
-  const references = await loadInlineImages(project.productImagePaths, 3);
   const image = await gemini.generateImage(prompt, references, closestAspectRatio(width, height));
   const asset = await saveGeneratedImage(projectId, image, { ready: body.autoReady, width, height });
   return { imageId: body.imageId, assetId: asset.id, imageUrl: asset.url };
@@ -107,8 +110,10 @@ async function runImageJob(job: ImageJob, body: GenerateAIImageV2Request, scene:
       references = await loadInlineImages(project.productImagePaths, 3);
     }
 
-    const prompt = productPhotoPrompt(
+    const prompt = photoPromptFor(
+      references.length > 0,
       `Product name (Korean): ${project.productName} (${findCategory(project.categoryId)?.name ?? ''})`,
+      project.context?.keywords?.length && `Keywords (Korean): ${project.context.keywords.join(', ')}`,
       `Scene style "${styleName}": ${scene}`,
       body.prompt?.trim() && `Additional request from the seller (may be Korean): ${body.prompt.trim()}`,
     );
@@ -234,6 +239,60 @@ JSON 형식: {"groups":[{"name":"...","keywords":["..."]}]}`,
   if (!groups.length) throw badRequest('키워드를 생성하지 못했습니다. 다시 시도해주세요.');
 
   await updateProject(projectId, (p) => ({ ...p, keywords: groups }));
+  return { groups };
+}
+
+/**
+ * POST /projects/{id}/generate/keyword-picks
+ * 후보 키워드 중 이 상품에 실제로 맞는 것만 골라 자동 체크용으로 반환한다.
+ */
+export async function pickKeywords(projectId: string) {
+  const project = await getProject(projectId);
+  const { groups: candidates } =
+    project.keywords?.length
+      ? { groups: project.keywords }
+      : await generateKeywords(projectId, {});
+
+  if (!candidates.length) throw badRequest('선택할 키워드 후보가 없습니다. 잠시 후 다시 시도해주세요.');
+
+  const gemini = await requireGemini();
+  const result = await gemini.generateJson<{ groups?: { name: string; keywords: string[] }[] }>(
+    `너는 한국 이커머스 상세페이지 기획자다. 아래 상품에 실제로 맞는 키워드만 골라라.
+상품명: ${project.productName}
+카테고리: ${findCategory(project.categoryId)?.name ?? '기타'}
+
+후보(그룹별):
+${JSON.stringify(candidates)}
+
+규칙:
+- 각 그룹에서 후보에 있는 키워드만 고른다. 새 키워드를 만들지 않는다.
+- 그룹당 2~4개 (후보가 적으면 그에 맞게)
+- 확인할 수 없는 인증·수치·과장 표현은 고르지 않는다.
+- 이 상품과 무관한 후보는 비운다.
+JSON 형식: {"groups":[{"name":"그룹명","keywords":["고른키워드"]}]}`,
+  );
+
+  const byName = new Map(candidates.map((g) => [g.name, new Set(g.keywords)]));
+  const groups = (result.groups ?? [])
+    .filter((g) => g?.name && Array.isArray(g.keywords))
+    .map((g) => {
+      const name = String(g.name);
+      const allowed = byName.get(name);
+      if (!allowed) return null;
+      const keywords = g.keywords.map(String).filter((k) => allowed.has(k));
+      return keywords.length ? { name, keywords } : null;
+    })
+    .filter((g): g is { name: string; keywords: string[] } => Boolean(g));
+
+  // 모델이 그룹명을 살짝 바꿔도 후보 순서로 최소 1개씩 보완
+  if (!groups.length) {
+    const fallback = candidates
+      .map((g) => ({ name: g.name, keywords: g.keywords.slice(0, Math.min(3, g.keywords.length)) }))
+      .filter((g) => g.keywords.length > 0);
+    if (!fallback.length) throw badRequest('키워드를 고르지 못했습니다. 다시 시도해주세요.');
+    return { groups: fallback };
+  }
+
   return { groups };
 }
 

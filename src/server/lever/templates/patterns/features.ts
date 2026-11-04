@@ -8,21 +8,27 @@ export const FEATURES: PatternGroup = {
   part2: '상품 특징',
   patterns: [
     {
-      key: 'beforeafter',
-      name: '전후 비교 사진',
-      guide: '메인 카피 (15자 이내)\n사진 2장: 같은 구도의 전/후 (손질 전후·포장 전후 등 실제 사진)\n사진 설명 2개 (각 15자 이내)',
+      key: 'crosscut',
+      name: '단면·과육',
+      guide: '메인 카피 (12자 이내)\n왼쪽: 겉모습 사진 / 오른쪽: 단면·과육 사진 (같은 개체면 더 좋음)\n아래 설명 2줄: 색·과즙·씨앗 등 눈으로 확인되는 사실만',
       draw: (c) => {
-        c.header('BEFORE & AFTER', '한눈에 보이는\n차이');
+        c.header('INSIDE', '겉과 속을\n함께 보세요');
         cardRow(
           c,
           2,
           (i, x, w, top) => {
-            c.slot(x, top, w, 440);
-            c.badge(i ? 'AFTER' : 'BEFORE', x + 20, top + 20, 150, 52, { radius: c.t.radius.chip, size: SIZE.fine, name: 'label' });
-            return bottomOf(c.textAt(i ? '[바뀐 뒤 모습]' : '[바뀌기 전 모습]', x, top + 464, w, SIZE.small, { weight: 700, name: 'list_item' }));
+            c.slot(x, top, w, 480);
+            c.badge(i ? '단면' : '겉면', x + 20, top + 20, 120, 48, { radius: c.t.radius.chip, size: SIZE.fine, name: 'label' });
+            return bottomOf(
+              c.textAt(i ? '[과육·색·수분 상태를 한 줄로]' : '[겉 색·모양을 한 줄로]', x, top + 504, w, SIZE.small, {
+                weight: 700,
+                name: 'list_item',
+              }),
+            );
           },
-          { bare: true, after: 0 },
+          { bare: true, after: 24 },
         );
+        c.text('※ 개체·수확 시기에 따라 색과 숙도가 조금 다를 수 있어요', SIZE.caption, { color: c.muted, name: 'sub_copy', gap: 0 });
         return 100;
       },
     },
@@ -169,25 +175,41 @@ export const FEATURES: PatternGroup = {
       },
     },
     {
-      key: 'pairing',
-      name: '곁들임 조합',
-      guide: '메인 카피 (15자 이내)\n원형 사진 3장: 이 상품 + 곁들이면 좋은 것 2가지\n이름 3개 (각 6자 이내)',
+      key: 'brix',
+      name: '당도 측정',
+      guide: '메인 카피 (12자 이내)\n측정 장면 사진 1장\n큰 숫자: 확인된 당도(Brix)만\n한 줄: 측정 기준·편차 안내 (보장 과장 금지)',
       draw: (c) => {
-        c.header('PAIRING', '함께 먹으면\n더 맛있어요');
-        const d = 200;
-        const gap = (CW - d * 3) / 2;
-        const names = ['[이 상품]', '[곁들임 1]', '[곁들임 2]'];
-        const top = c.y;
-        let bottom = top;
-        names.forEach((name, i) => {
-          const x = X + i * (d + gap);
-          c.slot(x, top, d, d, d / 2);
-          if (i) c.textAt('+', x - gap, top + d / 2 - 32, gap, 48, { weight: 800, ...c.accent(), name: 'badge' });
-          bottom = Math.max(bottom, bottomOf(c.textAt(name, x - 10, top + d + 24, d + 20, SIZE.small, { weight: 700, name: 'list_title' })));
-        });
-        c.y = bottom + 40;
-        c.text('[어떻게 곁들이면 좋은지 한 문장으로 적어 주세요]', SIZE.small, { color: c.muted, lineHeight: 1.6, name: 'list_item', gap: 0 });
-        return 100;
+        c.header('BRIX', '숫자로 보는\n당도');
+        c.slot(X, c.y, CW, 520);
+        c.space(520 + 48);
+        cardRow(
+          c,
+          1,
+          (_, x, w, top) => {
+            const num = c.textAt('[00]', x, top, w, 120, {
+              weight: 900,
+              ...c.accent(),
+              align: 'left',
+              lineHeight: 1,
+              name: 'badge',
+              fontFamily: c.t.font.heading,
+            });
+            const unit = c.textAt('°Brix  (측정 기준을 적어 주세요)', x, bottomOf(num) + 8, w, SIZE.small, {
+              weight: 700,
+              align: 'left',
+              name: 'list_title',
+            });
+            return bottomOf(
+              c.textAt('수확 시기·개체에 따라 당도 차이가 있을 수 있어요', x, bottomOf(unit) + 16, w, SIZE.caption, {
+                color: c.muted,
+                align: 'left',
+                name: 'list_item',
+              }),
+            );
+          },
+          { pad: 36, after: 0 },
+        );
+        return 90;
       },
     },
     {
@@ -219,26 +241,35 @@ export const FEATURES: PatternGroup = {
       },
     },
     {
-      key: 'tips',
-      name: '사용 팁 카드',
-      guide: '메인 카피 (15자 이내)\n팁 3개: 제목 10자 + 설명 1문장 + 작은 사진',
+      key: 'grade',
+      name: '등급·기대치',
+      guide: '메인 카피 (12자 이내)\n등급 3칸: 정품 / 가정용 / 못난이(또는 실속) — 각 외관·용도 1~2문장 (맛 단정·과장 금지)\n아래 한 줄: 선물용 추천 옵션',
       draw: (c) => {
-        c.header('TIP', '더 맛있게\n즐기는 법');
-        const tips = [['[팁 하나]', '[보관·손질 팁을 한 문장으로]'], ['[팁 둘]', '[먹는 방법 팁을 한 문장으로]'], ['[팁 셋]', '[남았을 때 활용 팁을 한 문장으로]']];
-        tips.forEach(([title, text], i) => {
-          cardRow(
-            c,
-            1,
-            (_, x, w, top) => {
-              const img = 150;
-              c.slot(x + w - img, top, img, img);
-              disc(c, String(i + 1), x, top, 56, 24);
-              const end = titledAt(c, title, text, x + 80, top + 8, w - img - 104, { titleSize: 30, textSize: SIZE.caption });
-              return Math.max(end, top + img);
-            },
-            { pad: 28, after: 20 },
-          );
-        });
+        c.header('GRADE', '등급을 알고\n고르세요');
+        const grades = [
+          ['정품', '외관·선별이 비교적 고른 구성', '선물·사진용'],
+          ['가정용', '맛은 즐기되 색·흠·모양이 섞일 수 있어요', '일상 섭취'],
+          ['못난이', '모양·흠이 있어도 활용하기 좋은 실속형', '가공·즙·요리'],
+        ];
+        cardRow(
+          c,
+          3,
+          (i, x, w, top) => {
+            const [name, desc, use] = grades[i];
+            const title = c.textAt(name, x, top, w, 36, { weight: 800, align: 'left', name: 'list_title', fontFamily: c.t.font.heading });
+            const body = c.textAt(desc, x, bottomOf(title) + 14, w, SIZE.caption, {
+              color: c.muted,
+              align: 'left',
+              lineHeight: 1.5,
+              name: 'list_item',
+            });
+            return bottomOf(
+              c.textAt(use, x, bottomOf(body) + 16, w, SIZE.fine, { weight: 700, ...c.accent(), align: 'left', name: 'label' }),
+            );
+          },
+          { pad: 28, gap: 16 },
+        );
+        c.text('선물용이면 [정품 옵션명]을 권장드려요', SIZE.small, { color: c.muted, name: 'sub_copy', gap: 0 });
         return 90;
       },
     },

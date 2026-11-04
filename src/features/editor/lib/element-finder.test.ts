@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import type { KonvaElement } from '@/shared/types/konva';
 
-const { elementTopInFrame, findBlankImageSlots, findPlaceholderTexts } = await import('./element-finder.ts');
+const { collectBlankImageSlots, elementTopInFrame, findBlankImageSlots, findPlaceholderTexts } = await import('./element-finder.ts');
 
 const el = (props: Record<string, unknown>) => props as unknown as KonvaElement;
 const ids = (elements: KonvaElement[]) => elements.map((element) => element.id);
@@ -29,6 +29,13 @@ describe('element-finder', () => {
 
   it('사진이 없는 보이는 이미지 자리만 찾는다', () => {
     assert.deepEqual(ids(findBlankImageSlots(tree)), ['slot', 'nestedSlot']);
+  });
+
+  it('프레임마다 빈 자리에 rootId를 붙인다', () => {
+    const frames = [el({ id: 'f1', type: 'frame', children: tree })] as unknown as import('@/shared/types/konva').KonvaFrameElement[];
+    const slots = collectBlankImageSlots(frames);
+    assert.deepEqual(ids(slots), ['slot', 'nestedSlot']);
+    assert.ok(slots.every((slot) => (slot as { rootId?: string }).rootId === 'f1'));
   });
 
   it('프레임 기준 세로 위치는 부모 그룹 y를 더한다', () => {

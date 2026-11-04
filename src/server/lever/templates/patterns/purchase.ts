@@ -73,22 +73,34 @@ export const PURCHASE: PatternGroup = {
       },
     },
     {
-      key: 'icons3',
-      name: '배송·교환·문의 3칸',
-      guide: `메인 카피 (15자 이내)\n3칸: 배송 / 교환·환불 / 문의 — 각 1~2문장 ${SELLER}`,
+      key: 'coldchain',
+      name: '보냉·완충',
+      guide: `메인 카피 (12자 이내)\n3칸: 완충 / 보냉·아이스팩 / 외부 박스 — 각 사용 여부·이유 ${SELLER}\n아래 한 줄: 계절·기온에 따라 냉매가 달라질 수 있음`,
       draw: (c) => {
-        c.header('GUIDE', '구매 전\n확인해 주세요');
-        const cells = [['배송', '[출고·배송 기간]'], ['교환', '[교환·환불 조건]'], ['문의', '[연락처·운영 시간]']];
+        c.header('KEEP FRESH', '받는 날까지\n지키려고요');
+        const cells = [
+          ['완충', '[망·트레이·완충재]'],
+          ['보냉', '[아이스팩·보냉백 여부]'],
+          ['박스', '[외부 박스·테이핑]'],
+        ];
         cardRow(
           c,
           3,
           (i, x, w, top) => {
-            disc(c, cells[i][0], x + (w - 96) / 2, top, 96, 26);
-            return bottomOf(c.textAt(cells[i][1], x, top + 124, w, SIZE.caption, { color: c.muted, lineHeight: 1.55, name: 'list_item' }));
+            disc(c, String(i + 1), x + (w - 72) / 2, top, 72, 26);
+            const title = c.textAt(cells[i][0], x, top + 96, w, SIZE.small, { weight: 800, name: 'list_title' });
+            return bottomOf(
+              c.textAt(cells[i][1], x, bottomOf(title) + 12, w, SIZE.caption, {
+                color: c.muted,
+                lineHeight: 1.5,
+                name: 'list_item',
+              }),
+            );
           },
           { pad: 26, gap: 16 },
         );
-        return 70;
+        c.text('기온·계절에 따라 냉매 구성이 달라질 수 있어요', SIZE.caption, { color: c.muted, name: 'sub_copy', gap: 0 });
+        return 90;
       },
     },
     {

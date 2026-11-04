@@ -19,7 +19,7 @@ export const confirmAiImages = ({ count, extraUsd = 0, hint }: ConfirmAiImagesOp
     description: `올린 상품 사진과 상품명을 바탕으로 장면마다 다른 사진을 만들어요. 예상 ${formatCost(
       count * MEDIA_COST.aiImageUsd + extraUsd,
     )} (등록한 Gemini 키로 청구)`,
-    hint,
+    hint: hint ?? '만들지 않으면 사진 자리는 비워 두고 바로 만들어요.',
     confirmText: '만들기',
     cancelText: '만들지 않기',
   });

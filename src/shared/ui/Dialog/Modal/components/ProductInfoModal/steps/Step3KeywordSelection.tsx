@@ -8,9 +8,11 @@ import Button from '@/shared/ui/Button/Button';
 import ToggleSelectGroup from '@/shared/ui/ToggleSelectGroup';
 import UploadedImagePreview from '@/features/detail-page/components/UploadedImagePreview';
 import Skeleton from '@/shared/ui/Skeleton/Skeleton';
+import Spinner from '@/shared/ui/Spinner/Spinner';
 import { ILLUSTRATIONS } from '@/shared/constants/assets';
 import { ROUTES } from '@/shared/constants/routes';
 import { useGenerateKeywords } from '@/features/detail-page/hooks/useGenerateKeywords';
+import { usePickKeywords } from '@/features/detail-page/hooks/usePickKeywords';
 import type { Step3Props } from '../types';
 
 const Step3KeywordSelection = ({
@@ -27,6 +29,7 @@ const Step3KeywordSelection = ({
   const generationData = useWatch({ control, name: 'generationData' }) as {
     keywordSelection?: {
       keywordData?: { groups: { name: string; keywords: string[] }[] };
+      customFeatures?: string;
     };
   } | undefined;
 
@@ -36,7 +39,7 @@ const Step3KeywordSelection = ({
     return groups.find((g) => g.name === groupName)?.keywords || [];
   };
 
-  // AI 키워드 데이터 (AiDetailPageModal에서 프리페치됨)
+  // AI 키워드 후보 (AiDetailPageModal에서 프리페치됨)
   const {
     data: keywordData,
     isLoading,
@@ -45,6 +48,8 @@ const Step3KeywordSelection = ({
   } = useGenerateKeywords(projectId, {
     enabled: generationMethod === 'keyword_selection',
   });
+
+  const { mutate: pickKeywords, isPending: isPicking, error: pickError } = usePickKeywords();
 
   // 키워드 선택 핸들러 - generationData 전체 재설정 (discriminatedUnion 대응)
   const handleKeywordChange = (groupName: string) => (selectedKeywords: string[]) => {
@@ -58,15 +63,12 @@ const Step3KeywordSelection = ({
     const currentGroups = currentData?.keywordSelection?.keywordData?.groups || [];
     const groupExists = currentGroups.some((g) => g.name === groupName);
 
-    // 기존 그룹 업데이트 또는 새 그룹 추가
     const updatedGroups = groupExists
       ? currentGroups.map((g) => (g.name === groupName ? { ...g, keywords: selectedKeywords } : g))
       : [...currentGroups, { name: groupName, keywords: selectedKeywords }];
 
-    // 빈 키워드 그룹 제거
     const filteredGroups = updatedGroups.filter((g) => g.keywords.length > 0);
 
-    // generationData 전체 재설정 (customFeatures 유지)
     setValue(
       'generationData',
       {
@@ -79,11 +81,52 @@ const Step3KeywordSelection = ({
     );
   };
 
+  const handleAiJudge = () => {
+    pickKeywords(projectId, {
+      onSuccess: (data) => {
+        const currentData = getValues('generationData') as {
+          keywordSelection?: { customFeatures?: string };
+        };
+        setValue(
+          'generationData',
+          {
+            keywordSelection: {
+              keywordData: data.groups.length > 0 ? { groups: data.groups } : undefined,
+              customFeatures: currentData?.keywordSelection?.customFeatures || '',
+            },
+          } as never,
+          { shouldValidate: true },
+        );
+      },
+    });
+  };
+
   return (
     <div>
       {generationMethod === 'keyword_selection' && (
         <div>
           <LabelInput title="이 상품만의 특별한 특징을 선택하거나 직접 입력해 주세요." isEssential>
+            <div className="mb-3 flex items-center justify-end">
+              <Button
+                type="button"
+                onClick={handleAiJudge}
+                disabled={isLoading || !!error || !keywordData || isPicking}
+                className="btn-secondary flex items-center gap-1.5 px-3 py-1.5"
+              >
+                {isPicking ? (
+                  <>
+                    <Spinner size={16} className="text-(--color-point)" />
+                    <span className="description">판단 중…</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon name="auto_awesome" width={16} className="text-(--color-point)" />
+                    <span className="description">AI 판단</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
             {isLoading && (
               <div className="flex flex-col gap-3">
                 <Skeleton bg="gray-50" className="h-(--btn-h) w-full rounded-lg" />
@@ -94,12 +137,16 @@ const Step3KeywordSelection = ({
             )}
 
             {error && (
-              <div className="text-center py-8">
+              <div className="py-8 text-center">
                 <p className="p text-red-500">키워드 생성에 실패했습니다.</p>
                 <Button type="button" className="btn-ghost mt-4" onClick={() => refetch()}>
                   다시 시도
                 </Button>
               </div>
+            )}
+
+            {pickError && (
+              <p className="description mb-2 text-red-500">AI 판단에 실패했습니다. 다시 눌러 주세요.</p>
             )}
 
             {!isLoading && !error && keywordData && (
@@ -112,7 +159,7 @@ const Step3KeywordSelection = ({
                       id: keyword,
                       label: keyword,
                     }))}
-                    defaultValue={getSelectedKeywords(group.name)}
+                    value={getSelectedKeywords(group.name)}
                     onChange={handleKeywordChange(group.name)}
                   />
                 ))}
@@ -122,7 +169,7 @@ const Step3KeywordSelection = ({
 
           <Input
             {...register('generationData.keywordSelection.customFeatures')}
-            className="mt-3 border focus:border-(--color-point) border-gray-100 py-2.75 px-3 rounded-lg w-full"
+            className="mt-3 w-full rounded-lg border border-gray-100 px-3 py-2.75 focus:border-(--color-point)"
             placeholder="상품의 특별한 이야기나 장점을 적어주세요. (500자 이내)"
           />
         </div>

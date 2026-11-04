@@ -209,7 +209,7 @@ export const useGenerateAIImages = () => {
       }
 
       if (successCount > 0) {
-        showToast.warn('교체할 이미지를 먼저 선택한 후 다시 시도해주세요.');
+        showToast.warn(`${successCount}장은 넣었고 ${failCount}장은 실패했어요. 다시 누르면 남은 빈 자리만 채워요.`);
         return;
       }
 

@@ -31,7 +31,7 @@ import {
   videoClipArgs,
   type MontageClip,
 } from './motion';
-import { downloadStockFile, getStockClipSource, searchStockVideos } from './stock';
+import { downloadStockFile, getStockClipSource, searchStockPhotos, searchStockVideos } from './stock';
 import { parseStockPicks, pickVideoFile, type StockClipSource } from './stockSources';
 
 type Target = Pick<HeroMotionRecord, 'frameId' | 'elementId' | 'assetId' | 'width' | 'height'>;
@@ -164,13 +164,30 @@ async function runStockMotion(projectId: string, inputs: StockInput[], target: T
   }
 }
 
+async function loadStockPhotoSource(productName: string) {
+  const photos = await searchStockPhotos(productName);
+  const photo = photos[0];
+  if (!photo) throw new ApiError(404, '상품과 어울리는 무료 사진을 찾지 못했어요. 검색어를 바꿔 무료 영상으로 만들어 주세요.');
+  const data = await downloadStockFile(photo.source, photo.url);
+  const mimeType = photo.url.toLowerCase().includes('.png') ? 'image/png' : 'image/jpeg';
+  return { source: { data, mimeType }, credit: photo.credit };
+}
+
 async function runHeroMotion(projectId: string, kind: PhotoMotionKind, target: Target, productName: string, applied: boolean) {
   const base = { ...target, kind, clipPath: null, notice: null, applied };
   try {
-    const asset = await findAssetRecord(target.assetId);
-    const data = asset && (await loadFile(asset.path));
-    if (!asset || !data) throw new ApiError(404, '맨 위 사진을 찾을 수 없어요.');
-    const source = { data, mimeType: asset.contentType || mimeFromPath(asset.path) };
+    let source: { data: Buffer; mimeType: string };
+    let credits: HeroMotionRecord['credits'];
+    if (kind === 'video') {
+      const found = await loadStockPhotoSource(productName);
+      source = found.source;
+      credits = [found.credit];
+    } else {
+      const asset = await findAssetRecord(target.assetId);
+      const data = asset && (await loadFile(asset.path));
+      if (!asset || !data) throw new ApiError(404, '맨 위 사진을 찾을 수 없어요.');
+      source = { data, mimeType: asset.contentType || mimeFromPath(asset.path) };
+    }
 
     let usedKind: PhotoMotionKind = kind;
     let notice: string | null = null;
@@ -179,15 +196,14 @@ async function runHeroMotion(projectId: string, kind: PhotoMotionKind, target: T
       clip = await makeClip(kind, source, target, productName);
     } catch (err) {
       if (kind !== 'video') throw err;
-      // AI 영상이 막히거나 늦으면 무료 줌·이동으로 대신 (비용이 들었어도 결과는 남긴다)
       console.error('[lever] hero video failed, falling back to pan', err);
-      notice = `AI 영상을 만들지 못해 줌·이동 컷으로 대신했어요. (${err instanceof ApiError ? err.message : '일시 오류'})`;
+      notice = `AI 영상을 만들지 못해 찾은 무료 사진을 줌·이동 컷으로 대신했어요. (${err instanceof ApiError ? err.message : '일시 오류'})`;
       usedKind = 'pan';
       clip = await makeClip('pan', source, target, productName);
     }
     const clipPath = `assets/motion-${projectId}-${Date.now()}.mp4`;
     await saveFile(clipPath, clip);
-    await setMotion(projectId, { ...base, kind: usedKind, status: 'ready', clipPath, notice, updatedAt: nowIso() });
+    await setMotion(projectId, { ...base, kind: usedKind, credits, status: 'ready', clipPath, notice, updatedAt: nowIso() });
   } catch (err) {
     console.error('[lever] hero motion failed', err);
     const notice = err instanceof ApiError ? err.message : '움직이는 컷을 만들지 못했어요. 다시 시도해 주세요.';
@@ -226,9 +242,23 @@ export async function startHeroMotion(projectId: string, kind: HeroMotionKind, o
     return { heroMotion: toHeroMotionInfo(pending.heroMotion) };
   }
 
+  if (kind === 'video') {
+    await requireGemini();
+    const pending = await setMotion(projectId, {
+      ...STOCK_TARGET,
+      kind,
+      applied,
+      status: 'pending',
+      clipPath: null,
+      notice: null,
+      updatedAt: nowIso(),
+    });
+    runInBackground('hero motion', () => runHeroMotion(projectId, 'video', STOCK_TARGET, project.productName, applied));
+    return { heroMotion: toHeroMotionInfo(pending.heroMotion) };
+  }
+
   const target = findHeroPhoto(project);
   if (!target) throw badRequest('맨 위 사진 자리에 사진을 먼저 넣어 주세요.');
-  if (kind === 'video') await requireGemini();
   const pending = await setMotion(projectId, { ...target, kind, applied, status: 'pending', clipPath: null, notice: null, updatedAt: nowIso() });
   runInBackground('hero motion', () => runHeroMotion(projectId, kind, target, project.productName, applied));
   return { heroMotion: toHeroMotionInfo(pending.heroMotion) };
@@ -249,7 +279,7 @@ export async function searchHeroStock(projectId: string, query: string | null) {
   const project = await getProject(projectId);
   const q = (query ?? '').trim().slice(0, 80) || project.productName.trim();
   if (!q) throw badRequest('검색어를 입력해 주세요.');
-  return { query: q, ...(await searchStockVideos(q, stockOrientation(HERO_CLIP_SIZE.width, HERO_CLIP_SIZE.height))) };
+  return searchStockVideos(q, stockOrientation(HERO_CLIP_SIZE.width, HERO_CLIP_SIZE.height));
 }
 
 // ===== 다운로드: 상세페이지 맨 위에 올릴 GIF =====

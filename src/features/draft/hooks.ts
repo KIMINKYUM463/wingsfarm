@@ -14,7 +14,7 @@ export const DRAFTS_KEY = ['drafts'] as const;
 /** 저장소 경로 → 화면에 띄울 URL */
 export const storageUrl = (path: string) => `/api/lever/storage/${path.split('/').map(encodeURIComponent).join('/')}`;
 
-const RUNNING = ['planning', 'generating'];
+const RUNNING = ['composing', 'planning', 'generating'];
 
 /** 초안 조회 — 기획·생성 중에는 1.5초마다 다시 불러온다 (진행 상황 n/N 표시) */
 export function useDraft(id: string | null) {

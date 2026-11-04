@@ -31,10 +31,40 @@ export const pexelsProvider: StockProvider = {
       query,
       orientation,
       size: 'medium',
-      locale: 'ko-KR',
+      locale: 'en-US',
       per_page: '15',
     });
     return videos.map(pexelsToStock);
   },
   clipSource: async (id) => pexelsClipSource(await pexels<PexelsVideo>(`/videos/${id}`)),
 };
+
+const PHOTOS = 'https://api.pexels.com/v1';
+
+export async function searchPexelsPhotos(query: string) {
+  const key = pexelsKey();
+  if (!key) return [];
+  const url = new URL(`${PHOTOS}/search`);
+  url.searchParams.set('query', query);
+  url.searchParams.set('per_page', '8');
+  url.searchParams.set('orientation', 'landscape');
+  const res = await fetch(url, { headers: { Authorization: key }, cache: 'no-store', signal: AbortSignal.timeout(15_000) });
+  if (!res.ok) return [];
+  const { photos = [] } = (await res.json()) as {
+    photos?: { id: number; url: string; photographer?: string; src?: { large?: string; original?: string }; width?: number; height?: number }[];
+  };
+  return photos.flatMap((photo) => {
+    const file = photo.src?.large || photo.src?.original;
+    if (!file) return [];
+    return [
+      {
+        source: 'pexels' as const,
+        id: photo.id,
+        url: file,
+        width: photo.width ?? 0,
+        height: photo.height ?? 0,
+        credit: { source: 'pexels' as const, author: photo.photographer || 'Pexels', url: photo.url },
+      },
+    ];
+  });
+}

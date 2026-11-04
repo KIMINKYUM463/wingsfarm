@@ -10,6 +10,7 @@ import {
   getImageJobStatus,
   markAIImageReady,
   matchCategory,
+  pickKeywords,
   startStyledImage,
 } from './ai';
 import { toCategoryList } from './catalog/categories';
@@ -25,7 +26,10 @@ import {
   paletteCatalog,
   patchDraft,
   planGuidePrompt,
+  reshuffleCompositions,
+  selectComposition,
   shufflePalettes,
+  startCompositions,
   startGenerate,
   startPlan,
 } from './drafts';
@@ -94,6 +98,7 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['GET', 'projects/:id/estimate', ({ params }) => estimateProject(params.id)],
   ['POST', 'projects/:id/generate', async ({ params, body }) => created(startGeneration(params.id, await body()))],
   ['POST', 'projects/:id/generate/keywords', async ({ params, body }) => generateKeywords(params.id, await body())],
+  ['POST', 'projects/:id/generate/keyword-picks', async ({ params }) => pickKeywords(params.id)],
   ['GET', 'projects/:id/hero-motion', ({ params }) => getHeroMotion(params.id)],
   ['POST', 'projects/:id/hero-motion', async ({ params, body }) => {
     const { kind, videos, source, videoId } = await body<{ kind?: string; videos?: unknown; source?: unknown; videoId?: unknown }>();
@@ -113,6 +118,9 @@ const ROUTES: [Method, string, RouteHandler][] = [
   ['POST', 'drafts/:id/autofill', async ({ params }) => toDraftDto(await autofillDraft(params.id))],
   ['GET', 'drafts/:id/plan-guide', ({ params }) => planGuidePrompt(params.id)],
   ['POST', 'drafts/:id/plan', async ({ params }) => toDraftDto(await startPlan(params.id))],
+  ['POST', 'drafts/:id/compositions', async ({ params }) => toDraftDto(await startCompositions(params.id))],
+  ['POST', 'drafts/:id/compositions/reshuffle', async ({ params }) => toDraftDto(await reshuffleCompositions(params.id))],
+  ['POST', 'drafts/:id/compositions/select', async ({ params, body }) => toDraftDto(await selectComposition(params.id, await body()))],
   ['POST', 'drafts/:id/sections', async ({ params, body }) => toDraftDto(await addSection(params.id, await body()))],
   ['POST', 'drafts/:id/palette/shuffle', async ({ params }) => ({ presets: await shufflePalettes(params.id) })],
   ['POST', 'drafts/:id/generate', async ({ params }) => toDraftDto(await startGenerate(params.id))],

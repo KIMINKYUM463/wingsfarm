@@ -86,6 +86,11 @@ export const draftApi = {
   autofill: (id: string) => unwrap(httpClient.post<Wrapped<DraftDto>>(`${BASE}/drafts/${id}/autofill`, {}, opts)),
   planGuide: (id: string) => unwrap(httpClient.get<Wrapped<{ prompt: string }>>(`${BASE}/drafts/${id}/plan-guide`, opts)),
   plan: (id: string) => unwrap(httpClient.post<Wrapped<DraftDto>>(`${BASE}/drafts/${id}/plan`, {}, opts)),
+  compositions: (id: string) => unwrap(httpClient.post<Wrapped<DraftDto>>(`${BASE}/drafts/${id}/compositions`, {}, opts)),
+  reshuffleCompositions: (id: string) =>
+    unwrap(httpClient.post<Wrapped<DraftDto>>(`${BASE}/drafts/${id}/compositions/reshuffle`, {}, opts)),
+  selectComposition: (id: string, candidateId: string) =>
+    unwrap(httpClient.post<Wrapped<DraftDto>>(`${BASE}/drafts/${id}/compositions/select`, { candidateId }, opts)),
   addSection: (id: string, typeId: string, index: number) =>
     unwrap(httpClient.post<Wrapped<DraftDto>>(`${BASE}/drafts/${id}/sections`, { typeId, index }, opts)),
   shufflePalettes: (id: string) =>

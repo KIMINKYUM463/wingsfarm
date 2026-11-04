@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { KonvaFrameElement } from '@/shared/types/konva';
 import { templateAssetId } from '../assets';
+import { fitTextToBox } from '../templates/nodes';
+import { promotePhotoSlots } from './photoSlots';
+
+export { looksLikePhotoSlot, promotePhotoSlots } from './photoSlots';
 
 /**
  * Konva 프레임 JSON을 다루는 서버 유틸
@@ -59,15 +63,25 @@ export function cloneWithNewIds(frame: FrameNode, frameId: string): FrameNode {
 
 /**
  * 템플릿 이미지 참조(figmaImageRef) → assetId
- * - `_image` 자리의 샘플 사진은 비워 둔다 (상품 사진/AI 이미지로 채울 자리)
+ * - 큰 사진·`_image` 자리의 샘플은 비운다 (상품 사진/AI 이미지로 채울 자리)
+ * - 작은 아이콘·장식만 템플릿 이미지로 남긴다
  */
 export function materializeTemplateImages(frame: FrameNode) {
+  promotePhotoSlots(frame);
   for (const node of walk(frame)) {
     if (!node.figmaImageRef) continue;
-    if (!isImageSlot(node)) node.assetId = templateAssetId(node.figmaImageRef);
+    node.assetId = templateAssetId(node.figmaImageRef);
     delete node.figmaImageRef;
   }
   return frame;
+}
+
+/** 이미 만든 페이지: 템플릿 샘플만 자리로 비우고, 잘리는 글자는 칸에 맞게 (판매자·AI 사진은 유지) */
+export function normalizeSellerFrame(frame: FrameNode): FrameNode {
+  const clone = structuredClone(frame);
+  promotePhotoSlots(clone);
+  for (const node of walk(clone)) if (node.type === 'text') fitTextToBox(node);
+  return clone;
 }
 
 export const collectAssetIds = (frames: FrameNode[]) => {
@@ -108,6 +122,7 @@ export function applyTexts(frame: FrameNode, texts: Record<string, string>) {
   for (const node of walk(frame)) {
     if (node.type === 'text' && typeof texts[node.id] === 'string' && texts[node.id].trim()) {
       node.text = texts[node.id];
+      fitTextToBox(node);
     }
   }
   return frame;

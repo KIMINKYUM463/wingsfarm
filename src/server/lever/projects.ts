@@ -10,7 +10,7 @@ import type { DesignStyleId } from '@/shared/lib/designStyles';
 import { normalizePalette, recolorTree, type PaletteNode } from '@/shared/lib/palette';
 import { resolveAssetUrls } from './assets';
 import { findCategory } from './catalog/categories';
-import { asNode, cloneWithNewIds, collectAssetIds, type FrameNode } from './frames/tree';
+import { asNode, cloneWithNewIds, collectAssetIds, normalizeSellerFrame, type FrameNode } from './frames/tree';
 import { badRequest, notFound } from './http';
 import { publicUrl, saveFile } from './storage';
 import { listFiles, newId, nowIso, readJson, updateJson, writeJson } from './store';
@@ -146,14 +146,18 @@ export async function buildTemplateFrame(
 export const frameAssetUrls = (frames: ProjectFrame[]) =>
   resolveAssetUrls(collectAssetIds(frames.filter((f) => f.status === 'active').map((f) => asNode(f.frameData))));
 
-/** POST /projects — 상품명·카테고리로 초안 프로젝트 생성 (짧은 구성: 구성별 템플릿 1개씩, 긴 구성: 본문 구성을 여러 개) */
+/** POST /projects — 상품명·카테고리로 초안 프로젝트 생성 (짧은: 구성별 1개, 긴·더 긴: 본문 구성을 여러 개) */
 export async function createProject(body: { productName?: string; categoryId?: string; length?: unknown }) {
   const productName = body.productName?.trim();
   if (!productName) throw badRequest('상품명을 입력해주세요.');
   if (!findCategory(body.categoryId)) throw badRequest('카테고리를 선택해주세요.');
 
   const id = newId();
-  const templates = await pickDraftTemplates(body.categoryId!, isTemplateStartLength(body.length) ? body.length : 'short');
+  const templates = await pickDraftTemplates(
+    body.categoryId!,
+    isTemplateStartLength(body.length) ? body.length : 'short',
+    productName,
+  );
   const orders = generateNKeysBetween(null, null, templates.length);
   const frames = await Promise.all(templates.map((t, i) => buildTemplateFrame(id, t, orders[i])));
   const now = nowIso();
@@ -226,7 +230,10 @@ export async function listProjects(query: URLSearchParams) {
 
 /** 에디터가 받는 프로젝트 상세 (조회·버전 복원이 함께 사용) */
 export async function toProjectDetail(project: ProjectRecord) {
-  const frames = sortFrames(project.frames);
+  const frames = sortFrames(project.frames).map((frame) => ({
+    ...frame,
+    frameData: normalizeSellerFrame(asNode(frame.frameData)) as ProjectFrame['frameData'],
+  }));
   return {
     ...toProjectDto(project),
     frames,

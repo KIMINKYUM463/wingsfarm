@@ -33,27 +33,107 @@ export const luminance = (hex: string) => {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 };
 
+/** 두 색을 amount(0~1) 비율로 섞기. amount=1이면 b */
+const mix = (a: string, b: string, amount: number) => {
+  const from = hexToRgb(a);
+  const to = hexToRgb(b);
+  return rgbToHex(from.map((v, i) => v + (to[i]! - v) * amount));
+};
+
+/** 따뜻한 종이색 — 대표색을 연하게 풀면 사탕 분홍이 되므로 바탕은 이 색에 조금만 섞는다 */
+const PAPER = '#F6F3ED';
+
 /** 대표색 하나로 나머지 3색을 만든다. 흰 글씨가 읽히도록 대표색은 충분히 어둡게 맞춘다. */
 export function derivePalette(main: string): DraftPalette {
   let base = main.toUpperCase();
   for (let i = 0; i < 6 && luminance(base) > 0.22; i++) base = shade(base, 0.15);
-  return { main: base, point: tint(base, 0.35), bgLight: tint(base, 0.94), bgDark: tint(base, 0.82) };
+  return {
+    main: base,
+    point: tint(base, 0.16),
+    bgLight: mix(PAPER, base, 0.04),
+    bgDark: mix(PAPER, base, 0.1),
+  };
 }
 
-/** 에디터 색상 탭·초안 색 바꾸기의 톤 11종 */
+/** 에디터 색상 탭·초안 색 바꾸기의 톤 */
 export const TONE_PRESETS: { id: string; name: string; main: string }[] = [
-  { id: 'mocha', name: '모카 브라운', main: '#7A5638' },
-  { id: 'rose', name: '로즈 핑크', main: '#B8476A' },
-  { id: 'nude', name: '누드 베이지', main: '#9A7458' },
-  { id: 'lavender', name: '라벤더', main: '#6E5AA8' },
+  { id: 'mocha', name: '모카 브라운', main: '#6B4A32' },
+  { id: 'rose', name: '로즈', main: '#8E3A54' },
+  { id: 'wine', name: '와인', main: '#6B2D3C' },
+  { id: 'nude', name: '누드 베이지', main: '#8A6A4E' },
+  { id: 'amber', name: '앰버', main: '#8B5A2B' },
+  { id: 'lavender', name: '라벤더', main: '#5C4E86' },
   { id: 'sky', name: '스카이 블루', main: '#2F7FB8' },
   { id: 'ocean', name: '오션 블루', main: '#1F5C99' },
   { id: 'navy', name: '미드나잇 네이비', main: '#1E2A4A' },
   { id: 'mint', name: '민트 틸', main: '#1E7F74' },
   { id: 'forest', name: '포레스트', main: '#2F5D3A' },
-  { id: 'coral', name: '코랄', main: '#C2553F' },
+  { id: 'coral', name: '테라코타', main: '#A24B32' },
   { id: 'mono', name: '모노 그레이', main: '#3D3D3D' },
 ];
+
+/** 카테고리만 알 때 쓰는 기본 톤 (파스텔 대신 흙·잉크 쪽) */
+export const CATEGORY_TONES: Record<string, string[]> = {
+  agri: ['forest', 'mocha', 'nude', 'amber'],
+  food: ['mocha', 'amber', 'forest', 'nude'],
+  electronics: ['navy', 'ocean', 'mono', 'sky'],
+  living: ['mocha', 'nude', 'forest', 'mono'],
+  fashion: ['mono', 'nude', 'navy', 'wine'],
+  accessory: ['nude', 'mono', 'mocha', 'wine'],
+  beauty: ['nude', 'rose', 'mocha', 'mint'],
+  health: ['forest', 'ocean', 'mint', 'mocha'],
+  edu: ['ocean', 'navy', 'mocha', 'mint'],
+  clinic: ['nude', 'sky', 'mint', 'mono'],
+};
+
+/** 상품명에서 빛깔을 짐작할 때. 앞쪽일수록 잘 맞는다 */
+const PRODUCT_TONE_HINTS: { re: RegExp; tones: string[] }[] = [
+  { re: /딸기|체리|석류|자두|와인/, tones: ['wine', 'mocha', 'navy'] },
+  { re: /사과|풋사과/, tones: ['forest', 'wine', 'mocha'] },
+  { re: /포도|블루베리|아로니아/, tones: ['navy', 'wine', 'lavender'] },
+  { re: /감귤|한라봉|오렌지|천혜향|레드향|유자|귤/, tones: ['amber', 'coral', 'mocha'] },
+  { re: /배|복숭아/, tones: ['nude', 'mocha', 'forest'] },
+  { re: /수박/, tones: ['forest', 'wine', 'coral'] },
+  { re: /참외|멜론/, tones: ['amber', 'forest', 'nude'] },
+  { re: /꿀|벌꿀|조청|엿/, tones: ['amber', 'mocha', 'nude'] },
+  { re: /쌀|현미|잡곡|찹쌀|보리/, tones: ['nude', 'mocha', 'mono'] },
+  { re: /한우|소고기|돼지|닭|오리/, tones: ['mocha', 'wine', 'navy'] },
+  { re: /고등어|갈치|생선|오징어|문어|전복|굴|새우|꽃게|대게|수산|멸치|조기/, tones: ['ocean', 'navy', 'mono'] },
+  { re: /버섯|표고/, tones: ['mocha', 'nude', 'forest'] },
+  { re: /마늘|양파|생강/, tones: ['nude', 'mocha', 'mono'] },
+  { re: /고추|김치|고춧가루/, tones: ['coral', 'wine', 'mocha'] },
+  { re: /녹차|쑥|매실/, tones: ['forest', 'mint', 'mocha'] },
+  { re: /콩|두부|된장|간장/, tones: ['mocha', 'nude', 'forest'] },
+];
+
+/** 파스텔로 읽히기 쉬운 톤 — 상품이 그 빛깔이 아니면 쓰지 않는다 */
+const SWEET_TONES = new Set(['rose', 'lavender', 'sky']);
+
+const uniqueTones = (ids: string[]) => {
+  const known = new Set(TONE_PRESETS.map((t) => t.id));
+  return [...new Set(ids)].filter((id) => known.has(id));
+};
+
+/** 상품명·카테고리에 어울리는 톤 id (최소 4개) */
+export function suggestProductTones(productName: string, categoryId = ''): string[] {
+  const text = productName.replace(/\s+/g, '');
+  const category = CATEGORY_TONES[categoryId] ?? CATEGORY_TONES.agri;
+  const hinted = PRODUCT_TONE_HINTS.find((rule) => rule.re.test(text))?.tones ?? [];
+  return uniqueTones([...hinted, ...category, 'mocha', 'forest', 'mono']).slice(0, 6);
+}
+
+/** AI가 고른 톤이 상품과 안 맞으면(예: 고등어+로즈) 상품 기본 톤으로 되돌린다 */
+export function resolveProductToneId(toneId: string | undefined, productName: string, categoryId = ''): string {
+  const home = suggestProductTones(productName, categoryId);
+  if (toneId && home.includes(toneId)) return toneId;
+  if (toneId && TONE_PRESETS.some((t) => t.id === toneId) && !SWEET_TONES.has(toneId)) return toneId;
+  return home[0] ?? 'forest';
+}
+
+export function paletteFromToneId(toneId: string | undefined, fallbackMain = '#2F5D3A'): DraftPalette {
+  const tone = TONE_PRESETS.find((t) => t.id === toneId);
+  return derivePalette(tone?.main ?? fallbackMain);
+}
 
 export const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
 

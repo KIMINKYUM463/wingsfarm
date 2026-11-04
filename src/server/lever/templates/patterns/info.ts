@@ -1,5 +1,5 @@
 import { CW, SIZE, X, type Canvas } from '../canvas';
-import { accentFill, bottomOf, cardRow, columns, disc, divider, onAccent, outline, softFill, titledAt, type PatternGroup } from './kit';
+import { accentFill, bottomOf, cardRow, columns, disc, divider, onAccent, outline, titledAt, type PatternGroup } from './kit';
 
 const FACTS = '(입력한 사실 그대로)';
 
@@ -84,18 +84,30 @@ export const INFO: PatternGroup = {
       },
     },
     {
-      key: 'zebra',
-      name: '줄무늬 표',
-      guide: `메인 카피 (10자 이내)\n표 5줄: 항목 / 내용 ${FACTS}`,
+      key: 'boxflat',
+      name: '박스 구성',
+      guide: `메인 카피 (12자 이내)\n상자·트레이를 연 구성 사진 1장\n아래 3칸: 총 중량 / 예상 과수·개수 / 포장재 포함 여부 ${FACTS}\n한 줄: 과수는 선별 상황에 따라 달라질 수 있음`,
       draw: (c) => {
-        c.header('INFO', '상품 정보');
-        INFO_ROWS.forEach(([k, v], i) => {
-          const start = c.nodes.length;
-          const h = tableRow(c, k, v, c.y);
-          if (i % 2 === 0) softFill(c, start, X, c.y, CW, h, Math.min(c.t.radius.card, 12));
-          c.space(h);
-        });
-        return 100;
+        c.header('IN THE BOX', '상자를 열면\n이렇게 담겨요');
+        c.slot(X, c.y, CW, 560);
+        c.space(560 + 40);
+        const cells = [
+          ['총 중량', '[중량]'],
+          ['과수·개수', '[대략 개수]'],
+          ['포장재', '[포함 / 별도]'],
+        ];
+        cardRow(
+          c,
+          3,
+          (i, x, w, top) => {
+            const [k, v] = cells[i];
+            const a = c.textAt(k, x, top, w, SIZE.caption, { color: c.muted, align: 'left', name: 'list_title' });
+            return bottomOf(c.textAt(v, x, bottomOf(a) + 10, w, 32, { weight: 800, align: 'left', name: 'list_item' }));
+          },
+          { pad: 28, gap: 16 },
+        );
+        c.text('과수·크기는 산지 선별에 따라 조금 달라질 수 있어요', SIZE.caption, { color: c.muted, name: 'sub_copy', gap: 0 });
+        return 90;
       },
     },
     {

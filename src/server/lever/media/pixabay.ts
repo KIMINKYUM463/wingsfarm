@@ -35,7 +35,7 @@ export const pixabayProvider: StockProvider = {
   hosts: ['pixabay.com'],
   hasKey: () => Boolean(pixabayKey()),
   search: async (query, orientation) => {
-    const hits = await pixabay({ q: query.slice(0, 100), lang: 'ko', video_type: 'film', safesearch: 'true', per_page: '15' });
+    const hits = await pixabay({ q: query.slice(0, 100), lang: 'en', video_type: 'film', safesearch: 'true', per_page: '15' });
     const videos = hits.map(pixabayToStock).filter((v) => v !== null);
     return preferOrientation(videos, orientation);
   },
@@ -45,3 +45,36 @@ export const pixabayProvider: StockProvider = {
     return pixabayClipSource(video);
   },
 };
+
+const PHOTO_API = 'https://pixabay.com/api/';
+
+export async function searchPixabayPhotos(query: string) {
+  const key = pixabayKey();
+  if (!key) return [];
+  const url = new URL(PHOTO_API);
+  url.searchParams.set('key', key);
+  url.searchParams.set('q', query.slice(0, 100));
+  url.searchParams.set('image_type', 'photo');
+  url.searchParams.set('safesearch', 'true');
+  url.searchParams.set('per_page', '8');
+  url.searchParams.set('lang', 'en');
+  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(15_000) });
+  if (!res.ok) return [];
+  const { hits = [] } = (await res.json()) as {
+    hits?: { id: number; pageURL?: string; user?: string; largeImageURL?: string; webformatURL?: string; imageWidth?: number; imageHeight?: number }[];
+  };
+  return hits.flatMap((hit) => {
+    const file = hit.largeImageURL || hit.webformatURL;
+    if (!file) return [];
+    return [
+      {
+        source: 'pixabay' as const,
+        id: hit.id,
+        url: file,
+        width: hit.imageWidth ?? 0,
+        height: hit.imageHeight ?? 0,
+        credit: { source: 'pixabay' as const, author: hit.user || 'Pixabay', url: hit.pageURL || 'https://pixabay.com' },
+      },
+    ];
+  });
+}

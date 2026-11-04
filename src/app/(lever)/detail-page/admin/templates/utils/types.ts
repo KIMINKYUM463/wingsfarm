@@ -31,6 +31,7 @@ export interface TemplateListItem {
   status?: string;
   thumbnailUrl: string | null;
   imageCount?: number;
+  hasBakedPhotos?: boolean;
   excludedCategoryIds: string[];
   createdAt?: string;
   updatedAt?: string;

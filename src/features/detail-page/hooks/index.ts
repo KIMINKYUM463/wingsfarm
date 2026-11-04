@@ -12,3 +12,4 @@ export { useUpdateDetailPage } from './useUpdateDetailPage';
 export { useDeleteDetailPage } from './useDeleteDetailPage';
 export { useCreateProject } from './useCreateProject';
 export { usePrefetchKeywords } from './usePrefetchKeywords';
+export { usePickKeywords } from './usePickKeywords';

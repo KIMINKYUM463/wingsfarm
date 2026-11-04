@@ -3,7 +3,7 @@
  *
  * 흐름: 클립(HERO_CLIP_SIZE, 무음 MP4) → 상세페이지 첫 섹션 위에 따로 들어가는 영상 → 다운로드는 GIF
  * - pan: 맨 위 사진을 천천히 확대하며 옆으로 이동 (ffmpeg, 무료)
- * - video: Gemini Omni 이미지→영상 (유료) 후 클립 크기로 자르기
+ * - video: 상품명으로 찾은 무료 사진 → Gemini Omni 이미지→영상 (유료) 후 클립 크기로 자르기
  * - stock: 무료 영상(Pexels·Pixabay) 최대 3개를 AI가 고른 장면·자막으로 컷 편집 + 모션그래픽
  */
 
@@ -20,8 +20,8 @@ export const videoAspect = (width: number, height: number): VideoAspect => (widt
 const even = (n: number) => Math.max(2, Math.round(n / 2) * 2);
 
 export const VIDEO_PROMPT_RULES = [
-  'Animate this exact product photo into a short, calm commercial shot (about 5 seconds).',
-  'Keep the product identical: same color, shape, size, count and packaging. Do not add text, logos, people or hands.',
+  'Animate this stock photo into a short, calm commercial shot (about 5 seconds) for a Korean food product page.',
+  'Keep the subject natural and appetizing. Do not add text, logos, people, hands or a different product.',
   'Use one slow camera move (gentle push-in or slide) with subtle natural motion such as light, steam, water droplets or leaves.',
   'No cuts, no scene changes. Quiet ambience only.',
 ].join(' ');

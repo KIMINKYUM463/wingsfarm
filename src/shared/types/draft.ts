@@ -7,16 +7,41 @@
  */
 import type { DesignStyleId } from '../lib/designStyles';
 
-export type DraftLength = 'short' | 'long';
+export type DraftLength = 'short' | 'long' | 'extra';
 /** ai: 올린 사진을 참고해 장면별 연출 사진 생성 / blank: 사진 자리를 비워 두고 에디터에서 직접 넣기 */
 export type DraftImageMode = 'ai' | 'blank';
 /** 맨 위 사진을 움직이는 컷(GIF)으로 — pan: 무료 줌·이동 / video: AI 영상(유료) */
 export type HeroMotion = 'off' | 'pan' | 'video';
 /** ai: AI가 참고 사진으로 연출 / own: 올린 사진 그대로 / blank: 빈 자리 */
 export type CutSource = 'ai' | 'own' | 'blank';
-export type DraftStatus = 'editing' | 'planning' | 'plan_failed' | 'ready' | 'generating' | 'generate_failed' | 'completed';
+export type DraftStatus =
+  | 'editing'
+  | 'composing'
+  | 'choosing'
+  | 'planning'
+  | 'plan_failed'
+  | 'ready'
+  | 'generating'
+  | 'generate_failed'
+  | 'completed';
 export type PaletteRole = 'main' | 'point' | 'bgLight' | 'bgDark';
 export type DraftPalette = Record<PaletteRole, string>;
+
+/** AI가 제안하는 상세페이지 구성 후보 (문구 작성 전 목차·스타일) */
+export interface CompositionCandidate {
+  id: string;
+  title: string;
+  reason: string;
+  /** conversion | trust | story 등 */
+  strategy: string;
+  sectionTypeIds: string[];
+  sectionNames: string[];
+  designStyle: DesignStyleId;
+  palette: DraftPalette;
+  lengthHint: DraftLength;
+  /** GET 시 서버가 붙이는 샘플 레이아웃 미리보기 (저장하지 않음) */
+  previewFrames?: unknown[];
+}
 
 export interface DraftOption {
   name: string;
@@ -148,6 +173,9 @@ export interface DraftRecord {
   status: DraftStatus;
   input: DraftInput;
   plan: DraftPlan | null;
+  /** 구성 후보 5안 (choosing 단계에서 선택) */
+  candidates: CompositionCandidate[] | null;
+  selectedCandidateId: string | null;
   progress: DraftProgress | null;
   generateProgress: GenerateProgress | null;
   projectId: string | null;

@@ -26,14 +26,20 @@ import { notFound } from '../http';
 import { publicUrl, toStoragePath } from '../storage';
 import { listFiles, newId, nowIso, readJson, removeData, updateJson, writeJson } from '../store';
 import { buildSectionFrame } from '../templates/sectionLayouts';
+import { withCandidatePreviews } from './compositionPreviews';
 
 const draftPath = (id: string) => `drafts/${id}.json`;
 
 export async function getDraft(id: string) {
   const draft = await readJson<DraftRecord | null>(draftPath(id), null);
   if (!draft) throw notFound('초안을 찾을 수 없습니다.');
-  // 이전 버전에서 만든 초안에는 새 입력 항목(사진 연출 등)이 없다
-  return { ...draft, input: { ...emptyDraftInput(), ...draft.input } };
+  // 이전 버전에서 만든 초안에는 새 입력 항목(사진 연출·구성 후보 등)이 없다
+  return {
+    ...draft,
+    input: { ...emptyDraftInput(), ...draft.input },
+    candidates: draft.candidates ?? null,
+    selectedCandidateId: draft.selectedCandidateId ?? null,
+  };
 }
 
 export const saveDraft = (draft: DraftRecord) => writeJson(draftPath(draft.id), draft);
@@ -63,6 +69,8 @@ export function newDraftRecord(input: DraftInput): DraftRecord {
     status: 'editing',
     input,
     plan: null,
+    candidates: null,
+    selectedCandidateId: null,
     progress: null,
     generateProgress: null,
     projectId: null,
@@ -114,7 +122,7 @@ export function sanitizeInput(raw: unknown, base: DraftInput = emptyDraftInput()
       description: str(model.description, DRAFT_LIMITS.modelDescription),
       imagePaths: imagePaths(model.imagePaths, 3),
     },
-    length: r.length === 'long' ? 'long' : 'short',
+    length: r.length === 'extra' ? 'extra' : r.length === 'long' ? 'long' : 'short',
     plan: str(r.plan, DRAFT_LIMITS.plan),
     reviewsText: str(r.reviewsText, DRAFT_LIMITS.reviewsText),
     reviewImagePaths: imagePaths(r.reviewImagePaths, 1),
@@ -290,7 +298,7 @@ export function sanitizePlan(raw: unknown, input: DraftInput, previous: DraftPla
   const p = (raw ?? {}) as Partial<DraftPlan>;
   const reviewQuotes = previous?.analysis?.reviewQuotes ?? [];
   const evidence = evidenceText(input, reviewQuotes);
-  const fallback = previous?.palette ?? palettePresets(input.categoryId)[0].palette;
+  const fallback = previous?.palette ?? palettePresets(input.categoryId, input.productName)[0].palette;
   return {
     sections: (Array.isArray(p.sections) ? p.sections : [])
       .slice(0, 40)
@@ -349,8 +357,14 @@ export function toDraftDto(draft: DraftRecord) {
   const previews = draft.plan
     ? Object.fromEntries(sectionFrames(draft.plan, draft.input.categoryId).map(({ section, frame }) => [section.id, frame]))
     : {};
+  // 구성 선택 화면용 — 샘플 레이아웃을 섹션 순서대로 이어 붙인 미리보기
+  const candidates =
+    draft.candidates?.length && (draft.status === 'choosing' || draft.status === 'composing' || draft.status === 'plan_failed')
+      ? withCandidatePreviews(draft.candidates, draft.input)
+      : draft.candidates;
   return {
     ...draft,
+    candidates,
     imageUrls: Object.fromEntries(allImagePaths(draft).map((p) => [p, publicUrl(p)])),
     previews,
     estimate: estimatePlan(draft.plan, draft.input),

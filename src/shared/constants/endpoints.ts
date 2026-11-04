@@ -66,6 +66,8 @@ export const ENDPOINTS = {
     GENERATE: (projectId: string) => `/functions/v1/projects/${projectId}/generate`,
     GENERATE_KEYWORDS: (projectId: string) =>
       `/functions/v1/projects/${projectId}/generate/keywords`,
+    PICK_KEYWORDS: (projectId: string) =>
+      `/functions/v1/projects/${projectId}/generate/keyword-picks`,
     REGENERATE_FRAMES: (projectId: string) =>
       `/functions/v1/projects/${projectId}/frames/regenerate`,
     RESTORE: (projectId: string) => `/functions/v1/projects/${projectId}/restore`,

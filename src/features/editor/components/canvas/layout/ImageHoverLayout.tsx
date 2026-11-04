@@ -369,13 +369,17 @@ export function ImageControlOverlay({ element, elementRef, children, onDragStart
 
       selectElement();
       setSelectedTool(TOGGLE_STATES.IMAGE);
+      if (!element.assetId) {
+        openFilePicker();
+        return;
+      }
 
       const imageUrl = element.assetId ? getAssetUrl(element.assetId) : null;
       if (imageUrl) {
         setSelectedAsset({ id: element.assetId!, thumbnailUrl: imageUrl });
       }
     },
-    [element.id, element.assetId, selectedItems, thisItem, selectElement, setSelectedTool, getAssetUrl, setSelectedAsset, updateSelectionWithTool],
+    [element.id, element.assetId, selectedItems, thisItem, selectElement, setSelectedTool, getAssetUrl, setSelectedAsset, updateSelectionWithTool, openFilePicker],
   );
 
   const handleOverlayDragStart = useCallback(

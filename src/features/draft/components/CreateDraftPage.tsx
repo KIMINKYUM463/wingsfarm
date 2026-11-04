@@ -15,6 +15,8 @@ import DraftForm from './DraftForm';
 
 const STATUS_LABEL: Record<DraftSummary['status'], string> = {
   editing: '작성 중',
+  composing: '구성 고르는 중',
+  choosing: '구성 선택',
   planning: '기획 중',
   plan_failed: '기획 실패',
   ready: '기획 완료',

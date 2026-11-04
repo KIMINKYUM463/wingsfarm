@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import type { HeroMotionState } from '@/features/editor/hooks/useHeroMotion';
+import { useFillBlankSlots } from '@/features/editor/hooks/useFillBlankSlots';
 import { useScrollToElement } from '@/features/editor/hooks/useScrollToElement';
 import { elementTopInFrame, findBlankImageSlots, findPlaceholderTexts, isImageElement } from '@/features/editor/lib/element-finder';
 import { useActiveFrames } from '@/features/editor/store/useCanvasDataStore';
@@ -64,6 +65,7 @@ export function EditorMediaBar({
   return (
     <>
     <div className="pointer-events-none fixed top-[calc(var(--header-h)+0.75rem)] left-1/2 z-30 flex -translate-x-1/2 gap-2">
+      <FillBlankChip />
       <TodoChip frames={frames} find={findBlankImageSlots} label="빈 사진 자리" />
       <TodoChip frames={frames} find={findPlaceholderTexts} label="채울 문구" />
       <button type="button" className={clsx(chip, 'pointer-events-auto border-gray-100 text-gray-800')} onClick={() => onMotionOpenChange(true)}>
@@ -73,6 +75,30 @@ export function EditorMediaBar({
     </div>
     {makingKind && runId !== hiddenRun && <MotionProgress kind={makingKind} onClose={() => setHiddenRun(runId)} />}
     </>
+  );
+}
+
+/** 빈 `_image` 자리에 AI 사진을 한 번에 만들어 넣는다 */
+function FillBlankChip() {
+  const { count, fill, isPending } = useFillBlankSlots();
+  if (!count) return null;
+  return (
+    <button
+      type="button"
+      className={clsx(chip, 'pointer-events-auto border-(--color-point)/30 bg-(--color-point)/5 text-(--color-point)')}
+      disabled={isPending}
+      onClick={() => void fill()}
+      title={`${formatCost(count * MEDIA_COST.aiImageUsd)} 정도 청구돼요`}
+    >
+      {isPending ? (
+        <>
+          <span className="h-3 w-3 animate-spin rounded-full border-2 border-(--color-point) border-t-transparent" />
+          AI 사진 넣는 중…
+        </>
+      ) : (
+        <>✦ AI로 한 번에 넣기 {count}장</>
+      )}
+    </button>
   );
 }
 
@@ -199,7 +225,7 @@ function MotionProgress({ kind, onClose }: { kind: HeroMotionKind; onClose: () =
 
 function MotionCredits({ motion }: { motion: HeroMotionInfo }) {
   const credits = motionCredits(motion);
-  if (motion.kind !== 'stock' || !credits.length) return null;
+  if (!credits.length) return null;
   return (
     <p className="-mt-2 text-xs text-gray-400">
       영상:{' '}
@@ -295,28 +321,30 @@ function HeroMotionModal({
           </div>
         )}
 
-        {(canCreate || motion) && (
-          <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
-            <div className="text-sm font-semibold text-gray-900">{motion ? '다시 만들기' : '만들기'}</div>
-            <div className="flex gap-2">
-              <button type="button" className="btn-outline flex-1 text-sm" disabled={busy || !canCreate} onClick={() => start.mutate({ kind: 'pan' })}>
-                천천히 줌·이동 · 무료
-              </button>
-              <button
-                type="button"
-                className="btn-primary flex-1 text-sm"
-                disabled={busy || !canCreate}
-                onClick={() =>
-                  window.confirm(`AI 영상(${MEDIA_COST.heroVideoSeconds}초)은 ${formatCost(HERO_VIDEO_USD)} 정도가 Gemini 키로 청구돼요. 만들까요?`) &&
-                  start.mutate({ kind: 'video' })
-                }
-              >
-                ✦ AI 영상 · {formatCost(HERO_VIDEO_USD)}
-              </button>
-            </div>
-            {!canCreate && <p className="text-xs text-gray-500">맨 위 사진 자리에 사진을 먼저 넣어 주세요. (무료 영상은 사진 없이도 돼요)</p>}
+        <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
+          <div className="text-sm font-semibold text-gray-900">{motion ? '다시 만들기' : '만들기'}</div>
+          <div className="flex gap-2">
+            <button type="button" className="btn-outline flex-1 text-sm" disabled={busy || !canCreate} onClick={() => start.mutate({ kind: 'pan' })}>
+              천천히 줌·이동 · 무료
+            </button>
+            <button
+              type="button"
+              className="btn-primary flex-1 text-sm"
+              disabled={busy}
+              onClick={() =>
+                window.confirm(
+                  `상품명으로 무료 사진을 찾아 AI 영상(${MEDIA_COST.heroVideoSeconds}초)을 만들어요. 예상 ${formatCost(HERO_VIDEO_USD)} (Gemini 키). 만들까요?`,
+                ) && start.mutate({ kind: 'video' })
+              }
+            >
+              ✦ AI 영상 · {formatCost(HERO_VIDEO_USD)}
+            </button>
           </div>
-        )}
+          <p className="text-xs text-gray-500">
+            AI 영상은 맨 위 사진이 아니라 Pexels·Pixabay에서 상품과 맞는 무료 사진을 찾아 만들어요.
+            {!canCreate ? ' 줌·이동은 맨 위 사진이 필요해요.' : ''}
+          </p>
+        </div>
 
         <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
           <div className="text-sm font-semibold text-gray-900">무료 영상 최대 {MAX_STOCK_PICKS}개로 AI 컷 편집</div>

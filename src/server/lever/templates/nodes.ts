@@ -70,6 +70,27 @@ export function estimateLines(value: string, width: number, fontSize: number, fo
   return Math.max(1, lines);
 }
 
+/** 박스 안에 글이 들어가게 글자 크기를 줄인다. 그래도 넘치면 높이만 늘린다. */
+export function fitTextToBox(node: FrameNode) {
+  if (node.type !== 'text') return;
+  const width = Number(node.width ?? 0);
+  const text = String(node.text ?? '');
+  if (!width || !text.trim()) return;
+  const family = typeof node.fontFamily === 'string' ? node.fontFamily : 'Pretendard';
+  const lineHeight = Number(node.lineHeight ?? 1.2) || 1.2;
+  let fontSize = Number(node.fontSize ?? 16);
+  const min = Math.max(12, Math.round(fontSize * 0.72));
+  const height = Number(node.height ?? 0);
+  if (node.wrap === 'none') node.wrap = 'word';
+  node.ellipsis = false;
+  if (!height) return;
+  const needed = (size: number) => estimateLines(text, width, size, family) * size * lineHeight;
+  while (fontSize > min && needed(fontSize) > height + 2) fontSize -= 1;
+  node.fontSize = fontSize;
+  const next = needed(fontSize);
+  if (next > height + 2) node.height = Math.ceil(next);
+}
+
 export function textNode(id: string, value: string, x: number, y: number, width: number, fontSize: number, o: TextOptions = {}): FrameNode {
   const lineHeight = o.lineHeight ?? 1.35;
   const lines = o.lines ?? estimateLines(value, width, fontSize, o.fontFamily);

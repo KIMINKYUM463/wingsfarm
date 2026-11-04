@@ -1,5 +1,18 @@
 import type { CategoryId } from './categories';
 
+/** 농수산물 페이지 맨 뒤에 꼭 넣는 섹션 */
+export const AGRI_CLOSING_SECTION_IDS = ['shipping_method', 'return_policy', 'product_notice'] as const;
+
+export const needsAgriClosing = (categoryId: string | null | undefined) => categoryId === 'agri';
+
+/** 본문에서 빼고 맨 뒤에 고정한다. 없으면 허용된 것만 추가 */
+export function ensureAgriClosing(ids: string[], categoryId: string, allowedIds: readonly string[]): string[] {
+  if (!needsAgriClosing(categoryId)) return ids;
+  const allow = new Set(allowedIds);
+  const pinned = AGRI_CLOSING_SECTION_IDS.filter((id) => allow.has(id));
+  return [...ids.filter((id) => !pinned.includes(id as (typeof pinned)[number])), ...pinned];
+}
+
 /**
  * 섹션 카탈로그 (후커블 분석서 "섹션 카탈로그" 기준, GIF 섹션 제외)
  *
@@ -163,13 +176,13 @@ const RECOMMEND = T(
 
 // ===== 공통 섹션 =====
 const COMMON = [
-  T('hero', '히어로', '도입', 'hero', '첫 화면. 상품을 한눈에 보여주는 대표 비주얼', '상품의 가장 큰 매력을 짧은 메인 문구로, 항목 3개는 6자 이내 핵심 키워드', { modelCapable: true }),
-  T('concept', '컨셉 비주얼', '도입', 'visual', '분위기·사용 장면으로 상품의 컨셉을 전달', '상품이 주는 경험·분위기를 감성적으로 표현', { modelCapable: true }),
+  T('hero', '히어로', '도입', 'hero', '첫 화면. 상품을 한눈에 보여주는 대표 비주얼', '상품명을 제목으로 쓰지 말고, 맛·식감·수치 중 가장 센 한 줄을 쓴다. 항목 3개는 6자 이내 핵심 키워드', { modelCapable: true }),
+  T('concept', '컨셉 비주얼', '도입', 'visual', '분위기·사용 장면으로 상품의 컨셉을 전달', '그 상품만의 장면(찌개, 김장, 찐 간식, 선물 상차림). "한 접시" "오늘 저녁은"처럼 아무 상품에나 되는 말은 쓰지 않는다', { modelCapable: true }),
   T('certification', '인증', '신뢰', 'badges', '보유한 인증을 인증번호와 함께 보여줌', '입력된 인증명·번호만 그대로 사용. 없는 인증은 절대 쓰지 않음', { evidence: 'certifications' }),
-  T('review', '고객 후기', '신뢰', 'reviews', '실제 구매 고객 후기 카드', '입력된 실제 후기 문장만 짧게 인용(의미 변경 금지). 작성자는 마스킹', { evidence: 'reviews' }),
+  T('review', '고객 후기', '신뢰', 'reviews', '실제 구매 고객 후기 카드', '입력된 실제 후기 문장만 짧게 인용(의미 변경 금지). 제목은 후기 속 장면으로. "고객이 남긴 한마디" 금지. 작성자는 마스킹', { evidence: 'reviews' }),
   T('social_proof', '판매 실적·순위', '신뢰', 'points', '판매량·순위 등 실적', '입력된 판매 실적 수치만 사용', { evidence: 'salesRecord', items: [2, 3], cuts: 'none' }),
   T('facility', '시설', '신뢰', 'story', '생산·제조 시설과 위생 관리', '입력된 시설·공정 정보만 사용', { evidence: 'facility' }),
-  T('quality', '품질', '상품 설명', 'points', '품질을 보여주는 핵심 포인트 3가지', '특징 입력을 근거로 품질 포인트 3개', {}),
+  T('quality', '품질', '상품 설명', 'points', '품질을 보여주는 핵심 포인트 3가지', '선별·품종·수치·산지 조건처럼 확인된 품질 근거 3개. 먹는 장면은 컨셉에 맡기고 여기서 되풀이하지 않는다', {}),
   T('comparison', '고르는 기준', '상품 설명', 'compare', '좋은 상품을 고르는 기준과 이 상품의 답', '다른 상품을 깎아내리지 말고 "확인할 점 → 이 상품" 형식. 확인된 사실만'),
   T('size_comparison', '크기 비교', '상품 설명', 'size', '크기·용량을 익숙한 물건과 비교', '입력된 크기·중량을 손·주먹·스마트폰처럼 익숙한 물건에 빗대어 감이 오게', { evidence: 'size' }),
   T('point_sum', '핵심 특징 요약', '상품 설명', 'grid', '핵심 특징을 아이콘 카드로 요약', '특징 4개를 각 8자 이내 제목 + 15자 내외 설명으로'),
@@ -179,7 +192,7 @@ const COMMON = [
   T('spec', '상품 정보', '상품 설명', 'table', '규격·구성·보관 등 기본 정보 표', '입력된 정보만 표로. 모르는 칸은 "[입력 필요]"'),
   T('options', '옵션·가격', '옵션·세트', 'table', '판매 옵션 한눈에 보기', '입력된 옵션 이름·규격만 사용', { evidence: 'options' }),
   T('package', '선물 포장', '옵션·세트', 'visual', '선물하기 좋은 포장 구성', '포장 사진이 있을 때 선물 상황을 제안', { evidence: 'gift' }),
-  T('conversion', '구매 유도(환기)', '구매 유도', 'cta', '마지막으로 구매를 결심하게 하는 한마디', '핵심 가치를 다시 한번 짧게'),
+  T('conversion', '구매 유도(환기)', '구매 유도', 'cta', '마지막으로 구매를 결심하게 하는 한마디', '앞에서 안 쓴 각도로 "지금 담는 이유" 한 줄. 히어로·컨셉 문장을 되풀이하지 않는다'),
   T('promotion', '이벤트·혜택', '구매 유도', 'cta', '진행 중인 이벤트·쿠폰', '입력된 혜택만 사용', { evidence: 'promotion' }),
   T('shipping_method', '배송 안내', '배송', 'steps', '주문부터 받는 날까지 배송 과정', '입력된 배송 정보만. 없으면 일반적인 안내 + "[입력 필요]"'),
   T('faq', 'FAQ', '마무리', 'faq', '자주 묻는 질문', '고객이 실제로 궁금해할 질문과, 입력 정보로 답할 수 있는 답만'),
@@ -205,6 +218,24 @@ const AGRI = [
   T('season_delivery_schedule', '명절 배송 일정', '배송', 'table', '명절 주문 마감·도착 일정', '명절 일정은 "[입력 필요]"로 비워 두고 판매자가 채우게 함', { evidence: 'gift' }),
   T('season_banner', '명절 인사', '배송', 'visual', '명절 선물 인사 배너', '명절 선물 상황 제안 (과장 금지)', { evidence: 'gift' }),
   T('data_notice', '개인정보 제3자 제공', '마무리', 'notice', '산지 발송을 위한 개인정보 제공 안내', '산지에서 직접 발송할 때 필요한 고지 문구'),
+  T(
+    'return_policy',
+    '교환·환불',
+    '마무리',
+    'notice',
+    '교환·환불이 되는 경우와 안 되는 경우',
+    '입력된 교환·환불 조건만. 없으면 신선식품 일반 안내 + "[입력 필요]"',
+    { items: [2, 4], cuts: 'none' },
+  ),
+  T(
+    'product_notice',
+    '상품상세정보',
+    '마무리',
+    'table',
+    '상품정보 제공고시',
+    '농수산물 품목 기준 항목. 입력된 값만 쓰고 없으면 "[입력 필요]"',
+    { items: [5, 8], cuts: 'none' },
+  ),
 ] as const satisfies readonly SectionType[];
 
 const FOOD = [
@@ -291,8 +322,8 @@ export const findSectionType = (categoryId: string, typeId: string) =>
  */
 const FLOWS: Partial<Record<CategoryId, { short: string[]; long: string[] }>> = {
   agri: {
-    short: ['hero', 'summary', 'concept', 'review', 'quality', 'comparison', 'size_comparison', 'point_sum', 'point_origin', 'point_origin_reason', 'point_producer', 'point_producer_reason', 'recommend', 'conversion', 'shipping_method', 'faq', 'contact'],
-    long: ['hero', 'summary', 'concept', 'review', 'season', 'quality', 'selection_process', 'comparison', 'size_comparison', 'point_sum', 'point_origin', 'point_origin_reason', 'point_producer', 'point_producer_reason', 'point_direct', 'recipe', 'storage_washing', 'recommend', 'options', 'package', 'conversion', 'promotion', 'shipping_method', 'delivery', 'faq', 'contact', 'notice_ai'],
+    short: ['hero', 'summary', 'concept', 'review', 'quality', 'comparison', 'size_comparison', 'point_sum', 'point_origin', 'point_origin_reason', 'point_producer', 'point_producer_reason', 'recommend', 'conversion', 'faq', 'contact', 'shipping_method', 'return_policy', 'product_notice'],
+    long: ['hero', 'summary', 'concept', 'review', 'season', 'quality', 'selection_process', 'comparison', 'size_comparison', 'point_sum', 'point_origin', 'point_origin_reason', 'point_producer', 'point_producer_reason', 'point_direct', 'recipe', 'storage_washing', 'recommend', 'options', 'package', 'conversion', 'promotion', 'faq', 'contact', 'shipping_method', 'return_policy', 'product_notice', 'notice_ai'],
   },
   food: {
     short: ['hero', 'summary', 'concept', 'review', 'quality', 'taste', 'point_sum', 'recipe', 'recommend', 'spec', 'conversion', 'shipping_method', 'faq', 'contact'],
@@ -309,14 +340,15 @@ const GENERIC_FLOW = {
   long: ['hero', 'concept', 'review', 'certification', 'quality', 'point_sum', 'detail', 'comparison', 'size_comparison', 'usage', 'how_to', 'spec', 'options', 'package', 'conversion', 'promotion', 'shipping_method', 'faq', 'contact', 'notice_ai'],
 };
 
-/** 잘 팔리는 상세페이지는 보통 9~13개 섹션 · 16,000~22,000px (860px 기준) */
-export const LENGTH_TARGET = { short: [9, 12], long: [13, 16] } as const;
+/** 잘 팔리는 상세페이지는 보통 9~13개 섹션 · 16,000~22,000px (860px 기준). extra는 비교·인증·사용법까지 넣은 더 긴 페이지 */
+export const LENGTH_TARGET = { short: [9, 12], long: [13, 16], extra: [18, 22] } as const;
 
 /** AI가 먼저 고를 수 있는 섹션 (카테고리에 안 맞는 공통 섹션 제외) */
 export const suggestableTypes = (categoryId: string) =>
   sectionTypesFor(categoryId).filter((t) => !t.notSuggestedFor?.includes(categoryId as CategoryId));
 
-const CLOSING_GROUPS: readonly SectionGroup[] = ['배송', '마무리'];
+/** 길이를 줄여도 빼면 안 되는 뒤쪽 — 구매 유도(CTA)까지 남겨야 페이지가 닫힌다 */
+const CLOSING_GROUPS: readonly SectionGroup[] = ['구매 유도', '배송', '마무리'];
 
 /** 섹션이 너무 많으면 본문 뒤쪽부터 덜어낸다 — 배송·마무리 섹션은 남긴다 */
 export function fitLength(ids: string[], categoryId: string, max: number) {
@@ -339,10 +371,11 @@ export function withAiNotice(ids: string[], usesAiImages: boolean) {
   return usesAiImages ? [...rest, AI_NOTICE_ID] : rest;
 }
 
-export function defaultFlow(categoryId: string, length: 'short' | 'long', available: (type: SectionType) => boolean) {
+export function defaultFlow(categoryId: string, length: 'short' | 'long' | 'extra', available: (type: SectionType) => boolean) {
   const types = suggestableTypes(categoryId);
   const flow = FLOWS[categoryId as CategoryId] ?? GENERIC_FLOW;
-  const base = flow[length].filter((id) => types.some((t) => t.id === id));
+  const flowKey = length === 'short' ? 'short' : 'long';
+  const base = flow[flowKey].filter((id) => types.some((t) => t.id === id));
   const extras = types.map((t) => t.id).filter((id) => !base.includes(id));
   const usable = (id: string) => {
     const type = types.find((t) => t.id === id);
@@ -354,5 +387,5 @@ export function defaultFlow(categoryId: string, length: 'short' | 'long', availa
     if (picked.length >= min) break;
     if (usable(id)) picked.splice(Math.max(picked.length - 3, 1), 0, id);
   }
-  return fitLength(picked, categoryId, max);
+  return ensureAgriClosing(fitLength(picked, categoryId, max), categoryId, types.map((t) => t.id));
 }

@@ -6,6 +6,7 @@
 import { ToggleState } from '@/shared/types/ui/toggles';
 import { TOGGLE_STATES } from '@/shared/constants/ui/toggles';
 import type { KonvaElement } from '@/shared/types/konva';
+import { isImageElement } from './element-finder';
 
 interface SelectedItem {
   id: string;
@@ -44,20 +45,17 @@ export const getSelectionType = (
     const element = getElement(item.id);
     if (!element) continue;
 
+    // 사진 자리(_image)는 아직 비어 있어도 이미지 패널
+    if (isImageElement(element)) {
+      validElements.push(element);
+      continue;
+    }
+
     // 1. assetId가 있는 rect/path → 이미지 계열 분기
     const hasAsset = (element.type === 'rect' || element.type === 'path') && 'assetId' in element && element.assetId;
 
     if (hasAsset) {
-      // 1-1. 그래픽 (_graphic)
-      if (element.name === '_graphic') {
-        return TOGGLE_STATES.GRAPHIC_EDIT;
-      }
-      // 1-2. 이미지 (_image 포함)
-      if (element.name?.includes('_image')) {
-        validElements.push(element);
-        continue;
-      }
-      // 1-3. 채워진 도형 (위 둘 다 아님) → 그래픽 패널
+      // 1-1. 그래픽 (_graphic) 또는 채워진 도형
       return TOGGLE_STATES.GRAPHIC_EDIT;
     }
 

@@ -425,11 +425,10 @@ export const useKonvaSelection = (options: UseKonvaSelectionOptions = {}) => {
       let targetId = clickedId;
       if (isClickOnContainer || containerParent) {
         const containerId = isClickOnContainer ? clickedId : containerParent!.id();
-        const isContainerSelected = selectedItems.some((item) => item.id === containerId);
 
-        // 컨테이너가 이미 선택된 상태에서 내부 요소 클릭 → 컨테이너 모드 진입 + 내부 요소 선택
-        // 내부 요소 드래그는 비활성화됨 (KonvaGroup/KonvaFrame에서 처리)
-        if (isContainerSelected && !isClickOnContainer && !metaPressed) {
+        // 그룹/상자 안 글씨·도형을 클릭하면 바로 내부 선택 (한 번에 테두리 잡고 이동 가능)
+        // 묶음 전체 선택은 빈 곳·상자만 클릭할 때
+        if (!isClickOnContainer && !metaPressed) {
           enterGroupMode(containerId);
           selectElement(clickedId);
           return;

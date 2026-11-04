@@ -75,13 +75,13 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
   );
 
   const plan = useDraftMutation(
-    async () => draftApi.plan(await ensureSaved()),
+    async () => draftApi.compositions(await ensureSaved()),
     (draft) => router.push(ROUTES.DRAFT(draft.id)),
   );
 
   const missing = [
     !input.productName.trim() && '상품명',
-    !input.productImagePaths.length && '상품 사진',
+    input.imageMode !== 'blank' && !input.productImagePaths.length && '상품 사진',
     !input.categoryId && '카테고리',
     !input.features.trim() && '제품 주요 특징',
   ].filter(Boolean);
@@ -106,7 +106,7 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pt-8 pb-36">
       <div>
         <div className="text-2xl font-bold text-gray-900">상세페이지 만들기</div>
-        <div className="mt-1 text-sm text-gray-500">상품명과 사진만 있으면 시작할 수 있어요. 초안(기획)까지는 무료로 만들고 마음껏 고칠 수 있어요.</div>
+        <div className="mt-1 text-sm text-gray-500">상품명과 특징만 있으면 시작할 수 있어요. 사진은 없어도 되고, 초안(기획)까지는 무료로 만들고 마음껏 고칠 수 있어요.</div>
       </div>
 
       <Field label="시작 방식">
@@ -295,6 +295,7 @@ export default function DraftForm({ initialDraft, initialInput }: DraftFormProps
             <div className="flex gap-2">
               <ChoiceCard selected={input.length === 'short'} onClick={() => update('length', 'short')} title="짧은 구성" description="최대 12개 섹션 · 정보가 적으면 줄여요" />
               <ChoiceCard selected={input.length === 'long'} onClick={() => update('length', 'long')} title="긴 구성" description="최대 16개 섹션 · 정보가 적으면 줄여요" />
+              <ChoiceCard selected={input.length === 'extra'} onClick={() => update('length', 'extra')} title="더 긴 구성" description="최대 22개 섹션 · 비교·인증·사용법까지" />
             </div>
           </Field>
 

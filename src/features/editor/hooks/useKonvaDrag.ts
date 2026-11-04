@@ -33,6 +33,7 @@ import { useSnapStore } from '@/features/editor/store/useSnapStore';
 import { recordHistoryIfNeeded } from '@/features/editor/store/useCanvasDataStore';
 import { getSelectionType } from '@/features/editor/lib/selection-type';
 import { findDropTarget, getFrameScale } from '@/features/editor/utils/dragUtils';
+import { findLogicalContainerParent } from '@/features/editor/lib/group-utils';
 import {
   getLineGuideStops,
   getObjectSnappingEdges,
@@ -146,6 +147,11 @@ export const useKonvaDrag = () => {
       if (!isSnapEnabled) return;
 
       const target = findDraggableNode(e.target);
+
+      // 그룹/프레임 안 자식: position()은 부모 상대좌표인데 스냅은 프레임(clip-group) 좌표라
+      // 섞이면 글자가 화면 밖으로 날아가 "사라짐"처럼 보인다 → 내부 드래그에선 스냅 생략
+      if (findLogicalContainerParent(target)) return;
+
       const stage = target.getStage();
       const layer = target.getLayer();
 

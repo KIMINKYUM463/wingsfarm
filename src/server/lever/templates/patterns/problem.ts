@@ -1,5 +1,5 @@
 import { CW, SIZE, W, X } from '../canvas';
-import { bottomOf, cardRow, disc, divider, outline, overlay, titled, titledAt, type PatternGroup } from './kit';
+import { bottomOf, cardRow, disc, divider, outline, titled, titledAt, type PatternGroup } from './kit';
 
 const PAINS = ['마트에서 산 과일이\n생각보다 싱거웠어요', '상자를 열어 보니\n무른 게 섞여 있었어요', '선물하기엔\n모양이 들쭉날쭉했어요'];
 const GUIDE = '메인 카피: 고객의 고민을 질문형으로 (15자 이내)\n고민 3개: 고객이 실제로 겪는 불편을 고객 말투로 (각 2줄 이내)';
@@ -180,19 +180,33 @@ export const PROBLEM: PatternGroup = {
       },
     },
     {
-      key: 'dim',
-      name: '어두운 사진 위 질문',
-      guide: '사진: 고민이 드러나는 장면 (글자가 올라가니 단순한 컷)\n질문 (2줄, 줄당 10자 이내)\n아래 고민 2개: 제목 + 설명',
+      key: 'precheck',
+      name: '구매 전 확인',
+      guide: '메인 카피 (12자 이내)\n확인 항목 4줄: 출고·수령일, 크기·등급 편차, 보관, 예약·제철 안내 (사실만, 과장 금지)\n아래 한 줄: 문의 방법',
       draw: (c) => {
-        const H = 1000;
-        c.y = 0;
-        overlay(c, 0, 0, W, H, () => {
-          c.y = 380;
-          c.header('WHY', '혹시 이런 경험\n있으신가요?', '고객이 겪는 불편을 한 문장으로 짚어 주세요');
+        c.header('BEFORE BUY', '구매 전\n꼭 확인해 주세요');
+        const lines = [
+          '[출고·수령 일정 — 주말·공휴일 포함]',
+          '[크기·모양·색은 개체마다 조금 다를 수 있어요]',
+          '[수령 후 바로 열어 상태를 확인해 주세요]',
+          '[보관 방법·섭취 권장 기간]',
+        ];
+        const start = c.nodes.length;
+        const top = c.y;
+        let y = top + 40;
+        for (const line of lines) {
+          disc(c, '!', X + 36, y, 44, 22);
+          const t = c.textAt(line, X + 100, y + 6, CW - 140, SIZE.small, { align: 'left', lineHeight: 1.5, name: 'list_item' });
+          y = Math.max(y + 44, bottomOf(t)) + 28;
+        }
+        c.boxBehind(start, X, top, CW, y - top + 20, 'rgba(255, 255, 255, 0)', {
+          cornerRadius: c.t.radius.card,
+          stroke: c.palette[c.accentRole],
+          strokeWidth: 3,
+          name: 'warning_box',
         });
-        c.y = H + 80;
-        titled(c, '고민 하나', '고객이 실제로 느끼는 불편을 구체적으로 적어 주세요.');
-        titled(c, '고민 둘', '그 불편 때문에 생기는 상황을 적어 주세요.', { gap: 0 });
+        c.y = y + 48;
+        c.text('[문의: 채널·운영 시간을 적어 주세요]', SIZE.caption, { color: c.muted, name: 'sub_copy', gap: 0 });
         return 100;
       },
     },

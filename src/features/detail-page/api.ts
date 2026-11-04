@@ -378,3 +378,20 @@ export const generateKeywords = async (
 
   return response.data;
 };
+
+/**
+ * AI가 후보 키워드 중 이 상품에 맞는 것만 골라 자동 체크용으로 반환
+ */
+export const pickKeywords = async (projectId: string): Promise<GenerateKeywordsResponseData> => {
+  if (!projectId) {
+    throw new CustomError(400, 'Project ID is required');
+  }
+
+  const response = await httpClient.post<GenerateKeywordsResponse>(
+    ENDPOINTS.PROJECTS.PICK_KEYWORDS(projectId),
+    {},
+    { withAuth: true },
+  );
+
+  return response.data;
+};

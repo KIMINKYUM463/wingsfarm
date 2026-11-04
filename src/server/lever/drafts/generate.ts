@@ -7,7 +7,7 @@ import type { DraftCut, DraftRecord, DraftSection } from '@/shared/types/draft';
 import { createAssetFromBuffer } from '../assets';
 import { asFrame, cloneWithNewIds, isImageSlot, walk, type FrameNode } from '../frames/tree';
 import { closestAspectRatio, loadInlineImages, requireGemini, type GeminiClient } from '../gemini';
-import { distinctFrom, productPhotoPrompt } from '../photoPrompt';
+import { distinctFrom, photoPromptFor } from '../photoPrompt';
 import { ApiError, badRequest } from '../http';
 import { saveNewProject } from '../projects';
 import { loadFile, mimeFromPath } from '../storage';
@@ -90,13 +90,15 @@ function referenceComposition(ctx: GenerateContext, path: string) {
   return ctx.referenceNotes.get(path)!;
 }
 
-function imagePrompt(ctx: GenerateContext, cut: DraftCut, composition: string | null) {
+function imagePrompt(ctx: GenerateContext, cut: DraftCut, composition: string | null, hasReferences: boolean) {
   const { input, plan } = ctx.draft;
   const identity = plan?.analysis?.identity;
   const otherScenes = (plan?.sections ?? []).flatMap((s) => s.cuts).filter((c) => c.id !== cut.id && c.source === 'ai').map((c) => c.scene);
-  return productPhotoPrompt(
+  return photoPromptFor(
+    hasReferences,
     `Product name (Korean): ${input.productName}`,
     identity && `Product details: ${[identity.colorFinish, identity.material, identity.scale].filter(Boolean).join(', ')}`,
+    input.features.trim() && `Keywords (Korean): ${input.features.trim()}`,
     `Scene (Korean): ${cut.scene}. Direction (Korean): ${cut.plan || cut.scene}`,
     composition && `Composition idea from a reference photo (reuse only the composition): ${composition}`,
     distinctFrom(otherScenes),
@@ -123,7 +125,7 @@ async function aiCutAsset(ctx: GenerateContext, section: DraftSection, cut: Draf
     stylePath ? referenceComposition(ctx, stylePath) : null,
   ]);
   const image = await ctx.gemini!.generateImage(
-    imagePrompt(ctx, cut, composition),
+    imagePrompt(ctx, cut, composition, refs.length > 0),
     refs,
     closestAspectRatio(Number(slot.width), Number(slot.height)),
   );

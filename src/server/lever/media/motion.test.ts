@@ -21,6 +21,15 @@ const {
 } = await import('./motion.ts');
 const { interleave, isStockSource, parseStockPicks, pexelsClipSource, pexelsToStock, pickVideoFile, pixabayClipSource, pixabayToStock, preferOrientation } =
   await import('./stockSources.ts');
+const { expandStockQuery } = await import('./stockQuery.ts');
+
+describe('스톡 검색어', () => {
+  it('한글 상품명은 영어 검색어로 바꾼다', () => {
+    assert.deepEqual(expandStockQuery('영덕 과메기'), ['gwamegi', 'dried pollack Korea', 'Korean dried fish']);
+    assert.ok(expandStockQuery('햇사과 5kg').includes('fresh apple orchard'));
+    assert.deepEqual(expandStockQuery('melon'), ['melon']);
+  });
+});
 
 describe('무료 영상 컷 편집', () => {
   const clips = [{ duration: 12 }, { duration: 8 }, { duration: 20 }];

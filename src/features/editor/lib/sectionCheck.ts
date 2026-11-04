@@ -37,7 +37,7 @@ export function checkSection(elements: KonvaElement[]): SectionNote[] {
   if (placeholders) {
     notes.push({ tone: 'fix', text: `채울 문구가 ${placeholders}곳 남았어요. "[키워드]" 같은 글자가 손님에게 그대로 보여요.`, fixRequest: '이 페이지에 남은 자리표시 문구를 상품 정보로 채워줘' });
   }
-  if (blanks) notes.push({ tone: 'fix', text: `빈 사진 자리가 ${blanks}곳 있어요. 사진을 넣거나 자리를 지워 주세요.` });
+  if (blanks) notes.push({ tone: 'fix', text: `빈 사진 자리가 ${blanks}곳 있어요. 위쪽 "AI로 한 번에 넣기"로 채우거나 직접 넣어 주세요.` });
   if (small) {
     notes.push({ tone: 'fix', text: `글자 ${small}개가 휴대폰에서 너무 작게 보여요 (${MIN_MOBILE_FONT}px 미만).`, fixRequest: '이 페이지의 작은 글자를 휴대폰에서 읽기 좋게 키워줘' });
   }

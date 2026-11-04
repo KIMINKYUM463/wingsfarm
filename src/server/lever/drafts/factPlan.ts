@@ -25,6 +25,8 @@ export const FACT_FREE_SECTIONS: ReadonlySet<string> = new Set([
   'contact',
   'delivery',
   'shipping_method',
+  'return_policy',
+  'product_notice',
   'conversion',
   'notice_ai',
   'data_notice',

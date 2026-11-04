@@ -20,8 +20,9 @@ import {
 
 export { startGenerate } from './generate';
 export { addSection, autofillDraft, planGuidePrompt, shufflePalettes, startPlan } from './plan';
+export { reshuffleCompositions, selectComposition, startCompositions } from './compositions';
 
-const BUSY = ['planning', 'generating'];
+const BUSY = ['composing', 'planning', 'generating'];
 
 /** POST /drafts */
 export async function createDraft(body: { input?: unknown }) {
@@ -51,7 +52,9 @@ export async function patchDraft(id: string, body: { input?: unknown; plan?: unk
       ...d,
       input,
       plan,
-      status: plan ? (d.status === 'completed' ? 'completed' : 'ready') : 'editing',
+      candidates: categoryChanged ? null : d.candidates,
+      selectedCandidateId: categoryChanged ? null : d.selectedCandidateId,
+      status: plan ? (d.status === 'completed' ? 'completed' : 'ready') : d.candidates?.length && !categoryChanged ? 'choosing' : 'editing',
       revision: d.revision + 1,
     };
   });
@@ -83,11 +86,11 @@ export async function listReuseSources(query: URLSearchParams) {
   };
 }
 
-/** GET /palettes?categoryId= — 색 바꾸기 패널 (역할 설명·카테고리 프리셋·톤 11종) */
+/** GET /palettes?categoryId=&productName= — 색 바꾸기 패널 (역할 설명·상품 프리셋·톤) */
 export function paletteCatalog(query: URLSearchParams) {
   return {
     roles: PALETTE_ROLES,
-    presets: palettePresets(query.get('categoryId') ?? ''),
+    presets: palettePresets(query.get('categoryId') ?? '', query.get('productName') ?? ''),
     tones: TONE_PRESETS.map((t) => ({ id: t.id, name: t.name, palette: derivePalette(t.main) })),
   };
 }

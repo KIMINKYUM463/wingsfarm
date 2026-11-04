@@ -93,12 +93,8 @@ export const useProductInfoModal = ({ currentStep, projectId }: UseProductInfoMo
       return (imageUpload?.detailPageUrls?.length ?? 0) > 0;
     }
 
-    // Step 4: 상품 이미지 (1개 이상 && 최대 10개 이하)
-    if (currentStep === 4) {
-      const hasImages = (productImageUrls?.length ?? 0) > 0;
-      const hasErrors = !!errors.productImageUrls;
-      return hasImages && !hasErrors;
-    }
+    // Step 4: 상품 이미지 (선택 · 최대 10개)
+    if (currentStep === 4) return !errors.productImageUrls;
 
     return false;
   }, [currentStep, companyName, generationMethod, generationData, productImageUrls, errors]);

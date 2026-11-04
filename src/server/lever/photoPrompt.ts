@@ -13,6 +13,13 @@ const PHOTO_RULES = [
   'Photorealistic commercial product photography.',
 ];
 
+const KEYWORD_PHOTO_RULES = [
+  'Create ONE new real-camera photograph of the product described in the Korean name, category and keywords below.',
+  'There are no reference photos. Infer appearance only from that text. Do not invent a different product.',
+  'It is a single photo only — not a web page, detail page, poster, banner, flyer, collage, split screen, infographic, mockup or screenshot.',
+  'Photorealistic commercial product photography.',
+];
+
 const NO_TEXT_RULE =
   'Absolutely no added text anywhere: no letters, words, numbers, captions, headlines, price tags, badges, stickers, watermarks, logo overlays, frames or borders. ' +
   'Only markings already printed on the product packaging in the reference photos may appear.';
@@ -21,6 +28,13 @@ type PromptPart = string | false | null | undefined | 0;
 
 export const productPhotoPrompt = (...details: PromptPart[]) =>
   [...PHOTO_RULES, ...details, NO_TEXT_RULE].filter(Boolean).join('\n');
+
+/** 올린 상품 사진이 없을 때 — 상품명·키워드만으로 장면을 만든다 */
+export const keywordPhotoPrompt = (...details: PromptPart[]) =>
+  [...KEYWORD_PHOTO_RULES, ...details, NO_TEXT_RULE].filter(Boolean).join('\n');
+
+export const photoPromptFor = (hasReferences: boolean, ...details: PromptPart[]) =>
+  hasReferences ? productPhotoPrompt(...details) : keywordPhotoPrompt(...details);
 
 /** 같은 페이지의 다른 사진과 겹치지 않게 하는 지시 */
 export const distinctFrom = (otherScenes: string[]) => {

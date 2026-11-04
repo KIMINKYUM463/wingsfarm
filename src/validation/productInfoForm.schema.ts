@@ -52,8 +52,8 @@ const baseRequestSchema = z.object({
     .max(100, '회사명은 100자 이내로 입력해주세요'),
   productImageUrls: z
     .array(z.string())
-    .min(1, '상품 이미지를 최소 1개 이상 업로드해주세요')
-    .max(10, '상품 이미지는 최대 10개까지 업로드 가능합니다'),
+    .max(10, '상품 이미지는 최대 10개까지 업로드 가능합니다')
+    .default([]),
 });
 
 // keyword_selection 방식 스키마

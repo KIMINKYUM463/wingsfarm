@@ -7,7 +7,7 @@ import type { DraftPalette, PalettePreset } from '@/shared/types/draft';
 
 /**
  * 4색 팔레트 편집 (초안 "색 바꾸기"와 에디터 "색상" 탭이 함께 사용)
- * - 추천 조합(프리셋) · 톤 11종 · 역할별 직접 고르기 · "대표색에 맞춤"
+ * - 추천 조합(프리셋) · 톤 · 역할별 직접 고르기 · "대표색에 맞춤"
  */
 export function PalettePanel({
   palette,

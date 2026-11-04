@@ -46,6 +46,7 @@ const KonvaGroup = forwardRef<Konva.Group, KonvaElementRendererProps>(
       groupRef,
       currentX,
       currentY,
+      isInGroupMode,
       allowInternalClick,
       onClick,
       onDblClick,
@@ -77,7 +78,8 @@ const KonvaGroup = forwardRef<Konva.Group, KonvaElementRendererProps>(
         y={currentY}
         {...commonGroupProps}
         {...shadowProps}
-        draggable
+        // 그룹 모드에선 컨테이너 자체 드래그 끄고, 자식만 움직이게 함
+        draggable={!isInGroupMode}
         onClick={onClick}
         onDblClick={onDblClick}
         onDragStart={onDragStart}
@@ -100,10 +102,13 @@ const KonvaGroup = forwardRef<Konva.Group, KonvaElementRendererProps>(
           />
         )}
 
-        {/* 자식 요소 렌더링 */}
+        {/* 자식은 항상 드래그 가능 — 글씨 클릭·드래그 시 상자 안에서만 이동 (그룹 통째 드래그는 빈 곳) */}
         <KonvaElementRenderer
           element={element}
           {...restProps}
+          onDragStart={onDragStart}
+          onDragMove={onDragMove}
+          onDragEnd={onDragEnd}
           onTransformStart={onTransformStart}
           onTransform={onTransform}
           onTransformEnd={onTransformEnd}

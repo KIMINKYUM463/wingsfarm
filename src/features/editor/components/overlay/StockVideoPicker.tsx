@@ -24,7 +24,7 @@ const pickKey = (video: StockVideo) => `${video.source}-${video.id}`;
 export function StockVideoPicker({ projectId, disabled, onSubmit }: { projectId: string; disabled: boolean; onSubmit: (videos: StockVideo[]) => void }) {
   const productName = useCanvasDataStore((state) => state.productName);
   const [input, setInput] = useState(productName ?? '');
-  const [query, setQuery] = useState<string | null>(null);
+  const [query, setQuery] = useState<string | null>(productName?.trim() || null);
   const [picked, setPicked] = useState<StockVideo[]>([]);
 
   const toggle = (video: StockVideo) => {
@@ -68,8 +68,13 @@ export function StockVideoPicker({ projectId, disabled, onSubmit }: { projectId:
           {notice}
         </p>
       ))}
+      {search.data?.searches?.length ? (
+        <p className="text-xs text-gray-500">영어 검색어: {search.data.searches.join(', ')}</p>
+      ) : null}
       {search.isSuccess && !videos.length && (
-        <p className="text-xs text-gray-500">&apos;{search.data.query}&apos; 영상이 없어요. 영어(예: melon)나 더 넓은 말(예: 과일, 농장)로 찾아 보세요.</p>
+        <p className="text-xs text-gray-500">
+          &apos;{search.data.query}&apos;와 맞는 영상이 없어요. 더 넓은 말(예: dried fish, farm)로 찾아 보세요.
+        </p>
       )}
 
       {videos.length > 0 && (
