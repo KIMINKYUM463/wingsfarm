@@ -1,0 +1,85 @@
+{
+ "summary": "200만 개의 아보카도를 까본 전문가가 직접 정확하고 쉬운 아보카도 손질법을 단계별로 시연하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "무조건 봐야하는데요",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "무조건 봐야하는데요",
+   "purpose": "200만 개 아보카도를 까본 경험을 바탕으로 신뢰성을 확보하며 시청자의 주목을 끈다",
+   "seconds": 3.0,
+   "note": "주방 카운터 앞에서 정면 응시, 아보카도 2개 보임 - 실제 화면"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 1",
+   "shot": "prep",
+   "text": "확교 다시 다나한지",
+   "purpose": "아보카도를 칼로 반으로 자르는 첫 번째 단계를 보여준다",
+   "seconds": 7.0,
+   "note": "칼로 아보카도 자르는 손 클로즈업 - 실제 화면 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 2",
+   "shot": "detail",
+   "text": "완으로 이별게 까는거야?",
+   "purpose": "잘린 아보카도를 완전히 이별시키는 방법을 설명한다",
+   "seconds": 7.0,
+   "note": "절반으로 자른 아보카도 들고 설명, 왼쪽에 초록색 자른 아보카도들 보임 - 실제 화면"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 3",
+   "shot": "prep",
+   "text": "확교 다시 다나한지",
+   "purpose": "다음 손질 단계를 시연한다",
+   "seconds": 7.0,
+   "note": "다시 아보카도 손질하는 장면, 칼 사용 - 실제 화면 (추정)"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "핵심 팁을 강조하며 영상을 마무리한다",
+   "seconds": 11.0,
+   "note": "썸네일 - 같은 구도에서 손질 방법 설명 - 실제 화면 (추정)"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "200만 개라는 구체적 숫자로 전문성과 권위를 즉시 확보해 클릭과 시청을 유도함",
+  "얼굴을 보이며 직접 말하고 시연하여 신뢰감과 친근함을 동시에 전달함",
+  "일상적으로 많이 까먹는 아보카도 손질이라는 실용적 주제로 대중성 확보"
+ ],
+ "copy_style": "반말·단정적 권위·경험 강조",
+ "template": "손질법",
+ "item": "아보카도",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "KF64VNat6MM",
+  "title": "아보카도만 200만개 깐 남자가 알려주는 아보카도 제대로 까는법입니다",
+  "length": 35,
+  "channel": "야우냐?",
+  "views": 6290000,
+  "description": ""
+ },
+ "via": "fal"
+}

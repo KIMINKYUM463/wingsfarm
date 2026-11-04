@@ -131,9 +131,10 @@ export function interleave<T>(lists: T[][]): T[] {
   return Array.from({ length: longest }, (_, i) => lists.flatMap((list) => (i < list.length ? [list[i]] : []))).flat();
 }
 
-export const isStockSource = (value: unknown): value is StockSource => value === 'pexels' || value === 'pixabay';
+export const isStockSource = (value: unknown): value is StockSource =>
+  value === 'pexels' || value === 'pixabay' || value === 'upload';
 
-/** 요청의 고른 영상 목록 검사 (1~3개, 같은 영상은 하나로) — 예전 형식 { source, videoId }도 받는다 */
+/** 요청에서 고른 영상 목록 검사 (1~3개, 같은 영상은 하나로) — 예전 형식 { source, videoId }도 받는다 */
 export function parseStockPicks(body: { videos?: unknown; source?: unknown; videoId?: unknown }): StockPick[] | null {
   const items = (Array.isArray(body.videos) ? body.videos : [body]) as { source?: unknown; videoId?: unknown }[];
   const picks = new Map<string, StockPick>();
@@ -145,3 +146,8 @@ export function parseStockPicks(body: { videos?: unknown; source?: unknown; vide
   }
   return picks.size >= 1 && picks.size <= MAX_STOCK_PICKS ? [...picks.values()] : null;
 }
+
+/** 프로젝트에 올린 내 영상 저장 경로 */
+export const uploadVideoPath = (projectId: string, videoId: number) => `assets/hero-uploads/${projectId}/${videoId}.mp4`;
+export const uploadMetaPath = (projectId: string, videoId: number) => `assets/hero-uploads/${projectId}/${videoId}.json`;
+export const uploadThumbPath = (projectId: string, videoId: number) => `assets/hero-uploads/${projectId}/${videoId}.jpg`;

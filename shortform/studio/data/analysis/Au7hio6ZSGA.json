@@ -1,0 +1,85 @@
+{
+ "summary": "대파를 냉장고에서 한 달간 신선하게 보관하는 방법을 손질과 포장 과정으로 보여준다",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "난 정말 몰랐었네~~",
+  "type": "다들속았다"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "난 정말 몰랐었네~~",
+   "purpose": "대파 보관법을 몰랐다는 공감대를 형성하며 시청자의 주의를 끈다",
+   "seconds": 3.0,
+   "note": "주방 조리대에 대파가 놓여 있고 손이 대파를 만지는 모습. 큰 노란 자막으로 시선 집중"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "요 봉지 안돼요",
+   "purpose": "대파를 적당한 크기로 손질하는 첫 번째 단계를 보여준다",
+   "seconds": 8.0,
+   "note": "추정: 손으로 대파를 손질하거나 자르는 장면. 비닐봉지 보관이 잘못된 방법임을 알려줌"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "store",
+   "text": "냅킨·키친타올",
+   "purpose": "손질한 대파를 용기에 담아 보관하는 방법을 구체적으로 보여준다",
+   "seconds": 10.0,
+   "note": "용기에 대파를 담고 있는 장면. 냅킨이나 키친타올을 함께 사용하는 모습"
+  },
+  {
+   "role": "STEP",
+   "label": "3",
+   "shot": "pack",
+   "text": "",
+   "purpose": "최종적으로 포장을 마무리하는 과정을 보여준다",
+   "seconds": 8.0,
+   "note": "추정: 손이 용기 뚜껑을 닫거나 랩으로 덮는 등 마무리 동작. 흰 장갑 착용"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "냅킨·키친타올",
+   "purpose": "완성된 보관 상태의 대파를 최종 결과물로 제시한다",
+   "seconds": 7.0,
+   "note": "썸네일 이미지. 용기에 깔끔하게 정리된 대파들이 보이는 최종 결과 샷"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "공감형 후킹('난 정말 몰랐었네')으로 시청자가 자신의 문제로 인식하게 만듦",
+  "손만 보이는 깔끔한 구도로 보관 과정에 집중하게 하고 따라하기 쉽게 만듦",
+  "실용적인 한 달 보관이라는 명확한 혜택을 제목에서 바로 제시함"
+ ],
+ "copy_style": "감탄형 반말로 친근하고 공감을 유도하는 말투",
+ "template": "보관경고",
+ "item": "대파",
+ "category": "채소",
+ "relevant": true,
+ "meta": {
+  "id": "Au7hio6ZSGA",
+  "title": "대파 냉장고 한달먹는방법",
+  "length": 36,
+  "channel": "배여사집밥  korean home meal",
+  "views": 1630000,
+  "description": ""
+ },
+ "via": "fal"
+}

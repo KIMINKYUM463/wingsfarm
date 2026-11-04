@@ -1,10 +1,10 @@
 /** 맨 위 움직이는 컷 상태 (프로젝트마다 하나) */
 export type HeroMotionKind = 'pan' | 'video' | 'stock';
 
-/** 무료 영상 사이트 */
-export type StockSource = 'pexels' | 'pixabay';
+/** 무료 영상 사이트 + 사용자가 올린 영상 */
+export type StockSource = 'pexels' | 'pixabay' | 'upload';
 
-/** 무료 영상은 최대 이만큼 골라 AI가 컷 편집한다 */
+/** 무료·내 영상은 최대 이만큼 골라 AI가 컷 편집한다 */
 export const MAX_STOCK_PICKS = 3;
 
 /** 상세페이지 첫 섹션 위에 따로 들어가는 움직이는 컷 크기 (상세페이지 폭, 4:3) */

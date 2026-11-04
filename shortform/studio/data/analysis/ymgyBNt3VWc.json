@@ -1,0 +1,85 @@
+{
+ "summary": "참치회의 높은 가격과 품질 간 차이를 강조하며 5만원 이하로 좋은 참치회를 즐길 수 있다고 알려주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "none",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "참치회 종에서도",
+  "type": "가격대비"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "참치회 종에서도",
+   "purpose": "참치회 종류 중에서도 가격 차이가 있음을 암시하며 시청자의 관심을 끈다",
+   "seconds": 10.0,
+   "note": "참치회가 접시에 펼쳐진 클로즈업, 왼쪽 상단에 자막"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "5만원이라면",
+   "purpose": "5만원 이하의 가격대를 제시하여 합리적인 소비를 유도한다",
+   "seconds": 10.0,
+   "note": "추정: 참치 덩어리를 나무 도마 위에 올린 클로즈업 샷"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "굉장히 준수한 퀄리티의",
+   "purpose": "품질 좋은 참치의 특징을 시각적으로 보여준다",
+   "seconds": 10.0,
+   "note": "참치 덩어리의 결과 색상을 보여주는 동일 구도"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "crave",
+   "text": "출안주로 너넉하게",
+   "purpose": "얇게 썬 참치회의 완성된 모습을 보여주며 구매 욕구를 자극한다",
+   "seconds": 11.0,
+   "note": "얇게 썬 참치회가 접시에 펼쳐진 먹음직스러운 샷"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "detail",
+   "text": "굉장히 준수한 퀄리티의",
+   "purpose": "다시 한번 품질을 강조하며 행동을 유도한다",
+   "seconds": 10.0,
+   "note": "추정: 썸네일용 참치 덩어리 클로즈업, 왼쪽 하단에 출연자 작은 이미지 삽입"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "제목에서 '비싸게 사먹지마세요'로 가격 절약 포인트를 명확히 제시해 클릭을 유도함",
+  "참치회의 육질과 결을 클로즈업으로 반복해서 보여주며 품질을 시각적으로 증명함",
+  "5만원이라는 구체적인 가격을 제시해 합리적 소비 기준을 제공함"
+ ],
+ "copy_style": "반말, 간결한 문장으로 품질과 가격 포인트 강조",
+ "template": "가격대비",
+ "item": "참치회(참다랑어)",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "ymgyBNt3VWc",
+  "title": "참치회 제발 비싸게 사먹지마세요",
+  "length": 51,
+  "channel": "배정길의 비밀레시피",
+  "views": 9400000,
+  "description": "#shorts #참치회 #참다랑어"
+ },
+ "via": "fal"
+}

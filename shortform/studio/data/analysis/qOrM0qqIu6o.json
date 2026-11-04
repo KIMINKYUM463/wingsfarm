@@ -1,0 +1,94 @@
+{
+ "summary": "꼬막을 물에 삶으면 안 되는 이유를 설명하고, 올바른 찜 조리법을 시연하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "꼬막을 물에 삶으면 안되는 이유!",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "꼬막을 물에 삶으면 안되는 이유!",
+   "purpose": "꼬막을 물에 삶으면 안 된다는 금지 사항으로 시청자의 주의를 끈다",
+   "seconds": 3.0,
+   "note": "손에 꼬막을 들고 있는 진행자 정면샷, 아래 찜기 보임"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hold",
+   "text": "꼬막을 물에 삶으면 안되는 이유!",
+   "purpose": "물에 삶으면 안 되는 이유를 설명한다",
+   "seconds": 4.0,
+   "note": "진행자가 꼬막을 들고 설명하는 클로즈업 샷"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "꼬막을 찜기에 넣는 과정을 보여준다",
+   "seconds": 10.0,
+   "note": "추정: 손으로 스테인리스 볼에 담긴 꼬막을 찜기에 옮기는 클로즈업, 아래 물 끓는 냄비 보임"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "prep",
+   "text": "이 상태에서",
+   "purpose": "찜기에서 꼬막을 찌는 올바른 방법을 시연한다",
+   "seconds": 14.0,
+   "note": "찜기 위에 올려진 꼬막 볼과 끓는 물 냄비를 위에서 내려다본 구도"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "우와아아아",
+   "purpose": "찜기로 조리한 결과를 보여주며 반응을 유도한다",
+   "seconds": 12.0,
+   "note": "진행자 얼굴과 찜기 화면 분할 구도, 진행자 감탄 표정, 괄호로 (절 한 꼬막 투입) 텍스트 상단"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "이 상태에서",
+   "purpose": "완성된 꼬막 상태를 클로즈업으로 확인시킨다",
+   "seconds": 13.0,
+   "note": "추정: 찜기에서 쪄진 꼬막의 최종 상태를 보여주는 클로즈업"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "제목에서 '절대 물에 삶지 마세요'라는 강한 부정 경고로 호기심 유발",
+  "진행자가 직접 얼굴을 보이며 신뢰감 있게 설명하고 시연",
+  "잘못된 방법(물에 삶기)과 올바른 방법(찜기 사용)을 명확히 대비시켜 실용성 강조"
+ ],
+ "copy_style": "반말, 감탄사 사용, 부정 경고형 제목",
+ "template": "손질법",
+ "item": "꼬막",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "qOrM0qqIu6o",
+  "title": "꼬막은 절대 물에 삶지 마세요!",
+  "length": 56,
+  "channel": "수부해TV subuhae",
+  "views": 6830000,
+  "description": "#꼬막 #꼬막삶는법 #꼬막손질 #수산물"
+ },
+ "via": "fal"
+}

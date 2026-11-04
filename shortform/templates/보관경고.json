@@ -1,0 +1,106 @@
+{
+  "name": "보관법 경고형 (O/X)",
+  "kind": "자동",
+  "layout": "letterbox",
+  "when": "택배 받은 직후 고객이 궁금한 것. 재구매 고객 만족도용",
+  "evidence": "참외 보관할 때 절대 베란다에 두지마세요 218만 / 감자 보관법 20만",
+  "title": [
+    "{title1}",
+    "{title2}"
+  ],
+  "info": "{info|산지에서 바로 보내는 {name}, 프로필 링크}",
+  "segments": [
+    {
+      "kind": "HOOK",
+      "say": "{hook}",
+      "source": "{hook_source|ai:hook}"
+    },
+    {
+      "each": "wrong",
+      "kind": "TIP",
+      "say": "{text}",
+      "source": "{source}",
+      "mark": "X"
+    },
+    {
+      "each": "right",
+      "kind": "TIP",
+      "say": "{text}",
+      "source": "{source}",
+      "mark": "O"
+    },
+    {
+      "kind": "CTA",
+      "say": "{outro|저장해 두고 택배 받는 날 꺼내 보세요.}",
+      "source": "{outro_source|ai:hero}"
+    }
+  ],
+  "fields": [
+    {
+      "key": "title1",
+      "label": "제목 1줄 (흰색)",
+      "type": "text",
+      "max": 13,
+      "hint": "품목명이 들어간 주제. 예: 꿀참외 고르는 법"
+    },
+    {
+      "key": "title2",
+      "label": "제목 2줄 (노란색)",
+      "type": "text",
+      "max": 13,
+      "hint": "궁금증을 만드는 한 마디. 예: 딱 3가지만 보세요"
+    },
+    {
+      "key": "hook",
+      "label": "첫 문장 (훅)",
+      "type": "text",
+      "hint": "흔한 잘못을 묻는 문장. 예: 참외, 사 오자마자 *베란다*에 두셨나요?"
+    },
+    {
+      "key": "hook_source",
+      "label": "첫 장면",
+      "type": "source",
+      "default": "ai:hook"
+    },
+    {
+      "key": "wrong",
+      "label": "X 잘못된 보관",
+      "type": "list",
+      "min": 1,
+      "max": 2,
+      "count": 1,
+      "sources": [
+        "ai:detail",
+        "ai:hero"
+      ],
+      "hint": "하면 안 되는 보관과 그 결과"
+    },
+    {
+      "key": "right",
+      "label": "O 맞는 보관",
+      "type": "list",
+      "min": 1,
+      "max": 3,
+      "count": 2,
+      "sources": [
+        "ai:store",
+        "ai:crave",
+        "ai:detail"
+      ],
+      "hint": "올바른 보관법"
+    },
+    {
+      "key": "outro",
+      "label": "마무리 문장",
+      "type": "text",
+      "hint": "저장 유도"
+    },
+    {
+      "key": "info",
+      "label": "아래 노란 바",
+      "type": "text",
+      "max": 22,
+      "hint": "주문 안내 한 줄. 예: 이렇게 고른 참외, 프로필 링크에"
+    }
+  ]
+}

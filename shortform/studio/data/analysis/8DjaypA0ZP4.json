@@ -1,0 +1,85 @@
+{
+ "summary": "참외를 고르는 3가지 기준(줄무늬, 배꼽, 색)을 클로즈업과 손으로 들어 보이며 차례로 설명하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "밝은",
+ "hook": {
+  "text": "평생 요긴하게 써먹는 참외 고르는 방법",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "참외 고르는 방법을 알려주겠다고 시선을 끈다",
+   "seconds": 10.0,
+   "note": "참외 여러 개가 검은 배경에 배치된 오버헤드샷, 줄무늬가 선명하게 보임 (추정)"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 1",
+   "shot": "detail",
+   "text": "",
+   "purpose": "줄무늬가 선명하고 골이 깊은 참외가 좋다고 알려준다",
+   "seconds": 20.0,
+   "note": "참외 표면의 줄무늬 클로즈업, 손가락으로 골을 따라가며 설명하는 장면 (추정)"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 2",
+   "shot": "detail",
+   "text": "",
+   "purpose": "참외의 배꼽(꼭지 반대편)이 작고 단단한 것이 좋다고 설명한다",
+   "seconds": 20.0,
+   "note": "참외 더미 위에 스티커가 붙은 참외들, 손으로 참외 배꼽 부분을 가리키는 장면 포함 (추정)"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 3",
+   "shot": "hold",
+   "text": "",
+   "purpose": "노란색이 진하고 균일한 참외를 선택하라고 안내한다",
+   "seconds": 20.0,
+   "note": "손으로 참외를 들어 올려 색상을 보여주는 샷, 검은 배경에서 노란색이 강조됨"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "pack",
+   "text": "",
+   "purpose": "선별된 좋은 참외를 포장된 상태로 보여준다",
+   "seconds": 20.0,
+   "note": "비닐 랩으로 포장된 참외들이 검은 용기에 담긴 모습, 손이 들고 있음"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "참외 고르는 3가지 기준을 명확하게 구분하여 기억하기 쉽게 구성했다",
+  "검은 배경에 노란 참외가 대비되어 시각적으로 집중도가 높다",
+  "각 팁마다 클로즈업과 손동작으로 구체적인 부분을 명확히 보여준다"
+ ],
+ "copy_style": "평서형, 핵심 키워드 강조, 간결한 설명",
+ "template": "고르는법",
+ "item": "참외",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "8DjaypA0ZP4",
+  "title": "평생 요긴하게 써먹는 참외 고르는 방법!",
+  "length": 191,
+  "channel": "이 남자의 cook",
+  "views": 1120653,
+  "description": "수박과 함께 여름 대표 과일 참외!\n맛있는 참외 고르는 방법!\n간단하지만 요긴하게 써먹으세요!\n\n\n이 남자의 cook 네이버 카페(이 남자의 식구들) : https://cafe.naver.com/tmc09\n\n\n#참외\n#여름과일\n#수박\n#맛있는참외고르는법\n#참외보관법"
+ },
+ "via": "fal"
+}

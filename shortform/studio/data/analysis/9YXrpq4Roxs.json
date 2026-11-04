@@ -1,0 +1,76 @@
+{
+ "summary": "조개 해감할 때 와사비를 넣으면 모래를 빠르게 제거할 수 있다는 팁을 시연하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "조개 해감할때 와사비 넣으면 모래를 미친듯이!?",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "조개 해감할때 와사비",
+   "purpose": "조개 해감에 와사비를 사용하는 방법이 있다고 흥미를 유발한다",
+   "seconds": 3.0,
+   "note": "출연자가 주방에서 와사비 제품을 들고 있는 전신샷, 조개가 담긴 용기도 보임"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "prep",
+   "text": "이만큼 집어넣고",
+   "purpose": "와사비를 조개가 담긴 물에 넣는 과정을 보여준다",
+   "seconds": 5.0,
+   "note": "손이 와사비를 조개 담긴 용기에 짜 넣는 클로즈업, 위에서 아래로 촬영"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "대포니이 한번보시죠",
+   "purpose": "와사비를 넣은 후 조개의 반응을 보여준다",
+   "seconds": 4.0,
+   "note": "출연자가 카메라를 보며 설명하는 장면, 조개 용기가 앞에 있음 (추정)"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "이만큼 집어넣고",
+   "purpose": "와사비를 넣은 후 조개가 실제로 모래를 배출하는 결과를 확인시킨다",
+   "seconds": 5.0,
+   "note": "조개가 담긴 투명 용기를 클로즈업으로 촬영, 와사비가 물에 풀어진 모습과 조개들이 보임"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "제목에서 '미친듯이'라는 강렬한 표현으로 호기심을 자극함",
+  "와사비라는 의외의 재료를 활용한 차별화된 팁 제공",
+  "출연자가 직접 얼굴을 드러내고 친근하게 설명해 신뢰감 형성"
+ ],
+ "copy_style": "반말 구어체, 느낌표로 강조하는 자극적 질문형",
+ "template": "손질법",
+ "item": "조개",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "9YXrpq4Roxs",
+  "title": "조개 해감할때 와사비 넣으면 모래를 미친듯이!?",
+  "length": 50,
+  "channel": "수부해TV subuhae",
+  "views": 6240000,
+  "description": "#조개 #와사비 #조개해감 #해감 #수산물정보 #수산물 #수부해"
+ },
+ "via": "fal"
+}

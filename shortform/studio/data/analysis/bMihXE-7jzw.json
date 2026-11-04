@@ -1,0 +1,88 @@
+{
+ "summary": "살아있는 바지락에 식초를 넣으면 해감이 빠르게 완료된다는 꿀팁을 전문가가 설명하는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "살아있는 바지락에",
+  "식초를 부었더니!?"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "green",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "스튜디오",
+ "music": "경쾌한",
+ "hook": {
+  "text": "살아있는 바지락에 식초를 부었더니!?",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "살아있는 바지락에 식초를 부었더니!?",
+   "purpose": "살아있는 바지락에 식초를 부으면 어떻게 되는지 궁금증을 유발한다",
+   "seconds": 3.0,
+   "note": "바지락이 담긴 볼 클로즈업, 상단에 자극적인 질문형 자막 고정"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "살아있는 바지락에 식초를 넣자",
+   "purpose": "바지락 해감할 때 식초를 넣는다는 핵심 팁을 제시한다",
+   "seconds": 10.0,
+   "note": "추정: 바지락에 식초를 붓는 디테일 장면, 하단에 파란색 자막"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "hold",
+   "text": "최은경",
+   "purpose": "전문가가 등장해 해감 방법에 대해 설명을 시작한다",
+   "seconds": 12.0,
+   "note": "스튜디오에서 전문가가 설명하는 모습, 우측 하단에 이름 자막, 바지락 물에 담긴 장면 인서트"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "5개 해감 방법",
+   "purpose": "식초를 넣은 결과 5개 해감 방법이라는 핵심 정보를 강조한다",
+   "seconds": 15.0,
+   "note": "추정: 해감 완료된 바지락 클로즈업, 중앙에 큰 글씨로 결과 강조"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "hold",
+   "text": "최은경",
+   "purpose": "전문가가 추가 설명과 팁을 마무리한다",
+   "seconds": 10.0,
+   "note": "전문가가 다시 등장해 마무리 설명, 우측 하단 이름 자막 유지"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "궁금증을 유발하는 질문형 제목('식초를 부었더니!?')으로 클릭을 유도함",
+  "화면 상단에 고정된 큰 글씨 자막으로 스크롤 중에도 내용 파악 가능",
+  "전문가 출연으로 신뢰도를 높이고, 간단한 팁을 50초 안에 압축해 전달"
+ ],
+ "copy_style": "질문형 반말, 핵심 키워드 강조",
+ "template": "손질법",
+ "item": "바지락",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "bMihXE-7jzw",
+  "title": "[1분 꿀팁] 바지락 해감 완벽하게 하는 꿀팁 #shorts",
+  "length": 50,
+  "channel": "TVCHOSUN LIFE",
+  "views": 4790000,
+  "description": "* 출연자, 특히 미성년자 출연자를 향한 악성 댓글은 사전 고지 없이 삭제될 수 있습니다. *\n\n\n#꿀팁 #요리 #바지락 #tvchosun #만물상 \n\n\nTV CHOSUN이 만든 라이프 정보 채널 ❤ 구독 좋아요 알람 설정 ❤"
+ },
+ "via": "fal"
+}

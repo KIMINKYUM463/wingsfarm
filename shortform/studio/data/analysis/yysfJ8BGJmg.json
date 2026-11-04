@@ -1,0 +1,88 @@
+{
+ "summary": "횟집 사장이 고수준의 칼솜씨로 사과를 연속해서 얇게 깎아내는 기술을 보여주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "사과깍기",
+  "Lv.99 횟집사장"
+ ],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "사과깍기 Lv.99 횟집사장",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "횟집 사장의 최고 레벨 사과깎기 실력을 예고하며 시선을 끈다",
+   "seconds": 3.0,
+   "note": "칼과 사과를 든 손의 클로즈업, 깎기 시작 직전 구도"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "사과 껍질을 연속으로 얇고 길게 깎아내는 기술을 보여준다",
+   "seconds": 7.0,
+   "note": "추정: 사과를 돌려가며 껍질을 벗기는 손동작의 클로즈업"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "끊김 없이 이어지는 사과 껍질의 길이와 균일함을 강조한다",
+   "seconds": 7.0,
+   "note": "추정: 계속해서 껍질이 벗겨지는 장면, 손과 칼의 움직임 지속"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "완벽한 칼솜씨로 사과 껍질이 계속 이어지는 모습을 반복해서 보여준다",
+   "seconds": 7.0,
+   "note": "유사한 각도에서 껍질 깎기 지속, 노트북 키보드가 배경에 보임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "최종적으로 완성된 긴 사과 껍질의 결과물을 보여준다",
+   "seconds": 5.0,
+   "note": "추정: 깎인 사과와 길게 이어진 껍질의 전체 모습"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "전문가(횟집 사장)의 칼 기술이라는 권위를 'Lv.99'라는 게임 용어로 재미있게 표현해 클릭을 유도했다",
+  "사과 껍질을 끊김 없이 깎는 ASMR적 요소와 반복되는 손동작이 만족감을 주며 끝까지 보게 만든다",
+  "단순하지만 누구나 시도해봤지만 잘 안 되는 행위를 완벽하게 해내는 모습이 대리만족을 준다"
+ ],
+ "copy_style": "게임 레벨 용어를 활용한 과장형 표현",
+ "template": "짧은루프",
+ "item": "사과",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "yysfJ8BGJmg",
+  "title": "사과깍기 Lv.99 찍어버린 횟집사장",
+  "length": 29,
+  "channel": "SoultoucH",
+  "views": 6530000,
+  "description": "사과를 깍는데 포스가 남다른 횟집사장 ㅎㄷㄷ\n\n#각종유머 #재미있는영상 #신기한영상 #사과깍기달인"
+ },
+ "via": "fal"
+}

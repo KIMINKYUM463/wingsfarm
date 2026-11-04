@@ -1,0 +1,88 @@
+{
+ "summary": "수산시장 광어가 68만원이라는 논란에 대해 실제 크기와 가격을 현장에서 확인하며 반전을 보여주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "수산시장 광어",
+  "68만원 논란"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "수산시장",
+ "music": "없음",
+ "hook": {
+  "text": "수산시장 광어 68만원 논란",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "광어 1마리에 68만",
+   "purpose": "수산시장 광어 68만원 논란이라는 자극적인 주제로 시청자의 관심을 끈다",
+   "seconds": 2.0,
+   "note": "자막으로 논란 가격 제시, 시장 전경 또는 광어 일부 노출 (추정)"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "store",
+   "text": "아니 무슨",
+   "purpose": "수산시장 내부에서 판매자가 등장하여 현장감을 전달한다",
+   "seconds": 3.0,
+   "note": "녹색 앞치마를 입은 판매자가 시장 매대 앞에서 카메라를 보며 말함"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "실제 광어의 엄청난 크기를 전신으로 보여주며 반전을 준다",
+   "seconds": 4.0,
+   "note": "사람 키만한 대형 광어를 들고 있는 전신샷, 시장 배경"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "hero",
+   "text": "예..??",
+   "purpose": "광어의 실제 크기를 강조하며 가격 논란의 맥락을 설명한다",
+   "seconds": 3.0,
+   "note": "같은 구도에서 빨간색 자막으로 반응 표시, 광어 크기 재강조"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "마지막으로 광어의 거대한 크기를 각인시키며 논란의 합리성을 납득시킨다",
+   "seconds": 2.0,
+   "note": "동일한 거대 광어 샷으로 마무리, 썸네일과 동일 구도"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "논란이라는 자극적 키워드로 클릭을 유도한 뒤 거대한 광어로 반전을 주어 끝까지 시청을 유도함",
+  "68만원이라는 구체적 숫자와 실제 광어 크기의 대비가 강렬한 임팩트를 줌",
+  "14초의 짧은 길이 안에 문제제기-현장-반전의 완결된 스토리를 담아 재시청과 공유를 유도함"
+ ],
+ "copy_style": "논란 제시 후 현장 반응으로 반전을 주는 리액션형",
+ "template": "현장리포트",
+ "item": "광어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "v5uoIIfbK8M",
+  "title": "수산시장 광어 가격 논란..",
+  "length": 14,
+  "channel": "원정상",
+  "views": 1910000,
+  "description": "#쇼츠 #수산시장 #광어 #회 #대방어 #횟집\n\n채널에 가입하여 혜택을 누려보세요.\nhttps://www.youtube.com/channel/UCs2yuJwlg2TsOtUeDSZF3_g/join\n헤드셋은 역시 : 스틸시리즈 노바 5\n키보드는 역시 : 스틸시리즈 gen3\n🚨 생방송 : 🚨 생방송 : https://chzzk.naver.com/189aeab13e11565d4030eeaea12fb978\n⭐인스타 https://www.instagram.com/swon5274/\n⭐페이스북 원정상 검색\n광고/협업 : biz@nobent.co.kr\n개인 문의 : swon5274@naver.com"
+ },
+ "via": "fal"
+}

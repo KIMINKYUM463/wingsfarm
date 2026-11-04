@@ -1,0 +1,88 @@
+{
+ "summary": "출연자가 키위를 6첨단까지 먹는 쉬운 껍질 까기 방법을 직접 시연하며 알려주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "키위만 6천만개 먹는",
+  "강남이 알려주는 꿀팁"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "스튜디오",
+ "music": "경쾌한",
+ "hook": {
+  "text": "키위만 6천만개 먹는 강남이 알려주는 꿀팁",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "키위 6천만개를 먹은 전문가가 껍질 까는 꿀팁을 알려준다고 후킹한다",
+   "seconds": 4.0,
+   "note": "키위를 손에 든 채 카메라 응시, 빨간 화살표로 키위 강조 - 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "키위를 입으로 가져가는 첫 번째 동작을 보여준다",
+   "seconds": 4.0,
+   "note": "키위를 입 가까이 가져가며 먹는 시늉 클로즈업 - 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "딱이야 된다니까",
+   "purpose": "키위를 먹으며 껍질을 제거하는 과정을 설명한다",
+   "seconds": 5.0,
+   "note": "상반신 구도로 키위를 먹으며 말하는 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "껍질만 이렇게",
+   "purpose": "껍질 제거 방법을 추가로 설명한다",
+   "seconds": 5.0,
+   "note": "키위를 들고 손동작으로 설명하는 중간 구도"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "딱이야 된다니까",
+   "purpose": "완성된 키위 먹기 방법을 시연하며 마무리한다",
+   "seconds": 4.0,
+   "note": "키위를 먹으며 최종 결과를 보여주는 클로즈업"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "숫자 권위(6천만개)를 제목에 반복 노출하여 전문성을 강조함",
+  "출연자가 직접 먹으며 시연하여 신뢰도와 현실감을 높임",
+  "짧은 시간(22초) 안에 핵심 팁만 빠르게 전달하여 끝까지 시청 유도"
+ ],
+ "copy_style": "반말·단정적 어조로 자신감 있게 팁 전달",
+ "template": "손질법",
+ "item": "키위",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "rWhiCXG41lM",
+  "title": "키위 쉽게 까는 방법 알려주는 강남",
+  "length": 22,
+  "channel": "전세계 건축물",
+  "views": 2660000,
+  "description": ""
+ },
+ "via": "fal"
+}

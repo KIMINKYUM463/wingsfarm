@@ -1,0 +1,85 @@
+{
+ "summary": "8천원, 2만5천원, 5만원 수박 세 가지를 직접 먹어보며 가격대별 맛 차이를 비교하고 반응을 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "스튜디오",
+ "music": "경쾌한",
+ "hook": {
+  "text": "50,000원 수박",
+  "type": "가격대비"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "50,000원",
+   "purpose": "5만원짜리 고가 수박을 먼저 보여주며 호기심을 유발한다",
+   "seconds": 8.0,
+   "note": "출연자가 5만원 수박을 들고 있는 모습, 가격을 크게 강조. 추정: 가장 비싼 제품을 먼저 제시"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "detail",
+   "text": "백화점 납품 수박",
+   "purpose": "5만원짜리 수박의 외형과 특징을 클로즈업으로 보여준다",
+   "seconds": 8.0,
+   "note": "수박을 두 손으로 들고 클로즈업, '백화점 납품 수박' 자막. 추정: 프리미엄 수박의 특징 설명"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "crave",
+   "text": "맛있는데??",
+   "purpose": "중간 가격대 또는 저가 수박을 먹으며 반응을 보여준다",
+   "seconds": 8.0,
+   "note": "출연자가 카메라를 보며 말하는 장면, '맛있는데??' 자막. 추정: 예상과 다른 긍정적 반응"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "걍나 맛있어",
+   "purpose": "실제로 수박을 먹는 장면을 보여주며 진짜 맛을 전달한다",
+   "seconds": 8.0,
+   "note": "수박 조각을 들고 먹으며 반응하는 모습, '걍나 맛있어' 자막"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hook",
+   "text": "맛있는데??",
+   "purpose": "최종 반응을 보여주며 시청자의 궁금증을 해소한다",
+   "seconds": 9.0,
+   "note": "썸네일 장면으로 추정, 출연자의 최종 평가 반응"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "가격대별 비교라는 명확한 구조가 시청자의 궁금증을 자극함",
+  "5만원이라는 고가 수박을 첫 장면에 배치해 강력한 훅을 만듦",
+  "출연자의 솔직하고 과장된 리액션이 몰입감을 높임"
+ ],
+ "copy_style": "반말·감탄형·가격 숫자 강조",
+ "template": "비교",
+ "item": "수박",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "YKWvIWHzrNs",
+  "title": "8000vs25000vs50000원 수박 비쌀수록 맛있을까?",
+  "length": 41,
+  "channel": "돼끼 baby_pig_rabbit",
+  "views": 4200000,
+  "description": ""
+ },
+ "via": "fal"
+}

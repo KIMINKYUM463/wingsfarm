@@ -1,0 +1,87 @@
+{
+  "name": "고르는 법 리스트",
+  "kind": "자동",
+  "layout": "letterbox",
+  "when": "제철 시작 2주 전부터. 저장·공유가 가장 잘 되는 포맷",
+  "evidence": "수박 고르는 법 3가지 2,582만 / 샤인머스캣 401만 / 제발 이런 사과 사지마세요 249만",
+  "title": [
+    "{title1}",
+    "{title2}"
+  ],
+  "info": "{info|이렇게 고른 {name}, 프로필 링크에}",
+  "segments": [
+    {
+      "kind": "HOOK",
+      "say": "{hook}",
+      "source": "{hook_source|ai:hook}"
+    },
+    {
+      "each": "items",
+      "kind": "TIP",
+      "say": "{text}",
+      "source": "{source}",
+      "label": "TIP {n}"
+    },
+    {
+      "kind": "CTA",
+      "say": "{outro|저장해 두고 장 볼 때 꺼내 보세요.}",
+      "source": "{outro_source|ai:hero}"
+    }
+  ],
+  "fields": [
+    {
+      "key": "title1",
+      "label": "제목 1줄 (흰색)",
+      "type": "text",
+      "max": 13,
+      "hint": "품목명이 들어간 주제. 예: 꿀참외 고르는 법"
+    },
+    {
+      "key": "title2",
+      "label": "제목 2줄 (노란색)",
+      "type": "text",
+      "max": 13,
+      "hint": "궁금증을 만드는 한 마디. 예: 딱 3가지만 보세요"
+    },
+    {
+      "key": "hook",
+      "label": "첫 문장 (훅)",
+      "type": "text",
+      "hint": "레퍼런스 훅 공식을 따른 첫 문장. 15~25자"
+    },
+    {
+      "key": "hook_source",
+      "label": "첫 장면",
+      "type": "source",
+      "default": "ai:hook"
+    },
+    {
+      "key": "items",
+      "label": "고르는 기준",
+      "type": "list",
+      "min": 2,
+      "max": 4,
+      "count": 3,
+      "sources": [
+        "ai:hero",
+        "ai:detail",
+        "ai:hold",
+        "ai:crave"
+      ],
+      "hint": "눈으로 확인할 수 있는 고르는 기준. 한 문장씩, 핵심어는 *별표*"
+    },
+    {
+      "key": "outro",
+      "label": "마무리 문장",
+      "type": "text",
+      "hint": "저장 유도. 예: *저장*해 두고 장 볼 때 꺼내 보세요."
+    },
+    {
+      "key": "info",
+      "label": "아래 노란 바",
+      "type": "text",
+      "max": 22,
+      "hint": "주문 안내 한 줄. 예: 이렇게 고른 참외, 프로필 링크에"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+ "summary": "랍스터를 먹지 않고 쓰레기통에 버린 이유를 밝히며 시청자의 호기심을 자극하는 스토리텔링 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "멀쩡한 랍스터를",
+  "쓰레기통에 버린 이유"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "레스토랑",
+ "music": "경쾌한",
+ "hook": {
+  "text": "멀쩡한 랍스터를 쓰레기통에 버린 이유",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "먹지도 않은",
+   "purpose": "멀쩡한 랍스터를 쓰레기통에 버렸다며 시청자의 호기심을 유발한다",
+   "seconds": 10.0,
+   "note": "주방에서 남성이 쓰레기통 앞에 서 있는 모습, 왼쪽 하단에 'mister_lewis' 워터마크 - 추정"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hold",
+   "text": "하는데요",
+   "purpose": "레스토랑에서 랍스터를 먹으러 갔다고 설명한다",
+   "seconds": 12.0,
+   "note": "실내에서 남성이 카메라를 보며 설명하는 모습, TikTok 워터마크 보임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "한 마리를 가지고 오고",
+   "purpose": "랍스터를 먹기 위해 머리를 가지고 왔다고 설명한다",
+   "seconds": 12.0,
+   "note": "랍스터 머리 부분의 국물을 클로즈업한 화면"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "시작하는데",
+   "purpose": "시식 장면으로 전환되며 긴장감을 조성한다",
+   "seconds": 10.0,
+   "note": "남성이 카메라를 보며 손가락으로 가리키는 표정 연출 - 추정"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "한 마리를 가지고 오고",
+   "purpose": "버린 이유를 밝히는 결말 장면을 암시한다",
+   "seconds": 15.0,
+   "note": "다시 랍스터 국물 클로즈업 화면, 썸네일용 이미지로도 사용됨 - 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "제목과 첫 장면에서 '멀쩡한 랍스터를 버렸다'는 극단적 행동으로 강한 호기심을 유발함",
+  "스토리텔링 구조로 결말을 끝까지 보게 만드는 영상 전개 방식 사용",
+  "레스토랑 현장감과 출연자의 과장된 표정 연출로 몰입도를 높임"
+ ],
+ "copy_style": "반말 구어체로 상황을 설명하며 긴장감을 조성하는 스토리텔링 말투",
+ "template": "기타",
+ "item": "랍스터",
+ "category": "수산",
+ "relevant": false,
+ "meta": {
+  "id": "6Td-LLCF_R4",
+  "title": "멀쩡한 랍스터를 쓰레기통에 버린 이유",
+  "length": 59,
+  "channel": "일분일초",
+  "views": 1970000,
+  "description": ""
+ },
+ "via": "fal"
+}

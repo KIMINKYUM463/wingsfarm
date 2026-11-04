@@ -1,0 +1,94 @@
+{
+ "summary": "생굴을 수돗물에 씻으면 안 되는 이유를 경고하고 올바른 소금물 세척법을 시연하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "생굴! 절대 수돗물에 세척하면 안됩니다!",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "생굴! 절대 수돗물에 세척하면 안됩니다!",
+   "purpose": "생굴을 수돗물에 씻으면 절대 안 된다고 경고하며 시청자의 주의를 끈다",
+   "seconds": 5.0,
+   "note": "주방에서 출연자가 정면을 보며 생굴을 손에 들고 경고하는 장면"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hold",
+   "text": "",
+   "purpose": "수돗물로 씻는 잘못된 방법을 보여주며 경고를 반복한다",
+   "seconds": 10.0,
+   "note": "추정: 출연자가 스테인리스 볼과 굴을 들고 수돗물 세척의 문제점을 설명하는 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "prep",
+   "text": "가루젓갈게",
+   "purpose": "소금물을 사용해야 한다는 올바른 방법을 제시한다",
+   "seconds": 12.0,
+   "note": "두 개의 볼을 들고 소금물 준비 방법을 설명, 화면에 가루젓갈 제품이 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "그 맛까지 올라온다",
+   "purpose": "소금물에 굴을 가볍게 흔들어 씻는 구체적인 방법을 시연한다",
+   "seconds": 12.0,
+   "note": "추정: 출연자가 소금물 세척의 효과를 설명하며 맛까지 좋아진다고 강조"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "prep",
+   "text": "가루젓갈게",
+   "purpose": "올바른 세척법을 최종 정리하며 소금물 사용을 재강조한다",
+   "seconds": 12.0,
+   "note": "볼과 소금 제품을 다시 보여주며 올바른 방법을 정리하는 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "구독과 좋아요를 유도하며 영상을 마무리한다",
+   "seconds": 9.0,
+   "note": "추정: 출연자가 카메라를 보며 행동 유도 멘트를 하는 마무리 장면"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "절대 금지라는 강한 부정 경고로 즉각적인 관심을 유발함",
+  "잘못된 방법과 올바른 방법을 명확히 대비하여 실용성을 높임",
+  "주방 환경에서 직접 시연하며 신뢰감과 전문성을 전달함"
+ ],
+ "copy_style": "반말 경고형, 절대~안됩니다 강조",
+ "template": "보관경고",
+ "item": "생굴",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "8QPLgDp7Xxk",
+  "title": "생굴은 절대 수돗물에 씻으면 안됩니다!",
+  "length": 60,
+  "channel": "수부해TV subuhae",
+  "views": 3290000,
+  "description": "#생굴 #굴 #각굴 #통영굴 #굴구이 #굴국밥 #굴세척법 #생굴세척법 \n#수산물 #수산물정보  #수부해 #요리"
+ },
+ "via": "fal"
+}

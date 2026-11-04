@@ -17,12 +17,12 @@ export const MARKETING_FORMAT_META: Record<
 > = {
   shorts: {
     title: "숏폼 영상",
-    blurb: "릴스·숏츠·틱톡 — 초 단위 연출 대본",
+    blurb: "릴스·숏츠·틱톡 — 레퍼런스 복제·템플릿 영상 제작",
     icon: "🎬",
     accent: "from-rose-600 via-orange-500 to-amber-400",
-    studio: "영상 스튜디오",
+    studio: "숏폼 스튜디오",
     stage: "reach",
-    gets: ["장면별 화면·대사·자막", "캡션·해시태그"],
+    gets: ["레퍼런스 해부", "템플릿 영상", "올릴 글"],
   },
   threads: {
     title: "쓰레드 글",

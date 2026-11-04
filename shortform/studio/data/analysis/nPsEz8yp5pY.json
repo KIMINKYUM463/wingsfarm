@@ -1,0 +1,77 @@
+{
+ "summary": "새우를 통째로 간단히 껍질 벗기는 5초 꿀팁을 손 클로즈업으로 단계별 시연한다",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "99% 모르는 새우 까는 법",
+  "type": "다들속았다"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "손에 올린 생새우에 번호 표시로 껍질 벗기는 순서를 예고하며 흥미를 유발한다",
+   "seconds": 3.0,
+   "note": "손바닥 위 생새우 클로즈업, 새우 몸통에 빨간 번호 2와 1 표시, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 1",
+   "shot": "detail",
+   "text": "통째로 떨어지고",
+   "purpose": "통째로 떨어지는 새우 껍질의 결과물을 먼저 보여주며 방법의 효과를 입증한다",
+   "seconds": 6.0,
+   "note": "손에 깐 새우와 통째 벗겨진 껍질을 함께 들고 있는 클로즈업"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 2",
+   "shot": "detail",
+   "text": "방법이 다른데",
+   "purpose": "익힌 새우로도 같은 방법이 통한다는 것을 보여주며 범용성을 강조한다",
+   "seconds": 8.0,
+   "note": "냄비에 담긴 익힌 주황색 새우들 클로즈업, 추정"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "통째로 떨어지고",
+   "purpose": "마지막으로 같은 방법을 한 번 더 반복 시연하며 핵심 동작을 각인시킨다",
+   "seconds": 17.0,
+   "note": "생새우를 손에 들고 껍질 벗기는 과정 재시연, 썸네일과 동일한 구도, 추정"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "99% 모르는이라는 강력한 후크로 호기심을 자극해 클릭을 유도했다",
+  "5초컷이라는 제목으로 간단함을 약속해 시청 부담을 낮췄다",
+  "손 클로즈업으로 방법을 명확히 보여주며 누구나 따라할 수 있게 했다",
+  "생새우·익힌 새우 모두 가능함을 보여줘 실용성을 입증했다"
+ ],
+ "copy_style": "짧은 문장 반복, 핵심어 강조, 간결한 설명형",
+ "template": "손질법",
+ "item": "새우",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "nPsEz8yp5pY",
+  "title": "99%모르는 새우까는법 (5초컷)",
+  "length": 34,
+  "channel": "인생2회차",
+  "views": 6190000,
+  "description": "#새우 #요리 #까는법 #꿀팁 #대하 #생활정보 #왕새우 #흰다리새우 #인생2회차"
+ },
+ "via": "fal"
+}

@@ -1,0 +1,85 @@
+{
+ "summary": "남대문시장 과일 가게에서 파인애플을 껍질째 돌려 깎아 막대 꽂아 완성하는 신박한 손질 기술을 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "시장",
+ "music": "경쾌한",
+ "hook": {
+  "text": "어라?? 신박한 파인애플 자르기",
+  "type": "만족감"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "파인애플 윗부분을 자르며 신박한 손질이 시작됨을 예고한다",
+   "seconds": 5.0,
+   "note": "시장 진열대 앞 흰 도마 위에서 손이 칼로 파인애플 윗부분 자르는 모습. 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "파인애플 껍질을 돌려가며 나선형으로 깎아내는 핵심 기술을 보여준다",
+   "seconds": 10.0,
+   "note": "손이 칼로 파인애플 껍질을 둥글게 돌려 깎는 클로즈업, 깎인 껍질 조각들이 도마에 쌓임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "껍질이 완전히 벗겨진 노란 파인애플 과육의 깔끔한 결과물을 보여준다",
+   "seconds": 7.0,
+   "note": "흰 도마 위에 깔끔하게 껍질 벗겨진 원통형 노란 파인애플이 놓여 있음"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "hold",
+   "text": "",
+   "purpose": "막대를 꽂아 손에 들고 먹을 수 있는 최종 상품 형태를 제시한다",
+   "seconds": 8.0,
+   "note": "손이 막대 꽂힌 파인애플을 들어 올려 보여줌, 배경에 시장 과일 진열대 보임"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "완성된 파인애플 상품을 다시 한번 보여주며 마무리한다",
+   "seconds": 5.0,
+   "note": "도마 위 완성된 파인애플 최종 컷. 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "손질 과정을 ASMR처럼 현장음과 함께 보여줘 만족감이 크다",
+  "신박한 나선형 껍질 깎기 기술이 시청자 호기심을 자극한다",
+  "시장 현장감과 숙련된 손놀림이 신뢰도를 높인다"
+ ],
+ "copy_style": "감탄사로 시작하는 현장 발견형 말투",
+ "template": "깎기ASMR",
+ "item": "파인애플",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "BfJRZKC7ric",
+  "title": "어라?? 신박한 파인애플 자르기 - Satisfying!! Mom's Amazing Pineapple Cutting Skills",
+  "length": 35,
+  "channel": "푸딩 FOODING",
+  "views": 5910000,
+  "description": "[[ Information ]] \nℹ️ 어라?? 신박한 파인애플 자르기 - Satisfying!! Mom's Amazing Pineapple Cutting Skills - Korean Street Food \n\n🗺️ 위치 \n남대문시장 4길 28-12\n\n🚩 구글맵 -\n https://goo.gl/maps/XnaJ3EPU4NzQKRjw7\n\n\n #과일자르기 #남대문시장 #파인애플 #fooding #shorts"
+ },
+ "via": "fal"
+}

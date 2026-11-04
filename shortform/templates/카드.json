@@ -1,0 +1,57 @@
+{
+  "name": "사진 카드 (캐러셀·틱톡 사진 모드)",
+  "kind": "자동",
+  "output": "cards",
+  "when": "고르는 법·보관법 영상과 같은 내용을 카드로 한 번 더. 영상 하나에 카드 하나를 짝지어 올린다",
+  "evidence": "틱톡 '과일 고르는 법 7가지' 사진 슬라이드, 인스타 정보형 캐러셀",
+  "title": [
+    "{title1}",
+    "{title2}"
+  ],
+  "info": "{info|프로필 링크에서 주문}",
+  "segments": [],
+  "fields": [
+    {
+      "key": "title1",
+      "label": "제목 1줄 (흰색)",
+      "type": "text",
+      "max": 13,
+      "hint": "품목명이 들어간 주제. 예: 꿀참외 고르는 법"
+    },
+    {
+      "key": "title2",
+      "label": "제목 2줄 (노란색)",
+      "type": "text",
+      "max": 13,
+      "hint": "궁금증을 만드는 한 마디. 예: 딱 3가지만 보세요"
+    },
+    {
+      "key": "items",
+      "label": "카드 내용",
+      "type": "list",
+      "min": 2,
+      "max": 6,
+      "count": 3,
+      "sources": [
+        "ai:hero",
+        "ai:detail",
+        "ai:hold",
+        "ai:crave"
+      ],
+      "hint": "카드 한 장에 한 가지. 쉼표로 두 줄 나눔. 별표 쓰지 않음"
+    },
+    {
+      "key": "outro_card",
+      "label": "마지막 카드 문구",
+      "type": "text",
+      "hint": "예: 저장해 두고 장 볼 때 꺼내 보세요"
+    },
+    {
+      "key": "info",
+      "label": "아래 노란 바",
+      "type": "text",
+      "max": 22,
+      "hint": "주문 안내 한 줄. 예: 이렇게 고른 참외, 프로필 링크에"
+    }
+  ]
+}

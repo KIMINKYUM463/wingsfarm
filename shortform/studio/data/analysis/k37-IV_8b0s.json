@@ -1,0 +1,88 @@
+{
+ "summary": "버섯을 씻어야 하는지 말아야 하는지에 대한 논쟁을 셰프들이 직접 설명하며 해결책을 제시하는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "버섯을 씻어? 말어?",
+  "셰프들이 알려주는 꿀팁"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "없음",
+ "hook": {
+  "text": "버섯을 씻어? 말어? 셰프들이 알려주는 꿀팁",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "일단 버섯은",
+   "purpose": "버섯을 씻는지 안 씻는지에 대한 논쟁적 질문으로 시청자의 호기심을 유발한다",
+   "seconds": 8.0,
+   "note": "검은 셔츠를 입은 셰프가 주방 배경에서 정면을 보며 말하는 모습, 상단에 제목 고정"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "모든 셰프님들이",
+   "purpose": "모든 셰프들의 공통된 의견을 전달한다",
+   "seconds": 9.0,
+   "note": "추정: 같은 셰프가 계속 설명하는 장면"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "detail",
+   "text": "키친타올 같은걸로",
+   "purpose": "버섯을 씻는 올바른 방법을 키친타올로 닦는 것이라고 알려준다",
+   "seconds": 9.0,
+   "note": "셰프가 손동작을 하며 키친타올로 닦는 방법을 설명하는 클로즈업 장면"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "수분을 어떻게 남겨두느냐",
+   "purpose": "수분을 어떻게 남겨두는지에 대한 주의사항을 전달한다",
+   "seconds": 9.0,
+   "note": "추정: 두 명의 셰프가 함께 등장하며 잘못된 방법에 대해 설명하는 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "키친타올 같은걸로",
+   "purpose": "최종적으로 키친타올로 닦는 방법을 다시 강조한다",
+   "seconds": 9.0,
+   "note": "추정: 마지막 강조 장면으로 올바른 방법을 재확인시킴"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "버섯 씻기에 대한 일상적 궁금증을 질문 형태로 던져 클릭을 유도함",
+  "셰프라는 권위 있는 전문가가 직접 설명해 신뢰도를 높임",
+  "간결하고 명확한 해답(키친타올로 닦기)을 제시해 실용성이 높음"
+ ],
+ "copy_style": "질문형 제목으로 호기심 자극 후 전문가 권위로 해답 제시",
+ "template": "손질법",
+ "item": "버섯",
+ "category": "채소",
+ "relevant": true,
+ "meta": {
+  "id": "k37-IV_8b0s",
+  "title": "버섯 씻어? 말어? 버섯 논쟁 셰프들이 종결시켜드림",
+  "length": 44,
+  "channel": "하하펄슨",
+  "views": 3840000,
+  "description": ""
+ },
+ "via": "fal"
+}

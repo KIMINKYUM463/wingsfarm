@@ -1,0 +1,85 @@
+{
+ "summary": "귤 한 박스를 끝까지 신선하게 먹을 수 있는 보관법을 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "밝은",
+ "hook": {
+  "text": "오늘은",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "오늘은",
+   "purpose": "귤 보관법을 다룬다는 것을 예고하며 시청자 관심을 유도한다",
+   "seconds": 3.0,
+   "note": "주방 바닥에 귤 상자가 놓여 있는 장면, 손이 상자를 가리킴 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "hero",
+   "text": "큰 한 박스를",
+   "purpose": "받은 귤 한 박스를 공개하여 상황을 설정한다",
+   "seconds": 10.0,
+   "note": "상자를 열어 귤이 가득 담긴 모습을 위에서 보여줌, 손이 상자 뚜껑을 열고 있음"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "store",
+   "text": "입으로 들어가.....",
+   "purpose": "귤을 물에 담가 보관하는 핵심 팁을 시연한다",
+   "seconds": 15.0,
+   "note": "파란 대야에 귤을 물과 함께 담그는 장면, 손이 귤을 만지고 있음"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "구독 좋아요 :)",
+   "purpose": "귤즙이나 음료 활용 등 부가적인 팁을 제시한다",
+   "seconds": 12.0,
+   "note": "유리컵에 담긴 오렌지색 음료(귤주스로 추정)를 위에서 클로즈업, 거품이 보임 (추정)"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "store",
+   "text": "입으로 들어가.....",
+   "purpose": "최종 보관 상태를 보여주며 구독을 유도한다",
+   "seconds": 17.0,
+   "note": "다시 대야에 담긴 귤들을 보여주며 마무리, 표지 이미지와 동일한 구도"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "15kg 대용량 귤 박스라는 구체적 수치로 실용성을 강조하여 클릭을 유도함",
+  "물에 담그는 간단하면만 신선한 보관법이라는 핵심 팁이 명확하게 전달됨",
+  "주방 테이블과 대야 등 일반 가정에서 바로 따라할 수 있는 현실적인 세팅"
+ ],
+ "copy_style": "반말로 친근하게, 말줄임표로 궁금증 유발",
+ "template": "보관경고",
+ "item": "귤",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "x0xQSYwZG1E",
+  "title": "귤, 이제 이렇게 보관하세요 👍",
+  "length": 57,
+  "channel": "오름쏭_미니멀라이프",
+  "views": 0,
+  "description": "15kg 귤 한박스도 끝까지 먹을 수 있습니다👍"
+ },
+ "via": "fal"
+}

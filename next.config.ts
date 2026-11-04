@@ -1,26 +1,31 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
 const nextConfig: NextConfig = {
-  // 레버페이지 에디터가 쓰는 React Compiler (자동 메모이제이션)
-  reactCompiler: true,
+  // 프로덕션만 React Compiler — 개발에 켜면 탭마다 Compiling이 크게 늘어난다
+  reactCompiler: !isDev,
   // 네이티브 바이너리는 번들하지 않고 node_modules에서 그대로 불러온다 (ffmpeg 경로 계산·canvas 네이티브 바인딩)
   serverExternalPackages: ["ffmpeg-static", "@napi-rs/canvas"],
-  // 실행 파일·자막 글꼴은 코드에서 import되지 않아 자동으로 배포 묶음에 안 들어가므로 직접 포함시킨다 (Vercel 움직이는 컷)
-  // 자막은 drawtext 대신 @napi-rs/canvas로 PNG를 그려 overlay — 글꼴 파일이 배포에 있어야 한다
-  outputFileTracingIncludes: {
-    "/api/lever/**": [
-      "./node_modules/ffmpeg-static/ffmpeg",
-      "./node_modules/ffmpeg-static/ffmpeg.exe",
-      "./assets/fonts/Pretendard-Bold.otf",
-    ],
-  },
+  // 큰 패키지는 쓰는 모듈만 불러 컴파일 범위를 줄인다
   experimental: {
+    optimizePackageImports: ["@deck.gl/core", "@deck.gl/layers", "@deck.gl/react", "@dnd-kit/core", "@dnd-kit/sortable"],
     // proxy가 요청 본문을 이 크기까지만 버퍼링하고 나머지는 조용히 잘라낸다 (사진 업로드 대비)
     proxyClientMaxBodySize: "50mb",
     // 상세페이지 이미지 합성(서버 액션)용
     serverActions: { bodySizeLimit: "50mb" },
     // 루트 레이아웃이 둘((main)·(lever))이라 전역 404가 필요하다
     globalNotFound: true,
+    // Turbopack 컴파일 결과를 디스크에 남겨 재시작·재방문이 빨라진다
+    turbopackFileSystemCacheForDev: true,
+  },
+  // 실행 파일·자막 글꼴은 코드에서 import되지 않아 자동으로 배포 묶음에 안 들어가므로 직접 포함시킨다 (Vercel 움직이는 컷)
+  outputFileTracingIncludes: {
+    "/api/lever/**": [
+      "./node_modules/ffmpeg-static/ffmpeg",
+      "./node_modules/ffmpeg-static/ffmpeg.exe",
+      "./assets/fonts/Pretendard-Bold.otf",
+    ],
   },
   turbopack: {
     rules: {
@@ -31,6 +36,39 @@ const nextConfig: NextConfig = {
         as: "*.js",
       },
     },
+  },
+  // npm run dev:webpack 용 — turbopack.rules 만으로는 아이콘 SVG가 컴포넌트가 안 되어 CustomIcon이 깨진다
+  webpack(config) {
+    const icons = /[\\/]src[\\/]assets[\\/]icons[\\/].+\.svg$/i;
+    config.module.rules.unshift({
+      test: icons,
+      use: [{ loader: "@svgr/webpack", options: { expandProps: "end" } }],
+    });
+    for (const rule of config.module.rules) {
+      if (!rule || typeof rule !== "object" || !("test" in rule)) continue;
+      const test = rule.test;
+      if (!(test instanceof RegExp) || !test.test("file.svg")) continue;
+      if (Array.isArray(rule.oneOf)) {
+        for (const nested of rule.oneOf) {
+          if (!nested || typeof nested !== "object") continue;
+          const nestedTest = "test" in nested ? nested.test : undefined;
+          if (nestedTest instanceof RegExp && nestedTest.test("file.svg")) {
+            nested.exclude = Array.isArray(nested.exclude)
+              ? [...nested.exclude, icons]
+              : nested.exclude
+                ? [nested.exclude, icons]
+                : icons;
+          }
+        }
+      } else {
+        rule.exclude = Array.isArray(rule.exclude)
+          ? [...rule.exclude, icons]
+          : rule.exclude
+            ? [rule.exclude, icons]
+            : icons;
+      }
+    }
+    return config;
   },
 };
 

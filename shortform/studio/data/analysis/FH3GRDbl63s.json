@@ -1,0 +1,85 @@
+{
+ "summary": "토마토 곁순을 제거하면 당도가 높아진다는 농사 팁을 비닐하우스 현장에서 손으로 직접 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "비닐하우스",
+ "music": "경쾌한",
+ "hook": {
+  "text": "토마토 여기를 제거하면 엄청 달립니다",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "토마토 여기를 제거하면 엄청 달립니다",
+   "purpose": "토마토 곁순 제거가 당도를 높인다는 핵심 메시지를 자막으로 강조한다",
+   "seconds": 3.0,
+   "note": "토마토 식물 전체가 보이는 원경, 비닐하우스 배경. 추정: 첫 화면에서 주제 제시"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "제거해야 할 토마토 곁순의 위치를 클로즈업으로 정확히 알려준다",
+   "seconds": 10.0,
+   "note": "추정: 손가락으로 곁순 부위를 가리키며 어디를 제거해야 하는지 보여줌"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "농사에 정답은 없다",
+   "purpose": "곁순을 손으로 직접 제거하는 방법을 시연한다",
+   "seconds": 15.0,
+   "note": "두 손으로 토마토 줄기의 곁순을 제거하는 클로즈업. 자막 상단에 '농사에 정답은 없다!' (녹색 강조)"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "곁순 제거 후의 깨끗한 상태를 보여주며 작업 완료를 확인시킨다",
+   "seconds": 10.0,
+   "note": "추정: 곁순이 제거된 토마토 줄기를 손으로 잡고 결과물을 보여줌"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hero",
+   "text": "농사에 정답은 없다",
+   "purpose": "채널 구독을 유도하며 영상을 마무리한다",
+   "seconds": 8.0,
+   "note": "추정: 썸네일 화면으로 채널명과 구독 버튼 표시. 자막 반복"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "제목에서 '여기를 제거하면 엄청 달립니다'라는 구체적 효과를 강조해 궁금증을 유발함",
+  "비닐하우스 현장에서 손으로 직접 시연해 신뢰도와 실용성을 동시에 전달함",
+  "46초 짧은 길이에 곁순 위치-제거 방법-결과를 명확하게 보여주는 간결한 구성"
+ ],
+ "copy_style": "단정적 반말, 효과 중심 메시지(엄청 달립니다)",
+ "template": "손질법",
+ "item": "토마토",
+ "category": "채소",
+ "relevant": true,
+ "meta": {
+  "id": "FH3GRDbl63s",
+  "title": "토마토 여기를 제거 하면 엄청 달립니다",
+  "length": 46,
+  "channel": "검율농원",
+  "views": 3860000,
+  "description": "농산물 구매할 땐? 검율농원!\n\n▶25년 판매 예정인 농산물:,청양고추, 생강, 쌈배추, 검정콩(새바람콩), 들깨, 그 외 한정 판매 농산물\n👨🏻‍🌾직접 농사 짓고 판매 하는 농산물입니다👩🏻‍🌾\n\n▶검율농원 카페:https://naver.me/xDJtO3xE\n▶검율농원 밴드:https://www.band.us/n/a5ae0fF9fbr5O\n▶검율농원 틱톡:tiktok.com/@geomyulfarm?is_from_webapp=1&sender_device=pc\n▶#농사 #텃밭 #텃밭작물#검율농원 #shorts #쇼츠\n#토마토 #방울토마토 #토마토농사\n▶사진출처:Pixabay,pexels,크라우드픽,직접 촬영한 사진\n-------------------------------------------------\n▶BGM:"
+ },
+ "via": "fal"
+}

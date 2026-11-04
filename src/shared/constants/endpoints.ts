@@ -63,6 +63,7 @@ export const ENDPOINTS = {
     HERO_MOTION_APPLY: (projectId: string) => `/functions/v1/projects/${projectId}/hero-motion/apply`,
     HERO_MOTION_STOCK: (projectId: string, query: string) =>
       `/functions/v1/projects/${projectId}/hero-motion/stock?q=${encodeURIComponent(query)}`,
+    HERO_MOTION_UPLOAD: (projectId: string) => `/functions/v1/projects/${projectId}/hero-motion/upload`,
     GENERATE: (projectId: string) => `/functions/v1/projects/${projectId}/generate`,
     GENERATE_KEYWORDS: (projectId: string) =>
       `/functions/v1/projects/${projectId}/generate/keywords`,

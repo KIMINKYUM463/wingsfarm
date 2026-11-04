@@ -1,0 +1,85 @@
+{
+ "summary": "전복 손질 시 반드시 지켜야 할 4가지 핵심 팁을 손으로 시연하며 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "전복 손질할 때 이 4가지는",
+  "type": "숫자리스트"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "prep",
+   "text": "전복 손질할 때",
+   "purpose": "전복 손질 시 지켜야 할 4가지가 있다고 시청자의 주의를 환기시킨다",
+   "seconds": 3.0,
+   "note": "접시에 담긴 여러 전복들을 위에서 내려다본 구도, 왼쪽 하단에 출연자 원형 프로필"
+  },
+  {
+   "role": "TIP",
+   "label": "1",
+   "shot": "detail",
+   "text": "이 4가지는",
+   "purpose": "첫 번째 팁으로 전복을 손에 들어 보여주며 손질 시작 단계를 안내한다",
+   "seconds": 8.0,
+   "note": "추정: 손바닥에 전복을 올려 클로즈업, 전복의 뒷면을 보여주는 구도"
+  },
+  {
+   "role": "TIP",
+   "label": "2",
+   "shot": "prep",
+   "text": "작은 칼을 이용해",
+   "purpose": "작은 칼을 사용해야 한다는 두 번째 팁을 전달한다",
+   "seconds": 10.0,
+   "note": "손바닥에 전복을 올리고 있는 클로즈업 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "3",
+   "shot": "prep",
+   "text": "절대 그냥 먹으면",
+   "purpose": "절대 그냥 먹으면 안 된다는 세 번째 주의사항을 강조한다",
+   "seconds": 10.0,
+   "note": "추정: 전복 내장을 분리하는 장면, 손에 칼과 내장이 보임"
+  },
+  {
+   "role": "TIP",
+   "label": "4",
+   "shot": "prep",
+   "text": "작은 칼을 이용해",
+   "purpose": "네 번째 팁으로 작은 칼 사용을 재차 강조하며 마무리한다",
+   "seconds": 10.0,
+   "note": "손바닥에 손질된 전복을 올려 보여주는 클로즈업, 최종 결과물 제시"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "숫자 4가지라는 명확한 구조로 끝까지 보게 만드는 완결성",
+  "손 클로즈업으로 손질 과정을 명확하게 보여주는 디테일",
+  "짧은 41초 안에 핵심 정보만 압축해 전달하는 효율성"
+ ],
+ "copy_style": "명사형 종결·숫자 강조·경고 톤",
+ "template": "손질법",
+ "item": "전복",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "Hc9paYaMEp4",
+  "title": "전복 손질 꼭 지켜야 하는 4가지",
+  "length": 41,
+  "channel": "배정길의 비밀레시피",
+  "views": 2970000,
+  "description": "#shorts #전복 #손질법"
+ },
+ "via": "fal"
+}

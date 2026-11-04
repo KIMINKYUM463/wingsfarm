@@ -1,0 +1,85 @@
+{
+ "summary": "연어를 더 맛있게 먹기 위한 소스 레시피를 단계별로 보여주고 직접 시식하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "text_only",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "연어 맛있게 먹는 법",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "소스 재료를 섞는 첫 번째 단계를 보여준다",
+   "seconds": 8.0,
+   "note": "흰 장갑 낀 손이 주황색 소스를 젓가락으로 섞는 클로즈업. 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "잘 섞어주세요. Mix it well",
+   "purpose": "완성된 소스를 용기에 담아 보여준다",
+   "seconds": 8.0,
+   "note": "흰색 용기에 담긴 소스 오버헤드 샷, 젓가락으로 섞는 모습"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "crave",
+   "text": "부드라우면서 살짝 매콤하고, It's soft and slightly spicy",
+   "purpose": "소스를 맛보며 부드럽고 살짝 매운 맛을 표현한다",
+   "seconds": 10.0,
+   "note": "검은 옷 입은 여성이 젓가락으로 소스를 맛보는 장면, 하단에 연어회와 3가지 소스 그릇"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "불닭소스 1스푼 1 spoonful of buldak sauce",
+   "purpose": "불닭소스를 추가하는 레시피 단계를 알려준다",
+   "seconds": 10.0,
+   "note": "검은 소스와 붉은 소스가 담긴 접시 오버헤드 샷, 위에 흰 깨 뿌려짐"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "crave",
+   "text": "부드라우면서 살짝 매콤하고, It's soft and slightly spicy",
+   "purpose": "최종 소스의 맛을 다시 한 번 확인하며 만족감을 표현한다",
+   "seconds": 11.0,
+   "note": "동일한 여성이 다시 맛보는 장면, 동일한 구도와 세팅. 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "소스 만들기부터 실제 시식까지 전 과정을 보여줘 신뢰감을 준다",
+  "얼굴을 노출하며 직접 먹어보는 장면으로 맛에 대한 확신을 전달한다",
+  "한영 자막 병기로 글로벌 도달률을 높였다"
+ ],
+ "copy_style": "존댓말 반말 혼용, 맛 표현 중심",
+ "template": "손질법",
+ "item": "연어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "IdUsMoaGkYM",
+  "title": "연어 맛있게 먹는 법",
+  "length": 47,
+  "channel": "레시피 읽어주는 여자",
+  "views": 3020000,
+  "description": "💌 Recipe blog : https://curious-pig.tistory.com\n💌 Insta : https://www.instagram.com/food_radio_\n💌 Mail : oguogibusiness@gmail.com\n\n\n#연어소스 #연어손질 #연어먹방 #shorts"
+ },
+ "via": "fal"
+}

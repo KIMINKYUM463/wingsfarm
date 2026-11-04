@@ -1,0 +1,88 @@
+{
+ "summary": "생선 껍질을 벗기는 '오로시' 기술 1분 강의를 단계별로 시연하며 쉽게 가르쳐 주는 영상",
+ "layout": "full",
+ "title_lines": [
+  "오로시 1분 강의",
+  "회 껍질 쉽게 벗기는 법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "오로시 1분 강의 회 껍질 쉽게 벗기는 법",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "오로시 1분 강의 회 껍질 쉽게 벗기는 법 깔끔한 칼에서",
+   "purpose": "생선회 껍질 벗기기(오로시) 강의라는 주제를 제시하고 시청자를 끌어당긴다",
+   "seconds": 5.0,
+   "note": "도마에 놓인 생선 필레와 칼, 조리 도구가 보이는 시작 화면"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 1",
+   "shot": "prep",
+   "text": "위치 시켜서 필을",
+   "purpose": "칼을 위치시켜 필을 떼는 첫 단계를 시연한다",
+   "seconds": 8.0,
+   "note": "추정: 칼날을 생선 껍질과 살 사이에 위치시키는 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 2",
+   "shot": "detail",
+   "text": "이랬도 있다면",
+   "purpose": "칼로 껍질을 벗기는 과정을 클로즈업으로 보여준다",
+   "seconds": 8.0,
+   "note": "칼로 생선 껍질을 벗기는 클로즈업 샷, 손의 움직임과 칼날 각도가 보임"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "중지로 1차를 만들어줘",
+   "purpose": "칼로 중지를 대고 1차로 잡아 당기라는 핵심 팁을 알려준다",
+   "seconds": 8.0,
+   "note": "칼 위에 중지를 대고 있는 손의 모습, 올바른 손 위치를 강조"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 3",
+   "shot": "prep",
+   "text": "이랬도 있다면",
+   "purpose": "껍질 벗기기를 완료하는 마지막 단계를 시연한다",
+   "seconds": 12.0,
+   "note": "추정: 껍질이 깨끗하게 벗겨진 생선 필레의 최종 모습을 보여주는 장면"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "초보자도 따라할 수 있게 '1분 강의'라는 명확한 시간 약속과 단계별 구성으로 진입장벽을 낮췄다",
+  "생선장수라는 전문가 권위와 손 클로즈업 시연으로 신뢰도와 학습 효과를 동시에 높였다",
+  "노란색 강조 자막과 핵심 단계만 추출한 간결한 구성으로 쇼츠 형식에 최적화했다"
+ ],
+ "copy_style": "반말, 단계별 지시형, 핵심 동작만 간결하게",
+ "template": "손질법",
+ "item": "생선회",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "NBU6ReW3j-U",
+  "title": "껍질 오로시는 이렇게! (초보자 강의 영상)",
+  "length": 41,
+  "channel": "생선장수 박장군",
+  "views": 3100000,
+  "description": "#shorts #reels #fish #sasimi #생선 #생선회 #숙성회 #수산물 #오로시"
+ },
+ "via": "fal"
+}

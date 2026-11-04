@@ -1,0 +1,88 @@
+{
+ "summary": "11년차 참치 전문가가 맛있는 참치 부위를 고르는 방법을 손질 시연으로 보여주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "참치 제일 맛난 부위",
+  "11년차 전문가가 알려줄게"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "hands",
+ "setting": "매장",
+ "music": "경쾌한",
+ "hook": {
+  "text": "참치 제일 맛난 부위 11년차 전문가가 알려줄게",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "11년차 전문가라는 권위를 내세워 참치 맛난 부위를 알려주겠다고 시청자의 관심을 끈다",
+   "seconds": 3.0,
+   "note": "참치를 자르는 손 클로즈업, 빨간 참치살이 도마 위에 있음 (추정)"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 1",
+   "shot": "prep",
+   "text": "",
+   "purpose": "참치를 손질하며 어떤 부위를 골라야 하는지 첫 번째 팁을 설명한다",
+   "seconds": 13.0,
+   "note": "장갑 낀 손으로 참치살을 만지며 부위 설명, 빨간 살코기와 흰 기름층 구분 (추정)"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 2",
+   "shot": "detail",
+   "text": "",
+   "purpose": "참치의 특정 부위를 클로즈업으로 보여주며 두 번째 선택 포인트를 알려준다",
+   "seconds": 13.0,
+   "note": "손으로 참치살을 들어 올려 지방층과 살코기 경계 보여줌 (추정)"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "참치의 전체적인 모습을 보여주며 좋은 부위의 특징을 시각적으로 확인시킨다",
+   "seconds": 13.0,
+   "note": "참치 전체 단면 클로즈업, 머리 부분과 몸통 부위가 함께 보임 (추정)"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "최종적으로 선별한 좋은 부위의 참치살을 클로즈업으로 보여주며 마무리한다",
+   "seconds": 13.0,
+   "note": "손으로 들어올린 흰색과 분홍색 참치살 클로즈업, 최종 결과물 제시 (추정)"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "11년차 전문가라는 구체적인 경력 수치로 신뢰도를 높여 클릭을 유도했다",
+  "참치 손질 과정을 직접 보여주며 실용적인 정보를 시각적으로 전달했다",
+  "letterbox 상단에 제목을 고정해 어느 시점에 들어와도 영상 주제를 바로 파악할 수 있게 했다"
+ ],
+ "copy_style": "전문가 권위를 내세운 반말 조언형",
+ "template": "고르는법",
+ "item": "참치",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "H6lDAropPTQ",
+  "title": "참치전문가 사장님이 알려주는 맛난 부위 고르는 방법",
+  "length": 55,
+  "channel": "대박스토리",
+  "views": 1460000,
+  "description": "대박을 꿈꾸는 대한민국 모든 분들을 응원합니다.\n@dbstory100man\n\n\n#참치창업 #참치가게 #참치회\n\n\n#shorts"
+ },
+ "via": "fal"
+}

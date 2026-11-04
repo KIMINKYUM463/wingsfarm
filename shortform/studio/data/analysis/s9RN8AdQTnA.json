@@ -1,0 +1,97 @@
+{
+ "summary": "꽃게 껍질을 손으로 까서 살만 깔끔하게 발라먹는 손질법을 단계별로 시연한다",
+ "layout": "letterbox",
+ "title_lines": [
+  "모르면 손해보는",
+  "꽃게 살만 발라먹는 법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "모르면 손해보는 꽃게 살만 발라먹는 법",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "꽃게 껍질을 벗기는 첫 단계를 보여주며 시청자의 관심을 끈다",
+   "seconds": 8.0,
+   "note": "추정: 손으로 꽃게 껍질을 분리하는 모습, 위에서 내려다본 구도, 격자 받침대 위"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "이렇게 까요",
+   "purpose": "꽃게를 이렇게 까라고 첫 번째 손질 단계를 알려준다",
+   "seconds": 10.0,
+   "note": "손으로 꽃게 내부를 손질하는 클로즈업, 껍질과 내장 분리 과정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "이렇게 싹 까고",
+   "purpose": "꽃게 살을 이렇게 싹 까라고 두 번째 손질 단계를 보여준다",
+   "seconds": 10.0,
+   "note": "꽃게 살을 발라내는 손동작 클로즈업, 깨끗하게 살만 분리하는 모습"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "hold",
+   "text": "드실래요?",
+   "purpose": "완성된 꽃게 살 덩어리가 얼마나 풍성한지 보여주며 만족감을 준다",
+   "seconds": 8.0,
+   "note": "손바닥 위에 발라낸 꽃게 살을 올려 카메라에 보여주는 장면"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "이렇게 싹 까고",
+   "purpose": "최종 결과물인 풍성한 꽃게살을 강조하며 식욕을 자극한다",
+   "seconds": 10.0,
+   "note": "추정: 완성된 꽃게살 디테일 또는 다시 한번 손질 과정 강조"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "crave",
+   "text": "",
+   "purpose": "마지막 식욕주의 문구와 함께 최종 결과물로 시청자를 유도한다",
+   "seconds": 5.0,
+   "note": "추정: 꽃게살 최종 결과물 또는 먹는 장면으로 마무리"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "손만 나오는 구도로 누구나 따라할 수 있다는 접근성을 높였다",
+  "단계별로 '이렇게 까요', '이렇게 싹 까고' 등 반복 구조로 이해하기 쉽게 구성했다",
+  "마지막 '드실래요?'로 결과물을 손에 들어 보여주며 만족감과 식욕을 동시에 자극했다"
+ ],
+ "copy_style": "반말, 단계별 행동 지시형, 질문으로 참여 유도",
+ "template": "손질법",
+ "item": "꽃게",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "s9RN8AdQTnA",
+  "title": "모르면 손해보는 꽃게 살만 발라먹는 법(마지막 식욕주의)",
+  "length": 51,
+  "channel": "맛집한끼",
+  "views": 2170000,
+  "description": ""
+ },
+ "via": "fal"
+}

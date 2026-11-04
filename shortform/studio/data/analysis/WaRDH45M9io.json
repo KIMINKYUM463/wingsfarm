@@ -1,0 +1,85 @@
+{
+ "summary": "감을 껍질째 썰어서 설탕에 절인 뒤 말려 1년 보관 가능한 감말랭이 만드는 법을 단계별로 보여준다",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "1년동안 감 맛있게 먹는 방법!",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "1년동안 감 맛있게 먹는 방법!",
+   "purpose": "1년 동안 감을 맛있게 먹을 수 있는 방법이 있다고 관심을 끈다",
+   "seconds": 3.0,
+   "note": "접시 위 완성된 감말랭이를 손으로 집는 모습. 추정: 오프닝"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "푸껑도 자르지고 남은 껍질도 깔끔하게 제거!",
+   "purpose": "껍질을 자르지 않고 감을 깨끗하게 손질하라고 알려준다",
+   "seconds": 8.0,
+   "note": "손으로 감을 들고 칼로 껍질 부분을 정리하는 클로즈업. 추정: 첫 번째 손질 단계"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "detail",
+   "text": "수분제거와 살균을 위해 소금 2큰술에 1시간 절이기!",
+   "purpose": "손질한 감에 소금 2큰술을 넣고 1시간 절이라고 안내한다",
+   "seconds": 12.0,
+   "note": "큰 볼에 슬라이스한 감과 소금이 담긴 모습, 클로즈업. 추정: 절이기 단계"
+  },
+  {
+   "role": "STEP",
+   "label": "3",
+   "shot": "detail",
+   "text": "바짝 말리면 맛없으니 말랑하고 쫀득할 정도만~",
+   "purpose": "비닐 말리면 맛없으니 말랑하고 쫀득할 정도만 말리라고 팁을 준다",
+   "seconds": 12.0,
+   "note": "말리는 중인 감말랭이 클로즈업, 노란 오렌지색 선명. 추정: 건조 단계 설명"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "수분제거와 살균을 위해 소금 2큰술에 1시간 절이기!",
+   "purpose": "완성된 감말랭이의 최종 모습과 보관법을 보여주며 마무리한다",
+   "seconds": 22.0,
+   "note": "표지 이미지: 볼에 담긴 완성된 감말랭이 전체샷. 추정: 완성품 보여주기"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "1년 보관이라는 구체적 기간 제시로 실용성 강조",
+  "껍질째·소금 절이기 등 차별화된 팁 제공",
+  "선명한 노란 오렌지색 감 비주얼이 식욕 자극"
+ ],
+ "copy_style": "느낌표 강조, 명령형 반말, 구체적 수치(2큰술, 1시간) 제시",
+ "template": "손질법",
+ "item": "감",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "WaRDH45M9io",
+  "title": "이렇게 하시면 1년동안 감 맛있게 드실 수 있어요.",
+  "length": 57,
+  "channel": "요리고수",
+  "views": 1820000,
+  "description": "1년동안 감 맛있게 먹는 방법! 감말랭이 만들기!\n\n👇👇👇 50년 요리고수의 다른 영상보기 👇👇👇\nhttps://www.youtube.com/@5052\n👍 E-MAIL : bnhrest@gmail.com"
+ },
+ "via": "fal"
+}

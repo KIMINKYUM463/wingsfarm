@@ -1,0 +1,85 @@
+{
+ "summary": "홍게 다리를 가위 없이 손으로 꺾어서 쉽게 까먹는 방법을 실연하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "없음",
+ "hook": {
+  "text": "홍게다리 가위 필요 없어요",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "가위 없이 홍게를 먹을 수 있다는 핵심 메시지를 전달한다",
+   "seconds": 5.0,
+   "note": "홍게 다리를 손으로 들고 있는 모습, 정면 앵글, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "홍게 다리의 껍질을 손으로 벌리는 첫 번째 동작을 보여준다",
+   "seconds": 8.0,
+   "note": "홍게 다리를 양손으로 잡고 껍질을 벌리는 클로즈업"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "홍게 다리를 손으로 꺾는 방법을 시연한다",
+   "seconds": 10.0,
+   "note": "홍게 다리를 손가락으로 꺾어 여는 모습, 추정"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "가위 없이 깔끔하게 벗겨진 홍게살을 보여준다",
+   "seconds": 8.0,
+   "note": "껍질이 벗겨진 홍게 다리를 카메라 앞에 들어 보이는 클로즈업"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "crave",
+   "text": "",
+   "purpose": "완성된 홍게살을 먹는 모습으로 만족도를 전달한다",
+   "seconds": 8.0,
+   "note": "홍게살을 입 가까이 가져가며 먹방 장면, 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "제목에서 '가위 필요 없다'는 실용적 팁으로 클릭을 유도함",
+  "손으로 직접 시연하며 누구나 따라할 수 있음을 보여줌",
+  "얼굴과 손동작을 모두 보여주며 친근감과 신뢰도를 높임"
+ ],
+ "copy_style": "반말로 편하게 알려주는 친근한 말투",
+ "template": "손질법",
+ "item": "홍게",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "OBTwMVq4zIg",
+  "title": "홍게다리 가위 필요 없어요~",
+  "length": 39,
+  "channel": "왕베짱이드리",
+  "views": 9300000,
+  "description": "홍게가 많이 잡힌다하여 자숙홍게 주문해서 먹어봤어요~\n수율 좋다 나쁘다 할수 있지만 나와요~ 맛나요~ 드셔보세요~\n제철음식^^"
+ },
+ "via": "fal"
+}

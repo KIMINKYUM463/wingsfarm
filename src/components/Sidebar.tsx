@@ -55,7 +55,11 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
 
 const NAV = NAV_GROUPS.flatMap((g) => g.items);
 
-const isActive = (href: string, pathname: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+const isActive = (href: string, pathname: string) => {
+  if (href === "/") return pathname === "/";
+  if (href === "/marketing" && pathname.startsWith("/shortform")) return true;
+  return pathname.startsWith(href);
+};
 
 function WorkingProduct() {
   const product = useAppStore((s) => s.workingProduct);

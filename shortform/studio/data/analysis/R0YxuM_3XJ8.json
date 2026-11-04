@@ -1,0 +1,87 @@
+{
+ "summary": "꽃게를 안전하게 먹기 위해 손질 시 반드시 제거해야 할 부위를 단계별로 보여주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "# 가을 꽃게 손질 이건 꼭 해주세요!"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "가을 꽃게 손질 이건 꼭 해주세요!",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "일단 껍데기를 깨는",
+   "purpose": "꽃게 손질이 필요하다는 경고로 시청자 주의를 끈다",
+   "seconds": 10.0,
+   "note": "주방 싱크대에서 양손으로 꽃게를 잡고 껍데기를 분리하는 장면 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "꽃게 내부의 특정 부위를 클로즈업으로 보여준다",
+   "seconds": 12.0,
+   "note": "꽃게 껍데기를 벗긴 후 내부 구조를 손으로 들어 클로즈업 (추정)"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "그 다음에 아기따!!",
+   "purpose": "제거해야 할 부위를 가위로 집어 경고한다",
+   "seconds": 11.0,
+   "note": "가위로 꽃게 내부의 검은색 부위를 집고 있는 클로즈업"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "detail",
+   "text": "여기 핑크핑크한 건 빠주시는 게 좋아요!",
+   "purpose": "제거한 핑크빛 부위가 먹을 수 있는 살임을 보여준다",
+   "seconds": 12.0,
+   "note": "손으로 흰색과 핑크색 살 부위를 들고 있는 클로즈업"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "그 다음에 아기따!!",
+   "purpose": "최종 손질 방법을 다시 한번 강조한다",
+   "seconds": 11.0,
+   "note": "가위로 제거 작업을 반복하는 장면 (추정)"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "꽃게 손질 시 반드시 제거해야 한다는 경고형 후크로 건강/안전 관심사를 자극",
+  "제거할 부위와 먹을 부위를 색깔(검은색/핑크색)로 명확히 대비해 이해가 쉬움",
+  "56초 짧은 길이에 손질 과정만 집중적으로 보여줘 집중도 유지"
+ ],
+ "copy_style": "반말 구어체에 '아기따!!' 같은 감탄사로 강조",
+ "template": "손질법",
+ "item": "꽃게",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "R0YxuM_3XJ8",
+  "title": "꽃게 먹을때 반드시 제거하세요.",
+  "length": 56,
+  "channel": "애주가TV참PD",
+  "views": 5520000,
+  "description": "꽃게 손질법"
+ },
+ "via": "fal"
+}

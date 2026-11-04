@@ -1,0 +1,85 @@
+{
+ "summary": "무화과를 건강에 좋고 오래 보관하려면 빨리 먹지 말고 얼렸다 꺼내 먹으라고 알려주는 보관법 팁 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "이런 앞으로도 낭작하게 슬러셔",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "store",
+   "text": "이런 앞으로도 낭작하게 슬러셔",
+   "purpose": "밀폐용기에 무화과를 담아 냉장 보관하는 모습으로 시선을 끈다",
+   "seconds": 4.0,
+   "note": "밀폐용기에 무화과 담는 손 클로즈업, 냉장고 선반 배경"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "건강에도 좋은 무화과",
+   "purpose": "건강에 좋은 무화과도 반으로 갈라 내부를 보여주며 설명한다",
+   "seconds": 5.0,
+   "note": "추정: 무화과를 손으로 반 가른 모습, 빨간 과육 클로즈업, 접시 위에 배치"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hold",
+   "text": "빨리 먹어야 하는 게",
+   "purpose": "빨리 먹어야 한다는 일반적 통념을 제시한다",
+   "seconds": 5.0,
+   "note": "손으로 무화과를 집어 들고 있는 장면, 밀폐용기와 함께"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "store",
+   "text": "얼렸다가 꺼내서",
+   "purpose": "얼렸다가 꺼내 먹는 것이 올바른 보관법임을 알려준다",
+   "seconds": 5.0,
+   "note": "추정: 냉동실에서 얼린 무화과를 꺼내는 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hold",
+   "text": "빨리 먹어야 하는 게",
+   "purpose": "빨리 먹어야 한다는 메시지로 행동을 촉구한다",
+   "seconds": 9.0,
+   "note": "썸네일 장면, 손으로 무화과 잡고 있는 모습 반복"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "제목에 '60초 비법'과 '가장 오래 맛있게'라는 숫자와 효능을 명확히 제시해 클릭을 유도했다",
+  "쉽게 무르는 무화과의 문제점을 제시한 뒤 냉동 보관이라는 간단한 해결책을 제시하는 문제-해결 구조가 명확하다",
+  "손으로 직접 다루는 장면과 반으로 갈라진 무화과의 클로즈업으로 신뢰감과 식욕을 동시에 자극한다"
+ ],
+ "copy_style": "반말 종결어미와 '-게', '-는 게' 등 구어체 표현으로 친근하게 설명",
+ "template": "보관경고",
+ "item": "무화과",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "HZsoKXoDVaA",
+  "title": "60초비법! 쉽게 무르는 무화과, 가장 오래 맛있게 먹을 수 있는 방법~",
+  "length": 28,
+  "channel": "주부찬스  jubu_chance",
+  "views": 1870000,
+  "description": "시청해 주셔서 감사합니다.\n비지니스문의\nelqpdlxm02@naver.com\n\n편집 일부는  vrew 무료 편집 프로그램을 이용해서 만들었습니다."
+ },
+ "via": "fal"
+}

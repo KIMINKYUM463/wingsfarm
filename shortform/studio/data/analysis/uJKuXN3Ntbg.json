@@ -1,0 +1,85 @@
+{
+ "summary": "피해야 할 참외의 특징을 부정형 경고로 보여주고 선별 기준을 알려주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "매장",
+ "music": "경쾌한",
+ "hook": {
+  "text": "이런 참외는",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hero",
+   "text": "이런 참외는",
+   "purpose": "피해야 할 참외가 있다고 주의를 환기시킨다",
+   "seconds": 3.0,
+   "note": "참외가 진열된 매대 전체샷, 자막 오버레이"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hold",
+   "text": "선돌인데",
+   "purpose": "선택하면 안 되는 참외의 첫 번째 특징을 보여준다",
+   "seconds": 6.0,
+   "note": "손으로 참외 하나를 들고 클로즈업, 선돌 상태 확인"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hero",
+   "text": "돌째",
+   "purpose": "돌째라는 두 번째 피해야 할 특징을 알려준다",
+   "seconds": 6.0,
+   "note": "비닐봉지에 담긴 참외들 위에서 촬영, 매대 배경"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "참외 씨를 먹었다가 배탈이 났을 때는 태좌보다 참외 자체가 원인일 가능성이 크다",
+   "purpose": "참외를 먹어보니 과육이 없고 배탈 위험이 있음을 설명한다",
+   "seconds": 9.0,
+   "note": "추정: 반으로 자른 참외 단면 또는 참외 관련 설명 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hero",
+   "text": "돌째",
+   "purpose": "올바른 참외 선별 기준을 재확인시킨다",
+   "seconds": 8.0,
+   "note": "다시 매대의 참외들을 보여주며 마무리, 비닐봉지와 가격표 보임"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "부정형 후크('이런 참외는')로 즉각 주의를 끌어 클릭과 시청 유도",
+  "선돌, 돌째 등 구체적인 용어를 사용해 실용적 정보를 전달",
+  "매장 현장감과 손으로 직접 보여주는 장면으로 신뢰도 확보"
+ ],
+ "copy_style": "반말 단정형, 핵심 키워드 강조",
+ "template": "고르는법",
+ "item": "참외",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "uJKuXN3Ntbg",
+  "title": "이런 참외는 고르지 마세요",
+  "length": 32,
+  "channel": "인생2회차",
+  "views": 1260000,
+  "description": "#인생2회차 #참외 #고르는법 #꿀팁 #정보"
+ },
+ "via": "fal"
+}

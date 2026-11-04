@@ -1,0 +1,85 @@
+{
+ "summary": "수상한 폐건물 같은 곳에서 운영되는 물고기 양식장의 실체를 궁금증을 유발하며 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "none",
+ "setting": "폐건물양식장",
+ "music": "밝은",
+ "hook": {
+  "text": "물탱크에 가득한 물고기",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "흐릿한 물탱크 화면으로 궁금증을 유발한다",
+   "seconds": 3.0,
+   "note": "추정: 흐릿한 물탱크 화면, 고양이 캐릭터 등장"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "origin",
+   "text": "불타 없어지고",
+   "purpose": "폐건물처럼 보이는 양식장의 전경을 보여준다",
+   "seconds": 8.0,
+   "note": "폐건물처럼 보이는 다층 구조물, 아래 물이 고여있음, 고양이 캐릭터 하단"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "생성되고 마는데...",
+   "purpose": "양식장 내부의 물고기와 곤충을 클로즈업으로 보여준다",
+   "seconds": 8.0,
+   "note": "물 위 잠자리(또는 곤충) 클로즈업, 물속에 물고기들, 고양이 캐릭터 하단에 땀방울 표시"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "origin",
+   "text": "하지만!",
+   "purpose": "양식장 전체 구조를 다시 한번 보여주며 정리한다",
+   "seconds": 10.0,
+   "note": "폐건물 양식장의 다른 각도, 목조 계단과 구조물, 바닥의 녹색 물"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "detail",
+   "text": "생성되고 마는데...",
+   "purpose": "마무리 메시지를 전달한다",
+   "seconds": 10.0,
+   "note": "추정: 앞 장면과 유사한 클로즈업, 고양이 캐릭터 반복"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "폐건물처럼 보이는 독특한 양식장 비주얼이 강한 호기심을 유발함",
+  "제목에서 '수상한'이라는 단어로 클릭을 유도하고 영상 내내 긴장감을 유지함",
+  "귀여운 고양이 캐릭터를 하단에 고정해 친근감을 더하고 반응을 표현함"
+ ],
+ "copy_style": "짧은 문장으로 긴장감과 반전을 만드는 말투",
+ "template": "현장리포트",
+ "item": "양식 물고기",
+ "category": "수산",
+ "relevant": false,
+ "meta": {
+  "id": "2bucRNtLto4",
+  "title": "굉장히 수상한 물고기 양식장 ㄷㄷ",
+  "length": 39,
+  "channel": "지식줄고양",
+  "views": 2140000,
+  "description": ""
+ },
+ "via": "fal"
+}

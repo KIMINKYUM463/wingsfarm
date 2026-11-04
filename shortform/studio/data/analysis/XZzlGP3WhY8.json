@@ -1,0 +1,88 @@
+{
+ "summary": "아보카도를 잘못된 방법으로 손질했다가 3D 입체 영상처럼 날아오는 연출로 재미있게 보여주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "절대 따라하면 안되는",
+  "아보카도 손질법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "절대 따라하면 안되는 아보카도 손질법",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "이 남자는 3D 영상속",
+   "purpose": "절대 따라하면 안 되는 방법이라는 역설적 호기심을 유발한다",
+   "seconds": 4.0,
+   "note": "손만 보이며 아보카도를 잡고 있는 모습, 도마에 'ZACK FILMS' 로고 보임 (추정: 첫 시작)"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "prep",
+   "text": "이렇게 자르더니만?",
+   "purpose": "잘못된 손질 방법을 시연하기 전 출연자가 카메라를 보며 설명한다",
+   "seconds": 6.0,
+   "note": "출연자 얼굴이 나오며 손에 검은 아보카도를 들고 설명하는 모습"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "도마위에 암만히 올려두고",
+   "purpose": "도마 위에 아보카도를 세워서 칼로 자르는 잘못된 방법을 보여준다",
+   "seconds": 7.0,
+   "note": "손과 칼이 나오며 도마 위 아보카도를 수직으로 자르는 클로즈업"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "반대로 비틀어주면",
+   "purpose": "잘린 아보카도가 3D 영상처럼 화면 밖으로 튀어나오는 특수효과를 보여준다",
+   "seconds": 7.0,
+   "note": "출연자 얼굴과 함께 아보카도 반쪽이 화면 앞으로 튀어나오는 3D 효과 연출"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "prep",
+   "text": "도마위에 암만히 올려두고",
+   "purpose": "다시 한번 손질 장면을 반복하여 강조한다",
+   "seconds": 8.0,
+   "note": "썸네일 이미지, 칼로 아보카도를 자르는 손 클로즈업 (추정: 마무리 반복)"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "'절대 따라하면 안 된다'는 역설적 제목으로 호기심을 극대화했다",
+  "3D 영상 효과를 활용한 시각적 임팩트가 쇼츠 포맷에 최적화되어 있다",
+  "출연자의 얼굴과 손을 교차 편집하여 리액션과 손질 과정을 동시에 보여준다"
+ ],
+ "copy_style": "반말 의문형으로 시청자와 대화하듯 진행",
+ "template": "손질법",
+ "item": "아보카도",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "XZzlGP3WhY8",
+  "title": "절대 따라하면 안되는 아보카도 손질법",
+  "length": 32,
+  "channel": "발견일기",
+  "views": 6940000,
+  "description": "[Credit & Disclaimer]\n\n본 영상은 교육 및 리뷰 목적으로 제작되었습니다. 🎥\nThis video is for educational and review purposes.\n\nSource Video: How to cut an avocado\n\nOriginal Creator: Austinmarsh\n\n\n⚠️ Copyright Disclaimer\n본 영상의 저작권은 원작자에게 있으며, 저작권법 제28조(공표된 저작물의 인용) 및 공정 이용(Fair Use) 원칙을 준수하고자 노력하고 있습니다. 만약 저작권과 관련하여 문제가 있을 경우, 연락해주시면 즉시 삭제 조치하겠습니다.\nAll rights belong to the original owner. No copyright infringement inten"
+ },
+ "via": "fal"
+}

@@ -1,0 +1,85 @@
+{
+ "summary": "전남 고흥 나로도산 왕바지락을 손으로 빠르게 까는 모습을 ASMR로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "없음",
+ "hook": {
+  "text": "바지락을 겁나 빨리 까는 모습",
+  "type": "만족감"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "바지락을 손으로 빠르게 까는 속도감 있는 장면으로 시선을 끈다",
+   "seconds": 3.0,
+   "note": "추정: 붉은 대야에 담긴 왕바지락을 손으로 집는 클로즈업, 주방 테이블 위"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "바지락을 하나씩 까서 체에 담긴 바지락살을 보여준다",
+   "seconds": 3.0,
+   "note": "손으로 바지락을 까는 동작, 체 안에 깐 바지락살이 쌓여있음"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "왕바지락의 큰 크기와 살이 통통한 상태를 클로즈업으로 강조한다",
+   "seconds": 3.0,
+   "note": "추정: 손으로 바지락을 까는 연속 동작, 바지락살의 크기가 잘 보임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "완성된 바지락살의 양과 품질을 최종적으로 보여준다",
+   "seconds": 3.0,
+   "note": "추정: 체에 담긴 왕바지락살 전체 모습, 계속 손질하는 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "전남 고흥 나로도산 왕바지락 상품임을 알린다",
+   "seconds": 2.0,
+   "note": "추정: 상품 정보나 마무리 장면(썸네일)"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "제목의 '겁나빨리까는'이라는 표현과 실제 빠른 손놀림이 일치하여 호기심을 자극한다",
+  "왕바지락의 큰 크기와 통통한 살이 클로즈업으로 잘 보여 품질을 직관적으로 전달한다",
+  "ASMR 형식의 조개 까는 소리와 반복적 동작이 시청 몰입도를 높인다"
+ ],
+ "copy_style": "반말·감탄형·속도 강조(겁나빨리, ㅋㅋ)",
+ "template": "깎기ASMR",
+ "item": "왕바지락",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "cgJuXQNQvRg",
+  "title": "바지락 겁나빨리까는와이프ㅋㅋ",
+  "length": 14,
+  "channel": "kfameats",
+  "views": 1530000,
+  "description": "바지락이엄청크네요 전남고흥 나로도산바지락입니다\n\n#고흥 #나로도 #바지락 #왕바지락"
+ },
+ "via": "fal"
+}

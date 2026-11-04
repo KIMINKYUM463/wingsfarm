@@ -1,0 +1,85 @@
+{
+ "summary": "주방에서 출연자가 옥수수 삶는 법과 보관 팁을 질문 던지기 방식으로 설명하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "밝은",
+ "hook": {
+  "text": "시골, 할머니한테 배워온 옥수수 삶는법",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hero",
+   "text": "시골, 할머니한테 배워온 옥수수 삶는법",
+   "purpose": "할머니에게 배운 검증된 옥수수 삶는 법이라는 권위를 보여주며 시청자의 관심을 끈다",
+   "seconds": 3.0,
+   "note": "삶아진 옥수수들이 쟁반 위에 진열되어 있는 모습"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 1",
+   "shot": "hold",
+   "text": "홀랑까지!",
+   "purpose": "껍질을 벗겨야 하는지 질문을 던지며 삶는 법의 첫 단계를 알려준다",
+   "seconds": 15.0,
+   "note": "추정: 출연자가 옥수수 껍질을 손에 들고 벗기는 방법을 설명하는 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 2",
+   "shot": "detail",
+   "text": "그 맛을 원한다면??",
+   "purpose": "옥수수를 삶을 때 맛을 결정하는 핵심 재료나 방법을 질문형으로 제시한다",
+   "seconds": 20.0,
+   "note": "추정: 출연자가 카메라를 보며 삶을 때 넣는 재료나 방법에 대해 설명하는 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "hold",
+   "text": "분명 생각거예요!",
+   "purpose": "삶은 옥수수의 보관 방법을 시청자에게 알려준다",
+   "seconds": 20.0,
+   "note": "출연자가 장갑을 끼고 삶은 옥수수를 손에 들고 보관 팁을 설명하는 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hook",
+   "text": "그 맛을 원한다면??",
+   "purpose": "마지막으로 핵심 질문을 다시 던지며 영상을 마무리한다",
+   "seconds": 20.0,
+   "note": "추정: 출연자가 다시 한번 핵심 포인트를 강조하며 마무리하는 장면"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "할머니에게 배웠다는 권위와 신뢰감으로 후킹",
+  "질문형 자막('~원한다면??')으로 궁금증을 유발하며 시청 유도",
+  "주방 실제 환경에서 직접 시연하며 신뢰도와 실용성을 높임"
+ ],
+ "copy_style": "반말에 질문형 자막으로 궁금증 유발, 느낌표로 강조",
+ "template": "손질법",
+ "item": "옥수수",
+ "category": "채소",
+ "relevant": true,
+ "meta": {
+  "id": "rjqYDbisvXE",
+  "title": "옥수수 삶는 레시피 부터, 보관 방법까지!🌽💛",
+  "length": 78,
+  "channel": "김진순 점심시간",
+  "views": 1810000,
+  "description": ""
+ },
+ "via": "fal"
+}

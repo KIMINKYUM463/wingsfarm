@@ -1,10 +1,13 @@
 /**
  * npm run dev — 3000이 이미 쓰이면 그 프로세스를 끄고 next dev를 띄운다.
+ * 기본은 Turbopack (탭 이동 시 Compiling이 webpack보다 훨씬 짧다).
+ * 필요하면: npm run dev:webpack
  */
 import { execSync, spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const PORT = 3000;
+const useWebpack = process.env.NEXT_DEV_WEBPACK === '1' || process.argv.includes('--webpack');
 
 function pidsOnPort(port) {
   if (process.platform === 'win32') {
@@ -49,7 +52,13 @@ if (existing.length) {
   await sleep(800);
 }
 
-const child = spawn('npx', ['next', 'dev', '-p', String(PORT)], {
+// Next 16 기본은 Turbopack. webpack은 탭마다 Compiling이 길어 개발 전환이 느리다.
+const args = ['next', 'dev', '-p', String(PORT)];
+if (useWebpack) args.splice(2, 0, '--webpack');
+
+console.log(useWebpack ? 'dev: webpack' : 'dev: turbopack (빠름)');
+
+const child = spawn('npx', args, {
   stdio: 'inherit',
   shell: true,
   env: process.env,

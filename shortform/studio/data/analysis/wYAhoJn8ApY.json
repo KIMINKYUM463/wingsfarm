@@ -1,0 +1,87 @@
+{
+ "summary": "신라호텔 경력직이 멜론을 손질하는 방법을 시연하며 전문적인 과일 깎기 팁을 알려 주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "호텔식 과일 손질"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "medium"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "밝은",
+ "hook": {
+  "text": "신라호텔 경력직이 알려주는 호텔식 과일 손질법",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "신라호텔 경력직이라는 권위를 앞세워 과일 손질법을 알려주겠다고 예고한다",
+   "seconds": 5.0,
+   "note": "주방에서 여러 사람이 있는 와이드 샷, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "아야~ 잘라?",
+   "purpose": "멜론을 손질하기 전 준비 단계나 초반 작업을 보여준다",
+   "seconds": 12.0,
+   "note": "분홍색 옷 입은 출연자가 과일(멜론 추정)을 손질하는 미디엄 샷"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "멜론 잘 고르는 게",
+   "purpose": "멜론을 깎는 핵심 기술을 클로즈업으로 보여준다",
+   "seconds": 15.0,
+   "note": "금발 출연자가 멜론을 들고 설명하는 클로즈업 샷"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "멜론 손질의 추가 팁이나 주의사항을 전달한다",
+   "seconds": 13.0,
+   "note": "두 출연자가 대화하는 투샷, 추정"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "멜론 잘 고르는 게",
+   "purpose": "완성된 손질 결과나 최종 기술을 다시 한 번 보여준다",
+   "seconds": 15.0,
+   "note": "금발 출연자가 멜론을 들고 있는 클로즈업, 썸네일과 동일한 구도"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "신라호텔 경력직이라는 강력한 권위와 신뢰성을 제목과 영상 전체에 활용",
+  "일반 가정에서도 따라할 수 있는 실용적인 과일 손질 팁 제공",
+  "대화 형식으로 자연스럽고 친근하게 정보 전달"
+ ],
+ "copy_style": "반말·대화형·권위 강조",
+ "template": "손질법",
+ "item": "멜론",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "wYAhoJn8ApY",
+  "title": "신라호텔 경력직의 과일 깎이 강의 #신라호텔 #과일손질법",
+  "length": 60,
+  "channel": "스튜디오슬램",
+  "views": 2110000,
+  "description": "*본 채널에 대한 허위 사실과 출연자에 대한 무분별한 욕설, 악의적인 댓글은 삭제될 수 있습니다."
+ },
+ "via": "fal"
+}

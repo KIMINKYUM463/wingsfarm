@@ -1,0 +1,85 @@
+{
+ "summary": "수박 고르는 방법에 대한 잘못된 상식을 지적하고, 배꼽으로 고르는 올바른 방법을 알려주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "마트",
+ "music": "경쾌한",
+ "hook": {
+  "text": "지금 '수박 고르는 법' 이라며 다 틀렸습니다",
+  "type": "다들속았다"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "지금 '수박 고르는 법' 이라며 다 틀렸습니다",
+   "purpose": "기존에 알려진 수박 고르는 법이 전부 틀렸다고 충격을 주며 시청자의 관심을 끈다",
+   "seconds": 8.0,
+   "note": "마트 통로 전경에서 수박 진열대로 이동하는 구도, 자막이 강조됨"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "잘못된 방법들을 언급하며 기존 상식을 부정한다",
+   "seconds": 7.0,
+   "note": "추정: 수박을 두드리거나 줄무늬를 보는 등 잘못된 방법을 설명, 진열된 수박들 전체 샷"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "배꼽이 크면",
+   "purpose": "수박 배꼽이 작은 것을 골라야 한다고 올바른 팁을 알려준다",
+   "seconds": 8.0,
+   "note": "손으로 수박을 들고 배꼽 부분을 클로즈업하여 보여줌"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "배꼽이 큰 수박의 단면을 보여주며 실제로 덜 익었음을 증명한다",
+   "seconds": 10.0,
+   "note": "추정: 배꼽이 큰 수박의 속을 보여주며 덜 익은 상태를 확인시킴, 반으로 자른 수박 클로즈업"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "hold",
+   "text": "다 틀렸습니다",
+   "purpose": "배꼽이 작은 수박을 선택하라는 결론을 다시 강조한다",
+   "seconds": 9.0,
+   "note": "손으로 수박을 들고 있는 장면, 올바른 선택 방법 재강조, 진열대 배경"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "전국민이 속았다는 강력한 부정형 훅으로 클릭을 유도",
+  "잘못된 방법과 올바른 방법을 명확히 대비시켜 정보의 가치를 높임",
+  "배꼽이라는 구체적이고 쉽게 확인 가능한 기준을 제시하여 실용성이 높음"
+ ],
+ "copy_style": "단정적 반말, 부정형 강조(다 틀렸다)",
+ "template": "고르는법",
+ "item": "수박",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "lok22pKNLgg",
+  "title": "수박 고르는 법(전국민이 속았습니다)",
+  "length": 42,
+  "channel": "인생2회차",
+  "views": 4000000,
+  "description": "#수박고르는법 #수박고르기 #인생2회차 #꿀팁 #수박고르는 방법"
+ },
+ "via": "fal"
+}

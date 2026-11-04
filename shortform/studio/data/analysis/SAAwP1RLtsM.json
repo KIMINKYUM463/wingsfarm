@@ -1,0 +1,87 @@
+{
+ "summary": "대하를 소금구이 대신 마지막에 간을 해서 먹어야 하는 이유를 조리 전후 비교로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [
+  "고기남자"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "대하 소금구이 하지 마세요",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hero",
+   "text": "요 대하는 우리가",
+   "purpose": "소금구이 하지 말라는 경고로 시청자의 주목을 끈다",
+   "seconds": 10.0,
+   "note": "조리 전 생대하 여러 팩이 놓여있는 탑뷰 구도 (추정)"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hero",
+   "text": "요 대하는 우리가",
+   "purpose": "잘못된 조리법인 소금구이 방식을 시각적으로 제시한다",
+   "seconds": 12.0,
+   "note": "생대하 팩들을 클로즈업으로 보여주는 장면 (추정)"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "detail",
+   "text": "그리고 마지막에",
+   "purpose": "올바른 조리법으로 구운 대하를 클로즈업으로 보여준다",
+   "seconds": 12.0,
+   "note": "구워진 대하를 팬에서 클로즈업, 윤기나는 모습"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hook",
+   "text": "살 필요 없다니까?",
+   "purpose": "직접 맛을 보며 올바른 조리법의 결과를 검증한다",
+   "seconds": 12.0,
+   "note": "검은 마스크와 검은 옷을 입은 진행자가 대하를 손으로 들고 있는 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "crave",
+   "text": "그리고 마지막에",
+   "purpose": "완성된 대하 요리의 먹음직스러운 모습으로 마무리한다",
+   "seconds": 12.0,
+   "note": "구운 대하 클로즈업, 썸네일용 완성샷 (추정)"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "제목과 첫 장면에서 '하지 마세요'라는 강력한 부정 경고로 즉각 주목을 끌었다",
+  "잘못된 방법과 올바른 방법을 시각적으로 대비하여 정보 전달이 명확하다",
+  "구운 대하의 윤기나는 클로즈업 샷으로 식욕을 자극하며 끝까지 시청을 유도한다"
+ ],
+ "copy_style": "반말 명령형, 부정 경고 후 올바른 방법 제시",
+ "template": "비교",
+ "item": "대하",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "SAAwP1RLtsM",
+  "title": "대하 소금구이 하지 마세요",
+  "length": 58,
+  "channel": "\b고기남자",
+  "views": 1970000,
+  "description": ""
+ },
+ "via": "fal"
+}

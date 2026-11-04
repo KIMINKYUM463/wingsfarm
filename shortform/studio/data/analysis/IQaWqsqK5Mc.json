@@ -1,0 +1,85 @@
+{
+ "summary": "백화점 5만원 고급 멜론과 시장 4천원 저렴한 멜론을 비교하며 가격 차이의 이유를 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "스튜디오",
+ "music": "경쾌한",
+ "hook": {
+  "text": "롯데백화점 5만원 멜론 실체",
+  "type": "가격대비"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hold",
+   "text": "롯데백화점 5만원 멜론 실체\n확실히 물렁입니다",
+   "purpose": "백화점 5만원짜리 고급 멜론을 손에 들고 보여주며 시청자의 호기심을 자극한다",
+   "seconds": 10.0,
+   "note": "손에 고급 멜론을 들고 있는 클로즈업, 그물망 패턴이 뚜렷한 고급 멜론"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "store",
+   "text": "파는꽃이거의",
+   "purpose": "백화점에 진열된 다양한 과일들의 풍경을 보여주며 고급 매장 분위기를 전달한다",
+   "seconds": 8.0,
+   "note": "추정: 백화점 과일 매장의 진열 모습, 다양한 색상의 과일들이 바구니에 담겨 있음"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "hold",
+   "text": "확실히물렁입니다",
+   "purpose": "다시 고급 멜론을 강조하며 품질을 확인하는 모습을 보여준다",
+   "seconds": 10.0,
+   "note": "동일한 구도로 멜론을 손에 들고 있는 모습, 발표자의 얼굴 일부가 멜론 뒤에 있음"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hook",
+   "text": "일단 멜론 맛이야~에요",
+   "purpose": "발표자가 직접 카메라를 보며 가격 차이에 대한 설명을 시작한다",
+   "seconds": 12.0,
+   "note": "발표자가 정면을 보며 말하는 모습, 실내 스튜디오 환경"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hold",
+   "text": "확실히물렁입니다",
+   "purpose": "마지막으로 다시 멜론을 보여주며 영상의 결론을 유도한다",
+   "seconds": 17.0,
+   "note": "추정: 첫 장면과 동일한 구도로 멜론을 들고 있는 썸네일용 컷"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "극명한 가격 차이(5만원 vs 4천원)로 강력한 호기심을 유발함",
+  "고급 백화점 브랜드를 활용해 신뢰도와 클릭 욕구를 동시에 자극함",
+  "발표자가 직접 얼굴을 보이며 친근하게 설명하여 몰입도를 높임"
+ ],
+ "copy_style": "반말·친근한 어투로 가격 차이를 자연스럽게 설명",
+ "template": "비교",
+ "item": "멜론",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "IQaWqsqK5Mc",
+  "title": "백화점 5만원 멜론 vs 시장 4천원 멜론",
+  "length": 57,
+  "channel": "단거",
+  "views": 1390000,
+  "description": ""
+ },
+ "via": "fal"
+}

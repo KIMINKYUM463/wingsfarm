@@ -1,0 +1,85 @@
+{
+ "summary": "피해야 할 사과의 특징(겉이 끈적한 것, 숨구멍이 많은 것)을 매장 진열 사과와 손에 든 클로즈업으로 경고하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "매장",
+ "music": "경쾌한",
+ "hook": {
+  "text": "제발 이런 사과 사지마세요",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "매장에 진열된 다양한 사과를 보여주며 시청자의 관심을 끈다",
+   "seconds": 5.0,
+   "note": "매장 진열대 위에 놓인 여러 사과들의 전경 샷"
+  },
+  {
+   "role": "WRONG",
+   "label": "1",
+   "shot": "hero",
+   "text": "중요한 건",
+   "purpose": "피해야 할 첫 번째 유형으로 중요한 특징이 있는 사과 진열 장면을 보여준다",
+   "seconds": 8.0,
+   "note": "추정: 매장 진열대에 황색, 녹색 사과들이 담긴 바구니가 보임, 첫 번째 주의사항 도입"
+  },
+  {
+   "role": "WRONG",
+   "label": "1",
+   "shot": "detail",
+   "text": "겉이 끈적한건",
+   "purpose": "겉이 끈적한 사과를 피하라고 경고한다",
+   "seconds": 8.0,
+   "note": "손에 든 붉은 사과 클로즈업, 표면 상태를 확인할 수 있도록 촬영"
+  },
+  {
+   "role": "WRONG",
+   "label": "2",
+   "shot": "detail",
+   "text": "숨구멍인데",
+   "purpose": "숨구멍이 많은 사과를 피하라고 경고한다",
+   "seconds": 8.0,
+   "note": "손에 든 붉은 사과 클로즈업, 표면의 흰 점들(숨구멍)이 많이 보이는 각도"
+  },
+  {
+   "role": "WRONG",
+   "label": "2",
+   "shot": "detail",
+   "text": "겉이 끈적한건",
+   "purpose": "끈적한 겉 표면이 문제임을 다시 한 번 강조한다",
+   "seconds": 9.0,
+   "note": "추정: 썸네일 이미지, 붉은 사과 클로즈업으로 마무리하며 핵심 메시지 반복"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "부정형 제목('사지마세요', '최악')으로 즉시 경고감을 주어 클릭을 유도함",
+  "매장 실제 진열 사과로 시작해 현실감과 공감대를 형성함",
+  "손에 들고 클로즈업으로 보여주는 반복 구조로 구매 시점에서 바로 확인 가능한 실용 정보를 제공함"
+ ],
+ "copy_style": "반말·경고형·핵심 키워드 강조",
+ "template": "고르는법",
+ "item": "사과",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "_mDP8Wi0oQY",
+  "title": "제발 이런 사과 사지마세요(최악입니다)",
+  "length": 38,
+  "channel": "인생2회차",
+  "views": 2490000,
+  "description": "#사과 #당도 #사과선택 #고르는법 #생활꿀팁  #인생2회차 #정보"
+ },
+ "via": "fal"
+}

@@ -1,0 +1,88 @@
+{
+ "summary": "노량진 수산시장에서 연어 필렛을 살 때 색과 신선도를 확인해야 한다는 팁을 현장에서 보여주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "노량진 수산시장 갈 때",
+  "주의할 점"
+ ],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "시장",
+ "music": "시장활기",
+ "hook": {
+  "text": "얼마예요?",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hero",
+   "text": "얼마예요?",
+   "purpose": "노량진 수산시장 연어 필렛 진열대를 보여주며 가격을 물어보는 장면으로 시청자의 관심을 끈다",
+   "seconds": 10.0,
+   "note": "연어 필렛과 회 진열대를 위에서 촬영, 손이 보임"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "흰는 썩어드러요?",
+   "purpose": "연어 필렛의 색이 흰색인지 확인해야 한다는 팁을 전달한다",
+   "seconds": 12.0,
+   "note": "추정: 연어 필렛 클로즈업, 흰색 부분 지적하는 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "store",
+   "text": "그거를 좀 조심 해야 됩니다",
+   "purpose": "시장 전체 풍경을 보여주며 현장감을 준다",
+   "seconds": 12.0,
+   "note": "노량진 수산시장 입구 및 통로, 사람 뒷모습이 보임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "흰는 썩어드러요?",
+   "purpose": "다시 연어 필렛으로 돌아와 색 확인 중요성을 강조한다",
+   "seconds": 12.0,
+   "note": "추정: 연어 필렛 진열대 재확인 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "최종 정리 및 구매 시 주의사항을 당부한다",
+   "seconds": 13.0,
+   "note": "추정: 마무리 장면, 연어 필렛 전체 샷"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "노량진이라는 구체적 장소와 현장 촬영으로 신뢰도를 높임",
+  "짧은 영상에서 흰색 부분 확인이라는 명확한 팁 하나에 집중",
+  "질문형 자막('얼마예요?', '썩어드러요?')으로 시청자 참여 유도"
+ ],
+ "copy_style": "반말 존댓말 혼용, 질문형으로 호기심 유발",
+ "template": "고르는법",
+ "item": "연어 필렛",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "EL1XIzn_u6k",
+  "title": "연어 필렛 살 때 꿀팁 (노량진)",
+  "length": 59,
+  "channel": "치얼스부부 cheersbubu",
+  "views": 12400000,
+  "description": ""
+ },
+ "via": "fal"
+}

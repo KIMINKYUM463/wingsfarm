@@ -1,0 +1,88 @@
+{
+ "summary": "애니메이션 캐릭터로 새우 먹는 방법 세 가지 유형을 유머러스하게 비교하는 짧은 콘텐츠",
+ "layout": "letterbox",
+ "title_lines": [
+  "사람마다 다른",
+  "새우먹는 법"
+ ],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "text_only",
+ "presenter": "none",
+ "setting": "스튜디오",
+ "music": "경쾌한",
+ "hook": {
+  "text": "사람마다 다른 새우먹는 법",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "사람마다 다른 새우먹는 법",
+   "purpose": "새우 먹는 방법이 사람마다 다르다는 주제를 제시한다",
+   "seconds": 2.0,
+   "note": "검은 배경에 노란색 강조 제목, 애니메이션 캐릭터 등장 전 타이틀 화면"
+  },
+  {
+   "role": "COMPARE",
+   "label": "유형1",
+   "shot": "detail",
+   "text": "너 꼬리 먹어?",
+   "purpose": "머리 먹는 유형을 질문 형태로 제시한다",
+   "seconds": 7.0,
+   "note": "추정: 파란 머리 캐릭터와 베이지 머리 캐릭터가 대화, 새우 머리를 먹는지 묻는 장면"
+  },
+  {
+   "role": "COMPARE",
+   "label": "유형2",
+   "shot": "detail",
+   "text": "머리 정도는",
+   "purpose": "머리 정도는 먹는 유형을 보여준다",
+   "seconds": 7.0,
+   "note": "캐릭터들이 대화하며 머리는 먹는다고 답하는 장면"
+  },
+  {
+   "role": "COMPARE",
+   "label": "유형3",
+   "shot": "detail",
+   "text": "더 먹을 수 있겠음?",
+   "purpose": "더 먹을 수 있는지 반문하는 유형을 보여준다",
+   "seconds": 7.0,
+   "note": "캐릭터가 새우를 먹으며 더 먹을 것이 있냐고 반문하는 장면"
+  },
+  {
+   "role": "REVEAL",
+   "label": "유형4",
+   "shot": "detail",
+   "text": "머리 정도는",
+   "purpose": "머리 정도는 먹는다는 대답을 반복하며 마무리한다",
+   "seconds": 8.0,
+   "note": "추정: 다시 머리 정도는 먹는다는 답변으로 루프하며 영상 종료, 표지 이미지로 이어짐"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "애니메이션 캐릭터를 활용해 친근하고 재미있는 분위기를 만들어 공감대를 형성함",
+  "새우 먹는 습관이라는 누구나 겪는 일상 소재로 시청자 참여 유도",
+  "짧은 러닝타임과 빠른 전개로 쇼츠 포맷에 최적화됨"
+ ],
+ "copy_style": "반말 질문형, 캐릭터 간 대화체",
+ "template": "짧은루프",
+ "item": "새우",
+ "category": "수산",
+ "relevant": false,
+ "meta": {
+  "id": "UGjPhyUb2hA",
+  "title": "사람마다 다른 새우먹는 법",
+  "length": 31,
+  "channel": "김블루",
+  "views": 5170000,
+  "description": "》김블루 VIP멤버쉽 가입하기!! :  https://www.youtube.com/channel/UCNzcxCN_Hh_lu5RCSFXKgGQ/join\n》김블루 시청자 디코 공지방!! : https://discord.gg/z9pY7PJ\n》김블루 인스타 : https://www.instagram.com/kimblue_37/?hl=ko\n》치지직 바로가기: https://chzzk.naver.com/0de8f1807076169b7eb9218137e99c51\n》김블루 팬카페!! : https://cafe.naver.com/bloodang\n★지금 구독하기와 좋아요버튼을 꾹 눌러달라구!!★\n》제가 직접 3년째 사용 중인 컴퓨터 오버시스템 링크 - https://oversystem.co.kr/\n사장님이 너무나 착하십니다 "
+ },
+ "via": "fal"
+}

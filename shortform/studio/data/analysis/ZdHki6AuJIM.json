@@ -1,0 +1,94 @@
+{
+ "summary": "주방에서 파인애플을 쉽고 깔끔하게 자르는 단계별 방법을 실연하며 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "밝은",
+ "hook": {
+  "text": "파인애플 자르는 방법 알려드릴게요",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "통파인애플을 보여주며 자르는 방법을 알려주겠다고 소개한다",
+   "seconds": 5.0,
+   "note": "주방 테이블 앞에 앉아 통파인애플을 손으로 가리키며 설명 시작, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "",
+   "purpose": "파인애플 윗부분과 아랫부분을 칼로 자르는 첫 단계를 보여준다",
+   "seconds": 10.0,
+   "note": "도마 위 파인애플의 꼭지 부분과 밑동을 칼로 자르는 손 클로즈업, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "prep",
+   "text": "",
+   "purpose": "파인애플을 세워서 껍질을 세로로 벗겨내는 방법을 시연한다",
+   "seconds": 15.0,
+   "note": "파인애플을 세운 상태에서 칼로 껍질을 위에서 아래로 벗기는 장면, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "3",
+   "shot": "prep",
+   "text": "",
+   "purpose": "껍질 벗긴 파인애플을 적당한 크기로 자르는 마지막 단계를 보여준다",
+   "seconds": 12.0,
+   "note": "껍질 벗긴 노란 파인애플을 도마 위에서 먹기 좋은 크기로 자르는 손 동작"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "완성된 파인애플 조각들을 클로즈업으로 보여주며 만족감을 준다",
+   "seconds": 10.0,
+   "note": "도마 위 깔끔하게 잘린 파인애플 조각들과 껍질이 분리된 모습을 위에서 내려다보는 구도"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hold",
+   "text": "",
+   "purpose": "완성된 결과물을 보여주며 영상을 마무리한다",
+   "seconds": 7.0,
+   "note": "잘린 파인애플 전체 모습과 출연자가 만족스러운 표정으로 마무리하는 장면, 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "실용적인 손질법을 단계별로 명확하게 구분해 따라하기 쉽게 구성했다",
+  "주방 환경과 친근한 출연자가 직접 시연하며 신뢰감과 접근성을 높였다",
+  "59초 짧은 길이에 핵심 단계만 압축해 끝까지 시청을 유도했다"
+ ],
+ "copy_style": "친근한 반말로 단계별 설명",
+ "template": "손질법",
+ "item": "파인애플",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "ZdHki6AuJIM",
+  "title": "파인애플 자르는 방법",
+  "length": 59,
+  "channel": "에나스쿨 ENA School",
+  "views": 9340000,
+  "description": ""
+ },
+ "via": "fal"
+}

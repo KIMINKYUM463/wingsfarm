@@ -1,0 +1,87 @@
+{
+ "summary": "떡을 먹는 소리(ASMR)와 함께 시청자 후원 요청을 반복하는 쇼츠",
+ "layout": "full",
+ "title_lines": [
+  "지뻔뻔"
+ ],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "없음",
+ "hook": {
+  "text": "설마 떡도 가능하신가요?",
+  "type": "질문리빌"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "설마 떡도 가능하신가요?",
+   "purpose": "후원 질문을 보여주며 시청자의 관심을 유도한다",
+   "seconds": 3.0,
+   "note": "스마트폰을 들고 있는 손과 후원 메시지 화면 보임, 추정"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "양념 물어먼 되는 거잖아",
+   "purpose": "손에 든 떡을 클로즈업으로 보여준다",
+   "seconds": 10.0,
+   "note": "회색 옷을 입은 출연자가 떡을 손에 들고 있는 장면, 추정"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "그다음 절구에 넣어서",
+   "purpose": "소금을 그릇에 담아 보여준다",
+   "seconds": 12.0,
+   "note": "돌절구에 소금이 담긴 모습, 추정"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "crave",
+   "text": "이 비주얼을 참나~?",
+   "purpose": "떡볶이용 떡을 클로즈업으로 보여준다",
+   "seconds": 15.0,
+   "note": "빨간 양념이 묻은 떡볶이 떡들이 도마 위에 놓인 모습"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "그다음 절구에 넣어서",
+   "purpose": "다시 절구와 소금을 보여주며 영상을 마무리한다",
+   "seconds": 20.0,
+   "note": "돌절구에 소금이 담긴 모습 재등장, 추정"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "떡과 소금이라는 일상 소재를 ASMR 형태로 짧고 반복적으로 보여주며 중독성을 유도했다",
+  "후원 요청 메시지를 자연스럽게 노출하며 시청자 참여를 유도했다",
+  "빠른 컷 전환과 반복 구조로 짧은 시간 안에 주목도를 높였다"
+ ],
+ "copy_style": "반말·감탄형·짧은 문장",
+ "template": "짧은루프",
+ "item": "떡",
+ "category": "가공",
+ "relevant": false,
+ "meta": {
+  "id": "0fPwQ0MAZZ4",
+  "title": "빻빻빻",
+  "length": 60,
+  "channel": "지뻔뻔",
+  "views": 13410000,
+  "description": ""
+ },
+ "via": "fal"
+}

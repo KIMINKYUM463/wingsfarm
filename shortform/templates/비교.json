@@ -1,0 +1,111 @@
+{
+  "name": "VS 비교형",
+  "kind": "자동",
+  "layout": "letterbox",
+  "when": "등급·크기·품종 차이 설명. 타사·마트 이름을 대며 깎아내리는 비교는 금지",
+  "evidence": "5천원 소고기 vs 10만원 소고기 351만 / 마트 참외 vs 산지직송(소규모)",
+  "title": [
+    "{title1}",
+    "{title2}"
+  ],
+  "info": "{info|두 가지 모두 프로필 링크에}",
+  "segments": [
+    {
+      "kind": "HOOK",
+      "say": "{hook}",
+      "source": "{hook_source|ai:hook}"
+    },
+    {
+      "kind": "TIP",
+      "say": "{a_say}",
+      "source": "{a_source}",
+      "label": "{a_name}"
+    },
+    {
+      "kind": "TIP",
+      "say": "{b_say}",
+      "source": "{b_source}",
+      "label": "{b_name}"
+    },
+    {
+      "kind": "CTA",
+      "say": "{verdict}",
+      "source": "{outro_source|ai:hero}"
+    }
+  ],
+  "fields": [
+    {
+      "key": "title1",
+      "label": "제목 1줄 (흰색)",
+      "type": "text",
+      "max": 13,
+      "hint": "품목명이 들어간 주제. 예: 꿀참외 고르는 법"
+    },
+    {
+      "key": "title2",
+      "label": "제목 2줄 (노란색)",
+      "type": "text",
+      "max": 13,
+      "hint": "궁금증을 만드는 한 마디. 예: 딱 3가지만 보세요"
+    },
+    {
+      "key": "hook",
+      "label": "첫 문장 (훅)",
+      "type": "text",
+      "hint": "예: 가정용이랑 선물용, *뭐가* 다른지 궁금하셨죠?"
+    },
+    {
+      "key": "hook_source",
+      "label": "첫 장면",
+      "type": "source",
+      "default": "ai:hook"
+    },
+    {
+      "key": "a_name",
+      "label": "A 이름",
+      "type": "text",
+      "max": 6
+    },
+    {
+      "key": "a_say",
+      "label": "A 설명",
+      "type": "text"
+    },
+    {
+      "key": "a_source",
+      "label": "A 장면",
+      "type": "source",
+      "default": "ai:hold"
+    },
+    {
+      "key": "b_name",
+      "label": "B 이름",
+      "type": "text",
+      "max": 6
+    },
+    {
+      "key": "b_say",
+      "label": "B 설명",
+      "type": "text"
+    },
+    {
+      "key": "b_source",
+      "label": "B 장면",
+      "type": "source",
+      "default": "ai:hero"
+    },
+    {
+      "key": "verdict",
+      "label": "결론",
+      "type": "text",
+      "hint": "어느 쪽이 누구에게 맞는지. 타사 비방 금지"
+    },
+    {
+      "key": "info",
+      "label": "아래 노란 바",
+      "type": "text",
+      "max": 22,
+      "hint": "주문 안내 한 줄. 예: 이렇게 고른 참외, 프로필 링크에"
+    }
+  ]
+}

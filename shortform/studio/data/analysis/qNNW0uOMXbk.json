@@ -1,0 +1,85 @@
+{
+ "summary": "해삼을 쉽게 썰 수 있는 방법을 시연하고 조리한 모습을 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "해삼? 너도 썰 수 있어",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hold",
+   "text": "이영상을보시다면",
+   "purpose": "해삼을 쉽게 썰 수 있다며 시청자의 관심을 끈다",
+   "seconds": 8.0,
+   "note": "진행자가 얼굴 나오며 생해삼을 손에 들고 있음. 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "hold",
+   "text": "이영상을보시다면",
+   "purpose": "해삼을 손에 들고 손질 방법을 설명한다",
+   "seconds": 8.0,
+   "note": "진행자가 생해삼을 들고 설명하는 장면. 흰 장갑 착용"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "고급식재료로 (코노와다) =해삼 내장 찾잘",
+   "purpose": "썰어진 해삼을 조리한 완성본을 클로즈업으로 보여준다",
+   "seconds": 12.0,
+   "note": "젓가락으로 해삼 내장(코노와다)을 집어 올리는 클로즈업. 국물에 담긴 모습"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "crave",
+   "text": "기가 막hiπay~!",
+   "purpose": "조리된 해삼을 먹는 장면으로 맛의 만족감을 전달한다",
+   "seconds": 10.0,
+   "note": "진행자가 눈 감고 먹는 표정으로 맛을 표현. 추정"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "detail",
+   "text": "고급식재료로 (코노와다) =해삼 내장 찾잘",
+   "purpose": "마지막으로 완성된 요리의 고급스러움을 강조한다",
+   "seconds": 15.0,
+   "note": "다시 한 번 해삼 내장 요리 클로즈업으로 마무리. 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "해삼이라는 어려운 식재료를 '너도 할 수 있어'라는 쉬운 접근으로 진입장벽을 낮춤",
+  "진행자의 과장된 표정과 반응으로 엔터테인먼트 요소를 더해 재미를 줌",
+  "손질부터 조리, 시식까지 전 과정을 압축해 완결성 있는 콘텐츠 제공"
+ ],
+ "copy_style": "반말·친근한 톤으로 어려운 식재료를 쉽게 접근",
+ "template": "손질법",
+ "item": "해삼",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "qNNW0uOMXbk",
+  "title": "해삼? 너도 썰 수 있어 #shorts",
+  "length": 53,
+  "channel": "수빙수tv sooBingsoo",
+  "views": 9000000,
+  "description": "#shorts"
+ },
+ "via": "fal"
+}

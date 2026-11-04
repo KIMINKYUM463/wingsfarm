@@ -1,0 +1,85 @@
+{
+ "summary": "마트에서 피해야 할 삼겹살 종류를 실물 비교로 보여주며 올바른 선택법을 알려주는 경고형 가이드 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "마트",
+ "music": "경쾌한",
+ "hook": {
+  "text": "절대 이런 삼겹살 사지마세요",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "store",
+   "text": "여러분은",
+   "purpose": "마트 정육 코너를 보여주며 소비자가 흔히 접하는 구매 상황을 제시한다",
+   "seconds": 3.0,
+   "note": "마트 냉장 진열대 전경, 포장된 삼겹살들이 진열된 모습"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "이 두 삼겹살 중",
+   "purpose": "피해야 할 두 가지 삼겹살 종류를 녹색 배경 위에서 비교하며 보여준다",
+   "seconds": 7.0,
+   "note": "녹색 배경 위 두 종류 삼겹살 클로즈업, 위아래로 배치하여 차이점 명확히 비교"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "손해입니다",
+   "purpose": "구워진 삼겹살의 단면을 클로즈업하여 육질과 결을 자세히 보여준다",
+   "seconds": 8.0,
+   "note": "추정: 그릴 위 구워진 삼겹살 클로즈업, 기름이 흐르는 모습"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "hero",
+   "text": "한 판을 3등분해",
+   "purpose": "세 가지 삼겹살 등급을 A, B, C로 라벨링하고 포장 상태까지 함께 비교 제시한다",
+   "seconds": 10.0,
+   "note": "상단에 A, B, C 라벨 붙인 세 조각, 하단에 실제 마트 포장 상품 배치하여 대응"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "crave",
+   "text": "손해입니다",
+   "purpose": "다시 구워진 삼겹살 클로즈업으로 마무리하며 올바른 선택의 결과를 보여준다",
+   "seconds": 7.0,
+   "note": "추정: 마지막 화면, 잘 구워진 삼겹살 클로즈업으로 강조"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "부정 경고('절대 사지마세요')로 즉각 주목을 끌고 손해 회피 심리를 자극한다",
+  "녹색 배경 위 실물 비교와 A/B/C 라벨링으로 복잡한 차이를 직관적으로 전달한다",
+  "마트 현장 → 상품 비교 → 조리 결과물 순서로 구매부터 결과까지 전 과정을 35초에 압축했다"
+ ],
+ "copy_style": "경고형 반말, 단정적 문장으로 손해 프레임 강조",
+ "template": "비교",
+ "item": "삼겹살",
+ "category": "축산",
+ "relevant": true,
+ "meta": {
+  "id": "uuFdMsTgY4g",
+  "title": "절대 이런 삼겹살 사지마세요(식당,마트 확인필수)",
+  "length": 35,
+  "channel": "인생2회차",
+  "views": 3340000,
+  "description": "#삼겹살 #목살 #마트 #트레이더스 #통삼겹 #이마트 #오돌뼈 #인생2회차 #생활정보 #꿀팁"
+ },
+ "via": "fal"
+}

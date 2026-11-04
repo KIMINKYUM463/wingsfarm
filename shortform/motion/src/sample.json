@@ -1,0 +1,13 @@
+{
+  "title1": "부사 사과 고르는 법",
+  "title2": "딱 3가지만 보세요",
+  "info": "청송 부사 5kg, 프로필 링크",
+  "highlight": "yellow",
+  "aiLabel": false,
+  "price": {"now": 39000, "before": 45000, "unit": "5kg (20~22과)"},
+  "scenes": [
+    {"kind": "HOOK", "frames": 75, "words": [{"text": "사과", "start": 0, "end": 0.4, "hl": true}, {"text": "이렇게", "start": 0.4, "end": 0.8}, {"text": "고르세요", "start": 0.8, "end": 1.4}]},
+    {"kind": "TIP", "frames": 75, "words": [{"text": "꼭지가", "start": 0, "end": 0.5, "hl": true}, {"text": "싱싱한지", "start": 0.5, "end": 1.0}, {"text": "보세요", "start": 1.0, "end": 1.5}]},
+    {"kind": "CTA", "frames": 90, "words": [{"text": "주문은", "start": 0, "end": 0.5}, {"text": "프로필", "start": 0.5, "end": 1.0, "hl": true}, {"text": "링크", "start": 1.0, "end": 1.4, "hl": true}]}
+  ]
+}

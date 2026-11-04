@@ -1,0 +1,88 @@
+{
+ "summary": "한국에서 흔히 먹는 와사비가 실제 뿌리 와사비가 아니라 대체품이라는 사실을 폭로하는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "한국인 99%가 당한",
+  "대국민 사기극"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "red",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "한국인 99%가 당한 대국민 사기극",
+  "type": "다들속았다"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "한국인 99%가 당한 대국민 사기극",
+   "purpose": "한국인 대부분이 속았다며 충격적인 사실이 있음을 예고한다",
+   "seconds": 3.0,
+   "note": "검은 배경에 흰색/빨간색 텍스트로 강렬한 제목 표시"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "튜브에서 나오는 녹색 페이스트가 진짜 와사비가 아님을 보여준다",
+   "seconds": 10.0,
+   "note": "추정: 손이 튜브형 와사비를 짜내는 클로즈업 샷, 빨간 화살표로 강조"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "코 뻥 뚫리며 먹은",
+   "purpose": "진짜 뿌리 와사비의 모습을 처음 공개한다",
+   "seconds": 10.0,
+   "note": "추정: 녹색 뿌리 와사비를 손에 들고 보여주며 갈아내는 모습, 빨간 화살표로 강조"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "detail",
+   "text": "진짜 내 인생이 부정당한 기분임",
+   "purpose": "진짜와 가짜의 차이를 밈 이미지로 재미있게 비교한다",
+   "seconds": 8.0,
+   "note": "추정: 충격받은 페페 밈 이미지 삽입으로 시청자 반응 대변"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "최고급 시즈오카산 뿌리 와사비를 소개하며 마무리한다",
+   "seconds": 11.0,
+   "note": "추정: 뿌리 와사비를 다시 한 번 클로즈업하며 원산지 정보 제공"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "'99%가 당한 사기극'이라는 강력한 부정 훅으로 즉각 주목을 끈다",
+  "빨간 화살표와 강조색 자막으로 핵심 정보를 명확히 전달한다",
+  "밈 이미지를 활용해 충격적인 정보를 유머러스하게 풀어낸다"
+ ],
+ "copy_style": "반말, 충격·부정 강조, 감정 표현 직설적",
+ "template": "비교",
+ "item": "와사비",
+ "category": "가공",
+ "relevant": true,
+ "meta": {
+  "id": "8PGy6vhqE6M",
+  "title": "한국인 99%가 당한 대국민 사기극 ㄷㄷ",
+  "length": 42,
+  "channel": "꿀셰프",
+  "views": 4220000,
+  "description": "오늘의 식품: 뿌리 와사비\n\n그 중에서도 최고로 쳐 주는 것은 시즈오카산 뿌리와사비\n\n앞으로도 식품, 음식에 숨은 신기한 비하인드 이야기를 내어드릴게요! 단골이 되어주세요!"
+ },
+ "via": "fal"
+}

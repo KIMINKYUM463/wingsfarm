@@ -1,0 +1,76 @@
+{
+ "summary": "서울 신당 중앙시장의 건오징어를 조금 찍어 먹었다가 단지를 가져가게 만드는 맛을 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "서울 신당 중앙시장에 있는",
+  "type": "현장"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hero",
+   "text": "서울 신당 중앙시장에 있는",
+   "purpose": "서울 신당 중앙시장의 건오징어를 소개하며 시청자의 관심을 끈다",
+   "seconds": 10.0,
+   "note": "접시 위에 둥글게 놓인 구운 건오징어를 위에서 내려다본 구도. 추정: 장소 소개"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "crave",
+   "text": "조금 찍어서 먹으면 맛있습니다",
+   "purpose": "조금만 찍어 먹으려 했으나 맛있어서 계속 먹게 된다는 경험을 전달한다",
+   "seconds": 9.0,
+   "note": "오징어를 젓가락으로 들어올리는 장면, 뒤에 여러 접시 보임. 추정: 먹는 장면"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "단지 가격은 좀 있는 편이지만",
+   "purpose": "단지를 가져갈 정도로 맛있지만 단지 가격은 저렴하다는 반전을 보여준다",
+   "seconds": 10.0,
+   "note": "둥근 접시에 오징어 한 조각이 있고, 젓가락으로 집는 클로즈업. 추정: 가격 언급"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "crave",
+   "text": "조금 찍어서 먹으면 맛있습니다",
+   "purpose": "다시 한번 조금 찍어 먹으면 맛있다는 메시지로 마무리하며 구매를 유도한다",
+   "seconds": 9.0,
+   "note": "첫 장면과 유사한 전체 접시 구도로 반복. 추정: 마무리 반복"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "단지 가격은 비싸지만 조금씩 찍어 먹으면 된다는 실용적 팁으로 가격 부담을 해소",
+  "구운 건오징어의 먹음직스러운 비주얼을 반복해서 보여주며 식욕 자극",
+  "신당 중앙시장이라는 구체적 장소로 신뢰도와 방문 욕구 유발"
+ ],
+ "copy_style": "존댓말, 반복 강조, 단순 명료한 설명",
+ "template": "현장리포트",
+ "item": "건오징어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "YibyACU38f8",
+  "title": "오징어를 맛있게 먹는 방법",
+  "length": 38,
+  "channel": "더들리",
+  "views": 3000000,
+  "description": "신당 중앙시장 옥경이네 건생선\n\n* 본 영상은 개인 사비로 다녀 온 영상으로, 광고 또는 협찬 영상이 아닙니다\n* Instagram : https://www.instagram.com/dudely_08\n* Email : dudely610@gmail.com"
+ },
+ "via": "fal"
+}

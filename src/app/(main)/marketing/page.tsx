@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { MarketingHub } from "@/components/marketing/MarketingHub";
 import { StudioShell, type ImagePlan } from "@/components/marketing/StudioShell";
 import type { ImageStatus } from "@/components/marketing/results";
@@ -58,13 +59,18 @@ function imageJobsFor(result: MarketingResult, hasProductImage: boolean): ImageJ
   return [];
 }
 
-/** 콘텐츠 캘린더에서 /marketing?studio=shorts&note=... 로 들어오면 해당 스튜디오를 연다 (ClientOnly 아래라 window 사용 가능) */
+/** 콘텐츠 캘린더에서 /marketing?studio=threads&note=... 로 들어오면 해당 스튜디오를 연다. 숏폼은 /shortform 으로 보낸다. */
 const initialStudio = (): MarketingFormat | null => {
   const studio = new URLSearchParams(window.location.search).get("studio");
+  if (studio === "shorts") {
+    window.location.replace("/shortform");
+    return null;
+  }
   return MARKETING_FORMATS.find((f) => f === studio) ?? null;
 };
 
 export default function MarketingPage() {
+  const router = useRouter();
   const month = new Date().getMonth() + 1;
   const inSeason = useMemo(() => SEASON_ITEMS.filter((s) => s.months.includes(month)).slice(0, 10), [month]);
 
@@ -109,6 +115,11 @@ export default function MarketingPage() {
   };
 
   const openStudio = (f: MarketingFormat) => {
+    // 숏폼은 shortform/ 스튜디오 코드를 그대로 쓴다
+    if (f === "shorts") {
+      router.push("/shortform");
+      return;
+    }
     resetResult();
     setOpen(f);
   };

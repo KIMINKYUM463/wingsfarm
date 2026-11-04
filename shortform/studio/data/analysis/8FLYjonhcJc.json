@@ -1,0 +1,94 @@
+{
+ "summary": "달걀 구매 시 손해 보지 않기 위해 알아야 할 3가지 팁을 매장에서 직접 설명하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "마트",
+ "music": "경쾌한",
+ "hook": {
+  "text": "달걀 살 때 모르면 손해보는 3가지",
+  "type": "숫자리스트"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "달걀 구매 시 알아야 할 3가지가 있다고 시청자의 관심을 유발한다",
+   "seconds": 3.0,
+   "note": "추정: 달걀 매대 앞에서 발표자가 서 있는 오프닝 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 1",
+   "shot": "detail",
+   "text": "",
+   "purpose": "첫 번째 팁으로 달걀을 손에 들고 확인하는 방법을 보여준다",
+   "seconds": 12.0,
+   "note": "추정: 발표자가 달걀을 손에 들고 설명하는 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 2",
+   "shot": "hold",
+   "text": "3번: A4 사이즈 케이지",
+   "purpose": "두 번째 팁으로 A4 사이즈 케이지 관련 정보를 알려준다",
+   "seconds": 15.0,
+   "note": "발표자가 달걀 케이스를 손에 들고 A4 사이즈 케이지에 대해 설명"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 3",
+   "shot": "detail",
+   "text": "농장에서 닭에게, 무엇을 먹이는지",
+   "purpose": "세 번째 팁으로 농장의 닭에게 무엇을 먹이는지 확인하라고 알려준다",
+   "seconds": 15.0,
+   "note": "발표자가 달걀을 들고 사료에 대해 설명하는 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "TIP 3",
+   "shot": "detail",
+   "text": "농장의 달갑이 너을 좋겠지",
+   "purpose": "달걀의 단백질 함량이 더 높은지 확인하라고 강조한다",
+   "seconds": 10.0,
+   "note": "발표자가 계속 달걀에 대한 설명을 이어가는 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hold",
+   "text": "농장에서 닭에게, 무엇을 먹이는지",
+   "purpose": "마지막으로 달걀 선택 시 무엇을 먹이는지 확인하라고 재차 강조한다",
+   "seconds": 5.0,
+   "note": "썸네일 장면으로 마무리하며 핵심 메시지 반복"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "223만 조회수를 기록한 이유는 '모르면 손해'라는 강력한 부정 회피 프레임으로 클릭을 유도했기 때문",
+  "일상적으로 구매하는 달걀이라는 친숙한 품목에 대한 실용 정보를 3가지로 명확히 구조화해 시청 완료율을 높임",
+  "마트 매대 앞에서 실제 제품을 들고 설명하는 현장감과 전문가 이미지가 신뢰도를 높임"
+ ],
+ "copy_style": "반말·숫자 강조·손해 회피 프레임",
+ "template": "고르는법",
+ "item": "달걀",
+ "category": "축산",
+ "relevant": true,
+ "meta": {
+  "id": "8FLYjonhcJc",
+  "title": "달걀 살 때 모르면 손해보는 3가지 (고정댓글 확인)",
+  "length": 60,
+  "channel": "다이어트 과학자 최겸 Gyum Choi",
+  "views": 2230000,
+  "description": ""
+ },
+ "via": "fal"
+}

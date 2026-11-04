@@ -1,0 +1,72 @@
+{
+  "name": "짧은 상품 루프 (8~12초)",
+  "kind": "자동",
+  "layout": "letterbox",
+  "when": "출하 당일 알림, 재입고, 마감 임박. 매일 올려도 부담 없는 포맷",
+  "evidence": "틱톡 제철김PD 햇 호박고구마 130만 / 문경 사과농장 8초 1만 / 해남 황금배추 7만",
+  "title": [
+    "{title1}",
+    "{title2}"
+  ],
+  "info": "{info|{price_text|주문은 프로필 링크}}",
+  "segments": [
+    {
+      "kind": "HOOK",
+      "say": "{line1}",
+      "source": "{source1|ai:hero}"
+    },
+    {
+      "kind": "CTA",
+      "say": "{line2}",
+      "source": "{source2|ai:crave}",
+      "optional": true
+    }
+  ],
+  "fields": [
+    {
+      "key": "title1",
+      "label": "제목 1줄 (흰색)",
+      "type": "text",
+      "max": 13,
+      "hint": "품목명이 들어간 주제. 예: 꿀참외 고르는 법"
+    },
+    {
+      "key": "title2",
+      "label": "제목 2줄 (노란색)",
+      "type": "text",
+      "max": 13,
+      "hint": "궁금증을 만드는 한 마디. 예: 딱 3가지만 보세요"
+    },
+    {
+      "key": "line1",
+      "label": "첫 줄",
+      "type": "text",
+      "hint": "상품 한 줄. 예: 산지에서 고른 참외, *오늘* 출발해요."
+    },
+    {
+      "key": "source1",
+      "label": "첫 장면",
+      "type": "source",
+      "default": "ai:hero"
+    },
+    {
+      "key": "line2",
+      "label": "둘째 줄",
+      "type": "text",
+      "hint": "주문 안내. 예: 주문은 *프로필 링크*예요."
+    },
+    {
+      "key": "source2",
+      "label": "둘째 장면",
+      "type": "source",
+      "default": "ai:crave"
+    },
+    {
+      "key": "info",
+      "label": "아래 노란 바",
+      "type": "text",
+      "max": 22,
+      "hint": "주문 안내 한 줄. 예: 이렇게 고른 참외, 프로필 링크에"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+ "summary": "남대문시장 과일가게 이모가 참외를 빠르고 깔끔하게 껍질 깎는 과정을 숙련된 손기술로 보여주는 ASMR 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "시장",
+ "music": "없음",
+ "hook": {
+  "text": "과일가게 이모의 숙련된 참외 깎기 시작",
+  "type": "현장"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "칼로 참외를 반으로 자르며 숙련된 손기술을 처음 보여준다",
+   "seconds": 3.0,
+   "note": "도마 위 참외를 큰 칼로 반 가르기, 손만 보임 (추정: 영상 시작)"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "참외를 세로로 세워 껍질을 얇게 벗겨내는 첫 단계를 보여준다",
+   "seconds": 10.0,
+   "note": "참외 반쪽을 세워 칼로 껍질 벗기기, 손의 움직임과 벗겨지는 껍질 클로즈업"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "참외 꼭지 부분을 손으로 정리하며 디테일한 손질 과정을 보여준다",
+   "seconds": 8.0,
+   "note": "손으로 참외 윗부분(꼭지) 정리, 벗겨진 껍질들이 도마에 쌓임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "깔끔하게 껍질 벗긴 참외를 들고 얼굴과 함께 완성품을 자랑스럽게 보여준다",
+   "seconds": 8.0,
+   "note": "분홍색 옷 입은 이모가 웃으며 껍질 벗긴 참외를 카메라 앞에 들어보임, 얼굴 나옴"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "완성된 참외의 깨끗한 상태를 마지막으로 클로즈업하여 결과물을 강조한다",
+   "seconds": 13.0,
+   "note": "다시 손만 나오며 깎아진 참외와 껍질들을 보여줌, 도마 위 최종 결과물 (추정: 마무리 장면)"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "현장의 생생한 칼질 소리와 과일 껍질 벗겨지는 ASMR이 몰입감을 높인다",
+  "숙련된 손기술이 빠르게 진행되면서도 안정적인 구도로 시원함을 준다",
+  "판매자의 얼굴과 미소를 중간에 보여줘 신뢰감과 친근함을 동시에 전달한다"
+ ],
+ "copy_style": "자막 없이 현장 소리와 숙련된 작업만으로 전달하는 무언의 설득",
+ "template": "깎기ASMR",
+ "item": "참외",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "e2YHHl5XWk0",
+  "title": "과일가게 이모 참외깎기",
+  "length": 42,
+  "channel": "Foodie Mama",
+  "views": 4290000,
+  "description": "풀영상 다양한 과일 자르기 https://youtu.be/NlC6SauXCQc\n\n🔎Information\n\n▶Price : KRW 2,000  (USD 1.5)\n수박 - 2,000원 \n멜론 - 2,000원\n참외 - 2,000원\n파인애플 - 1,500원\n\n▶Location : 서울특별시 중구 남대문시장4길 28-12 (남대문시장 과일)\n- google map : https://goo.gl/maps/XnaJ3EPU4NzQKRjw7\n\n#shorts"
+ },
+ "via": "fal"
+}

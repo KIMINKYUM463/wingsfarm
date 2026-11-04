@@ -1,0 +1,88 @@
+{
+ "summary": "일식 셰프가 TV 스튜디오에서 장어를 손질하는 방법을 시연하고 출연자들이 반응하는 예능 클립",
+ "layout": "letterbox",
+ "title_lines": [
+  "일식 셰프가 보여주는",
+  "장어 손질하는 방법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "스튜디오",
+ "music": "경쾌한",
+ "hook": {
+  "text": "일식 셰프가 보여주는 장어 손질하는 방법",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "일식 셰프가 장어 손질 시연을 시작한다는 것을 알린다",
+   "seconds": 5.0,
+   "note": "셰프가 주방 카운터에서 손질 도구를 들고 있는 장면 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "꼭~ 큰애 살려 대장! 살아 절망을 제가하는 방법",
+   "purpose": "셰프가 장어 손질 방법을 설명하며 시연한다",
+   "seconds": 10.0,
+   "note": "여성 출연자가 셰프의 설명을 듣고 있는 반응 샷, 하단 자막 있음"
+  },
+  {
+   "role": "SHOW",
+   "label": "1단",
+   "shot": "prep",
+   "text": "뼈를 흔들하게 걸라 먹기 편하게 하는 칼질!",
+   "purpose": "장어를 손으로 잡고 분리하는 핵심 동작을 보여준다",
+   "seconds": 12.0,
+   "note": "금발 출연자가 양손을 벌려 동작을 따라하며 설명, '1단' 라벨과 하단 자막"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "손질 기술의 디테일을 강조하며 반응을 유도한다",
+   "seconds": 8.0,
+   "note": "출연자가 놀란 표정으로 반응하는 클로즈업 (추정)"
+  },
+  {
+   "role": "REVEAL",
+   "label": "1단",
+   "shot": "detail",
+   "text": "뼈를 흔들하게 걸라 먹기 편하게 하는 칼질!",
+   "purpose": "뼈를 흔들하게 가르는 칼질 기술을 재강조한다",
+   "seconds": 7.0,
+   "note": "동일 출연자가 손동작을 하며 기술을 설명하는 장면, '1단' 라벨 반복"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "유명 셰프의 전문성이 권위를 주고 호기심을 자극한다",
+  "출연자들의 과장된 반응이 재미 요소를 더해 시청 유지율을 높인다",
+  "letterbox 상단 제목과 하단 자막으로 핵심 내용을 반복 강조해 숏폼에 최적화되어 있다"
+ ],
+ "copy_style": "해요체와 명사형 종결로 전문성과 친근함을 혼합",
+ "template": "손질법",
+ "item": "장어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "Mws8nwP7cI4",
+  "title": "일식 셰프가 보여주는 장어 손질하는 방법 #shorts #냉장고를부탁해",
+  "length": 42,
+  "channel": "예능내컷",
+  "views": 5250000,
+  "description": "#shorts #냉장고를부탁해  #김성주 #안정환 #이연복 #최현석 \n#김풍 #정호영 #에드워드리 #최강록 #이미영 #박은영"
+ },
+ "via": "fal"
+}

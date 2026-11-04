@@ -1,0 +1,85 @@
+{
+ "summary": "자연산과 양식 연어를 초밥으로 비교하며 먹고 자라기 때문에 맛이 다르다는 비밀을 알려주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "자연산 (생)연어는",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "자연산 (생)연어는",
+   "purpose": "자연산 생연어에 대한 궁금증을 유발하며 영상을 시작한다",
+   "seconds": 3.0,
+   "note": "나무 도마 위 연어 클로즈업, 왼쪽 하단에 진행자 원형 프로필 삽입"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "의외로",
+   "purpose": "자연산 연어로 만든 초밥의 외관과 특징을 보여준다",
+   "seconds": 7.0,
+   "note": "검은 접시 위 흰 초밥(연어 없이 밥과 와사비만) 여러 개 배치, 젓가락으로 하나씩 집는 손 동작"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "detail",
+   "text": "먹고 자라기 때문에",
+   "purpose": "양식 연어 초밥과 비교하여 시각적 차이를 강조한다",
+   "seconds": 8.0,
+   "note": "같은 검은 접시에 오렌지색 연어 초밥들이 배치되어 있고 젓가락으로 집는 장면"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "crave",
+   "text": "맛의",
+   "purpose": "토핑이 올라간 완성된 연어 초밥의 풍성함을 보여준다",
+   "seconds": 7.0,
+   "note": "파와 소스가 토핑된 연어 초밥들, 젓가락으로 하나씩 집는 클로즈업"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "먹고 자라기 때문에",
+   "purpose": "최종 완성된 연어 초밥 세트를 보여주며 마무리한다",
+   "seconds": 7.0,
+   "note": "추정: 흰 초밥과 연어 초밥이 함께 배치된 최종 비교 컷"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "자연산과 양식의 비교라는 명확한 구조로 궁금증을 유발하고 해소함",
+  "초밥이라는 완성된 요리 형태로 보여줘 시각적 만족도가 높음",
+  "진행자 프로필을 삽입해 신뢰도와 채널 정체성을 강화함"
+ ],
+ "copy_style": "단정적 설명형, 핵심 키워드 강조",
+ "template": "비교",
+ "item": "연어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "sYUXOpJkJxA",
+  "title": "일반인은 모르는 연어의 비밀",
+  "length": 32,
+  "channel": "배정길의 비밀레시피",
+  "views": 6270000,
+  "description": "#shorts #연어 #푸드스토리"
+ },
+ "via": "fal"
+}

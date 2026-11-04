@@ -1,0 +1,87 @@
+{
+ "summary": "광어 오로시(뼈 발라내기)의 기본 순서를 단계별로 시연하는 손질 튜토리얼 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "광어 오로시의 기초"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "초보자를 기쁘게 하는 광어 오로시의 기초",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "초보자를 기쁘게",
+   "purpose": "초보자도 할 수 있는 광어 손질법이라는 점을 강조하며 시청자의 관심을 유도한다",
+   "seconds": 3.0,
+   "note": "빨간 도마 위 광어 전체 모습, 왼쪽에 작업 환경 일부 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "detail",
+   "text": "이 부분",
+   "purpose": "광어의 특정 부위(머리 근처)에 칼을 넣는 시작점을 알려준다",
+   "seconds": 12.0,
+   "note": "추정: 칼날이 광어 머리 근처 부위에 위치, 빨간 원으로 시작점 표시, 손만 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "prep",
+   "text": "뼈가 깨집니다",
+   "purpose": "칼로 뼈를 따라 살을 분리하는 과정을 보여준다",
+   "seconds": 15.0,
+   "note": "칼이 광어 몸통 중앙을 따라 진행, 손만 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "3",
+   "shot": "detail",
+   "text": "끝에서 가지고 오세요",
+   "purpose": "뼈에서 살을 가지고 오는 마무리 동작을 설명한다",
+   "seconds": 15.0,
+   "note": "추정: 분리된 광어 살을 들어올리는 장면, 흰 살이 드러남, 손만 보임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "뼈가 깨집니다",
+   "purpose": "완성된 광어 오로시 결과물을 보여주며 성취감을 전달한다",
+   "seconds": 14.0,
+   "note": "깔끔하게 손질된 광어 전체, 빨간 도마 위 배치"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "핵심 키워드('초보자를 기쁘게', '이 부분', '뼈가 깨집니다')를 노란색으로 강조해 시각적 집중도를 높였다",
+  "59초라는 짧은 시간에 시작-중간-끝을 명확히 보여주는 3단계 구조로 완결성을 제공했다",
+  "손만 보이는 클린한 구도와 빨간 도마로 광어가 돋보이게 하여 전문성과 신뢰감을 동시에 전달했다"
+ ],
+ "copy_style": "반말 + 명령형, 핵심 동작만 짧게 강조",
+ "template": "손질법",
+ "item": "광어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "NdNLx75IBQA",
+  "title": "광어 오로시의 기초",
+  "length": 59,
+  "channel": "생선장수 박장군",
+  "views": 6170000,
+  "description": "#광어 #오로시"
+ },
+ "via": "fal"
+}

@@ -1,0 +1,85 @@
+{
+ "summary": "일식 쉐프가 주방에서 전복을 손질하는 전문 기법을 단계별로 시연하며 알려 주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "없음",
+ "hook": {
+  "text": "일식 쉐프들은 전복 다 이렇게 손질 합니다",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "전복 손질 있지",
+   "purpose": "일식 쉐프가 전복 손질법을 알려주겠다고 권위를 내세우며 시청자 주목을 끈다",
+   "seconds": 3.0,
+   "note": "쉐프복 입은 남성이 주방에서 전복을 들고 있는 정면 구도"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "이래 쉬어 뜰어뻬면돼",
+   "purpose": "전복 껍질에서 살을 분리하는 첫 번째 단계를 설명한다",
+   "seconds": 12.0,
+   "note": "전복을 들고 숟가락으로 분리하는 방법 시연, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "prep",
+   "text": "숟가락 한개만~",
+   "purpose": "전복 내장 제거와 손질 방법을 시연한다",
+   "seconds": 15.0,
+   "note": "전복을 들고 숟가락 사용법 강조, 추정"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "(깔끔하게 분리된전복)",
+   "purpose": "손질된 전복의 깨끗한 내부를 클로즈업으로 보여준다",
+   "seconds": 10.0,
+   "note": "손으로 전복을 들어 내부의 깨끗하게 분리된 상태를 클로즈업"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "prep",
+   "text": "숟가락 한개만~",
+   "purpose": "마무리 손질 팁을 전달하며 완성된 전복을 보여준다",
+   "seconds": 14.0,
+   "note": "다시 주방 전체 구도로 전환하여 손질된 전복을 들고 있음"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "일식 쉐프라는 전문가 권위로 신뢰를 주고 '이렇게만 하면 된다'는 간단함을 강조해 클릭을 유도한다",
+  "숟가락 하나만 있으면 된다는 단순한 도구 강조로 누구나 따라할 수 있다는 접근성을 제공한다",
+  "주방 현장감과 쉐프의 직접 시연으로 실용적이고 믿을 만한 정보라는 인상을 준다"
+ ],
+ "copy_style": "반말 구어체로 친근하게 설명하며 핵심 도구(숟가락)를 반복 강조",
+ "template": "손질법",
+ "item": "전복",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "A1y8TWc9Ajg",
+  "title": "일식 쉐프들은 전복 다 이렇게 손질 합니다!",
+  "length": 54,
+  "channel": "수부해TV subuhae",
+  "views": 3130000,
+  "description": "#전복 #전복손질 #수부해 #수산물 #수산물정보 #먹방 #전복요리 #전복구이 #전복버터구이"
+ },
+ "via": "fal"
+}

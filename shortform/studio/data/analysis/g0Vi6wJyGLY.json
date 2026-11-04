@@ -1,0 +1,85 @@
+{
+ "summary": "생굴을 맛있게 먹는 방법을 시장에서 두 명의 진행자가 실연하며 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "시장",
+ "music": "경쾌한",
+ "hook": {
+  "text": "야! (시작 장면)",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "야!",
+   "purpose": "시장 전문가가 굴 먹는 법을 알려주겠다고 시청자의 주목을 끈다",
+   "seconds": 10.0,
+   "note": "선글라스 착용한 진행자가 시장 배경에서 카메라를 보며 말함 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "아저씨들이 굴을 먹는데",
+   "purpose": "굴을 손에 들고 어떻게 먹는지 클로즈업으로 보여준다",
+   "seconds": 12.0,
+   "note": "안경 착용한 다른 진행자가 굴을 손에 들고 클로즈업으로 보여줌"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "hold",
+   "text": "외국에서",
+   "purpose": "굴의 상태나 특정 먹는 방법을 설명한다",
+   "seconds": 12.0,
+   "note": "첫 번째 진행자가 굴을 손에 들고 보여주며 설명함"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "여기다 먹겠지?",
+   "purpose": "굴 먹는 구체적인 방법이나 소스 사용법을 보여준다",
+   "seconds": 12.0,
+   "note": "손에 병(소스 추정)을 들고 있는 장면, 굴과 함께 촬영"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hold",
+   "text": "외국에서",
+   "purpose": "최종적으로 완성된 굴 먹는 방법을 보여준다",
+   "seconds": 10.0,
+   "note": "다시 첫 번째 진행자가 굴을 들고 최종 방법 시연 (추정)"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "시장 현장에서 촬영하여 전문성과 신뢰감을 동시에 전달함",
+  "두 명의 진행자가 번갈아 등장하며 역동적인 구성을 만듦",
+  "굴이라는 계절 수산물에 대한 실용적인 정보를 제공하여 공유 가치가 높음"
+ ],
+ "copy_style": "반말 구어체, 친근한 대화형 말투",
+ "template": "손질법",
+ "item": "생굴",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "g0Vi6wJyGLY",
+  "title": "생굴을 가장 맛있게 먹는 방법",
+  "length": 56,
+  "channel": "마법소년  김셰프",
+  "views": 1470000,
+  "description": "#oysters #shorts #요리 #레시피"
+ },
+ "via": "fal"
+}

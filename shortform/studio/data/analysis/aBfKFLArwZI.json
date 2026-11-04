@@ -1,0 +1,85 @@
+{
+ "summary": "미역을 맹물에 불리지 말고 쌀뜨물에 불려야 비린내가 없고 풍미가 좋다는 조리 팁을 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "아직도 미역을 맹물에 불리나요?",
+  "type": "다들속았다"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "아직도 미역을 맹물에 불리나요?",
+   "purpose": "미역을 맹물에 불리는 잘못된 방법을 질문 형태로 지적한다",
+   "seconds": 3.0,
+   "note": "냄비에 마른 미역과 맹물이 담긴 모습, 손만 보임"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "아직도 미역을 맹물에 불리나요?",
+   "purpose": "맹물 대신 쌀뜨물을 사용하는 것이 올바른 방법임을 알려준다",
+   "seconds": 3.0,
+   "note": "쌀뜨물과 미역이 함께 담긴 냄비, 추정: 맹물과 대비되는 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "미역국이 맛이 없는 이유 비린내도 남니다",
+   "purpose": "쌀뜨물에 미역을 불리면 맛이 없는 비린내가 남지 않는다고 설명한다",
+   "seconds": 4.0,
+   "note": "불린 미역이 냄비에 담긴 클로즈업, 녹색 자막"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "detail",
+   "text": "비린내도 잡고 미역국의 풍미",
+   "purpose": "비린내도 잡고 미역국의 풍미를 높이는 방법임을 강조한다",
+   "seconds": 4.0,
+   "note": "쌀뜨물에 불린 미역이 익어가는 모습, 쌀알이 보임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "미역국이 맛이 없는 이유 비린내도 남니다",
+   "purpose": "최종 결과물로 미역국이 맛있게 완성되었음을 보여준다",
+   "seconds": 4.0,
+   "note": "표지 이미지, 완성된 미역국의 모습, 추정"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "잘못된 상식을 '아직도~?'라는 질문형으로 제시해 즉각적인 관심을 유도함",
+  "맹물 vs 쌀뜨물 대비 구조로 잘못된 방법과 올바른 방법을 명확히 보여줌",
+  "18초 짧은 길이에 핵심 팁만 압축해 끝까지 시청 유도"
+ ],
+ "copy_style": "질문형 후크로 시작해 문제점과 해결책을 강조하는 반말체",
+ "template": "보관경고",
+ "item": "미역",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "aBfKFLArwZI",
+  "title": "#미역을맹물에불리지마십시요#미역국의비법#건강한반찬#꼬북등산tv",
+  "length": 18,
+  "channel": "꼬북등산tv",
+  "views": 3610000,
+  "description": ""
+ },
+ "via": "fal"
+}

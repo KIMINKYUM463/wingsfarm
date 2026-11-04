@@ -1,0 +1,85 @@
+{
+ "summary": "고구마를 신문지 없이 박스에 보관하지 말고, 상자에 구멍을 뚫고 종이로 감싸서 넣으라고 알려 주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "신문지 보지 마세요 다 썩어요!!!",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "완전꿀팁 신문지 보지 마세요 다 썩어요!!!",
+   "purpose": "신문지로 고구마를 보관하면 썩는다고 경고한다",
+   "seconds": 3.0,
+   "note": "고구마 여러 개가 더미로 쌓여 있고, 분홍색 라벨과 강렬한 경고 자막이 보임"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hero",
+   "text": "상자에 작은구멍 여러개 뚫어주세요",
+   "purpose": "박스에 그냥 넣으면 안 된다고 알려 준다",
+   "seconds": 4.0,
+   "note": "추정: 구멍 뚫린 종이 박스와 고구마가 보임. 환기 구멍의 중요성을 강조하는 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "이 종이에 싸서 상자에 넣고",
+   "purpose": "종이로 고구마를 감싸서 상자에 넣으라고 시연한다",
+   "seconds": 4.0,
+   "note": "손이 고구마를 종이(신문지가 아닌 다른 종이)로 감싸서 박스에 넣는 동작이 보임"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "store",
+   "text": "상자에 작은구멍 여러개 뚫어주세요",
+   "purpose": "올바른 보관 방법의 최종 결과를 보여 준다",
+   "seconds": 4.0,
+   "note": "추정: 구멍 뚫린 박스에 종이로 감싼 고구마가 담긴 최종 모습"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "완성된 보관 방법을 다시 한번 강조한다",
+   "seconds": 4.0,
+   "note": "추정: 최종 보관 상태를 다시 보여주며 마무리하는 장면"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "신문지 보관의 실패 경험을 강하게 경고('다 썩어요!!!')하여 즉각적인 주의를 끈다",
+  "박스에 구멍 뚫기, 종이로 감싸기 등 구체적이고 실행 가능한 해결책을 단계별로 보여 준다",
+  "19초 안에 잘못된 방법과 올바른 방법을 모두 담아 짧고 명확하게 전달한다"
+ ],
+ "copy_style": "반말 경고형, 명령어 강조(~마세요, ~주세요)",
+ "template": "보관경고",
+ "item": "고구마",
+ "category": "채소",
+ "relevant": true,
+ "meta": {
+  "id": "gdzwJbnMGtk",
+  "title": "고구마보관방법 종결할께요 제발 박스에 그냥 넣지마세요 #고구마보관법 #군고구마",
+  "length": 19,
+  "channel": "푸드득",
+  "views": 154002,
+  "description": ""
+ },
+ "via": "fal"
+}

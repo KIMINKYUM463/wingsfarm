@@ -1,0 +1,85 @@
+{
+ "summary": "살아있는 참문어를 단계별로 손질하는 과정을 손만 보이게 클로즈업으로 보여주며 구매 링크를 안내하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "없음",
+ "hook": {
+  "text": "살아있는 문어 손질하는 법",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "살아있는 문어의 생생한 모습을 클로즈업으로 보여주며 시청자의 관심을 끈다",
+   "seconds": 15.0,
+   "note": "살아있는 갈색 참문어를 손으로 잡고 있는 클로즈업, 문어의 질감과 생동감 강조 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "문어의 내부를 뒤집어 내장을 제거하는 첫 번째 단계를 보여준다",
+   "seconds": 25.0,
+   "note": "문어 머리 부분을 뒤집어 내장과 먹물주머니 등을 제거하는 손 클로즈업 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "문어의 눈과 입 부분을 제거하는 세부 손질 과정을 보여준다",
+   "seconds": 25.0,
+   "note": "문어의 눈 부분을 칼이나 손으로 제거하는 클로즈업, 검은 눈알이 선명하게 보임 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "손질이 완료된 깨끗한 문어의 모습을 보여준다",
+   "seconds": 25.0,
+   "note": "손질 완료된 하얀 문어 다리를 손으로 잡고 있는 모습, 깨끗하게 정리된 상태 (추정)"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "pack",
+   "text": "맛은 후",
+   "purpose": "쇼핑몰 로고를 보여주며 구매를 유도한다",
+   "seconds": 16.0,
+   "note": "오른쪽 하단에 '맛은 후' 로고가 보이는 화면, 상품 구매 링크 안내 (추정)"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "손 클로즈업만으로 손질 과정을 명확하게 보여주어 실용적 정보 전달이 확실함",
+  "ASMR 형식의 현장음과 생생한 문어 질감이 신선도와 전문성을 효과적으로 전달함",
+  "106초 동안 핵심 손질 과정만 압축해 지루하지 않고 쇼핑몰 링크로 바로 연결되는 판매 동선이 명확함"
+ ],
+ "copy_style": "자막 없이 제목과 영상만으로 설명하는 간결한 스타일",
+ "template": "손질법",
+ "item": "참문어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "H699aIwx2MA",
+  "title": "살아있는 문어 손질방법 How to clean live octopus",
+  "length": 106,
+  "channel": "인어교주해적단 The Pirates",
+  "views": 1825750,
+  "description": "살아있는 참문어는 아래  링크 쇼핑몰에서 겟!\nhttp://bit.ly/2uMGlsa"
+ },
+ "via": "fal"
+}

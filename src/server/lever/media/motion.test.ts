@@ -181,6 +181,10 @@ describe('무료 영상 컷 편집', () => {
     assert.equal(parseStockPicks({ videos: [1, 2, 3, 4].map((videoId) => ({ source: 'pexels', videoId })) }), null);
     assert.equal(parseStockPicks({ videos: [{ source: 'youtube', videoId: 1 }] }), null);
     assert.equal(parseStockPicks({ videos: [] }), null);
+    assert.deepEqual(parseStockPicks({ videos: [{ source: 'upload', videoId: 42 }, { source: 'pexels', videoId: 7 }] }), [
+      { source: 'upload', videoId: 42 },
+      { source: 'pexels', videoId: 7 },
+    ]);
   });
 });
 

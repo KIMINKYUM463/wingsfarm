@@ -1,0 +1,85 @@
+{
+ "summary": "마늘을 대량으로 손질하고 소분 보관하는 전체 과정을 단계별로 시연하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "제가해줄요",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "제가해줄요",
+   "purpose": "대량의 마늘을 쉽게 처리해주겠다며 시청자의 관심을 끈다",
+   "seconds": 3.0,
+   "note": "주방에서 파란 장갑 낀 발표자가 대량의 마늘을 쟁반에 붓는 장면, 추정: 시작 후크"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 1",
+   "shot": "prep",
+   "text": "",
+   "purpose": "마늘 껍질을 벗기는 첫 단계를 보여준다",
+   "seconds": 12.0,
+   "note": "추정: 발표자가 마늘 껍질을 벗기고 손질하는 과정, 쟁반 위에 껍질 벗긴 마늘이 놓여있음"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 2",
+   "shot": "detail",
+   "text": "비산 이유가",
+   "purpose": "손질한 마늘의 비산 이유를 설명한다",
+   "seconds": 15.0,
+   "note": "발표자가 손질된 마늘을 보여주며 설명, 클로즈업으로 디테일 강조"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 3",
+   "shot": "pack",
+   "text": "다 지퍼백으로!!!",
+   "purpose": "마늘을 지퍼백에 소분하여 담는 방법을 시연한다",
+   "seconds": 15.0,
+   "note": "발표자가 여러 개의 지퍼백에 마늘을 나누어 담는 장면, 테이블 위에 다양한 용기와 지퍼백 배치"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "store",
+   "text": "비산 이유가",
+   "purpose": "최종적으로 소분 완료된 마늘 보관 상태를 보여준다",
+   "seconds": 14.0,
+   "note": "추정: 완성된 소분 마늘들을 정리하여 보여주는 최종 결과 장면, 표지 썸네일과 유사한 구도"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "1190만 조회수는 대량 마늘 손질이라는 공감 가능한 주제와 실용성 덕분",
+  "발표자가 직접 얼굴을 드러내고 친근하게 말하며 신뢰도를 높임",
+  "핵심 키워드(지퍼백, 비산 이유)를 큰 자막으로 강조해 짧은 시간에 정보 전달이 명확함"
+ ],
+ "copy_style": "반말 구어체로 친근하게 설명하며 핵심 키워드 강조",
+ "template": "손질법",
+ "item": "마늘",
+ "category": "채소",
+ "relevant": true,
+ "meta": {
+  "id": "GUcNJX_nOrE",
+  "title": "마늘 소분/보관 팁 이걸로 종결! #식재료소분법 #식재료보관팁 #음식소분 #마늘보관법 #마늘소분 #다진마늘보관 #Foodstorage #FoodStorageTips #생활꿀팁",
+  "length": 59,
+  "channel": "푸디젠 Foodie Jen",
+  "views": 11930000,
+  "description": ""
+ },
+ "via": "fal"
+}

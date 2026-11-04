@@ -1,0 +1,88 @@
+{
+ "summary": "생굴을 올바른 세척법으로 쉽고 깨끗하게 씻는 방법을 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [
+  "온갖 맛이 모두는",
+  "'올바른' 굴 세척법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "온갖 맛이 모두는 '올바른' 굴 세척법",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hold",
+   "text": "온갖 맛이 모두는\n'올바른' 굴 세척법",
+   "purpose": "손에 깨끗한 생굴을 올려 올바른 세척법이 있음을 제시한다",
+   "seconds": 5.0,
+   "note": "손바닥 위 깨끗한 생굴 클로즈업, 싱크대 배경"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "",
+   "purpose": "볼에 담긴 생굴을 보여주며 세척 준비 단계를 제시한다",
+   "seconds": 5.0,
+   "note": "추정: 볼에 담긴 생굴들, 손이 볼을 들고 있음"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "detail",
+   "text": "20~30초 정도!",
+   "purpose": "생굴을 20~30초 정도 씻어야 한다는 핵심 팁을 전달한다",
+   "seconds": 8.0,
+   "note": "볼에 담긴 생굴과 손이 세척 동작하는 장면, 파란색 볼과 스테인리스 볼 2개 보임"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "hook",
+   "text": "응응응..!",
+   "purpose": "출연자가 직접 등장해 세척법의 중요성을 강조한다",
+   "seconds": 7.0,
+   "note": "청록색 니트 입은 남성 출연자가 주방에서 설명하는 모습"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "20~30초 정도!",
+   "purpose": "올바른 세척 시간을 다시 강조하며 마무리한다",
+   "seconds": 8.0,
+   "note": "세척 과정 반복 장면, 손이 볼에서 굴을 씻는 클로즈업"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "'올바른'이라는 단어로 기존 방법이 틀렸을 수 있다는 호기심을 유발",
+  "20~30초라는 구체적인 숫자로 실행 가능한 팁 제공",
+  "깨끗한 생굴을 손에 올린 결과물을 먼저 보여줘 신뢰도 상승"
+ ],
+ "copy_style": "반말, 구체적 숫자 강조, '올바른' 키워드로 권위 부여",
+ "template": "손질법",
+ "item": "굴",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "bMVLav-RaQY",
+  "title": "생각보다 쉬운 #생굴씻는법 🙌 #굴 #생굴 #굴씻는법 #생굴세척 #굴손질법 #shorts",
+  "length": 33,
+  "channel": "땡큐파머스",
+  "views": 1440000,
+  "description": ""
+ },
+ "via": "fal"
+}

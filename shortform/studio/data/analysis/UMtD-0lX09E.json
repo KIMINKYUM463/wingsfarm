@@ -1,0 +1,85 @@
+{
+ "summary": "뉴질랜드 굴 양식장 현장부터 고급 레스토랑 조리·시식까지 보여주며 한국 굴 수출이 어려운 이유를 설명하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "face",
+ "setting": "양식장",
+ "music": "경쾌한",
+ "hook": {
+  "text": "우리나라가 굴 수출 못하는 이유",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "origin",
+   "text": "뉴질랜드에서",
+   "purpose": "뉴질랜드 굴 양식장 현장을 보여주며 수출 가능한 고급 굴 생산 환경을 소개한다",
+   "seconds": 10.0,
+   "note": "추정: 양식장 전경과 노란 수확 바구니에 굴이 담긴 모습, 작업자가 굴을 다루는 장면"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "고작 한 접에",
+   "purpose": "고급 레스토랑에서 제공되는 고품질 굴의 모습을 클로즈업으로 보여준다",
+   "seconds": 12.0,
+   "note": "굴 껍질이 열린 클로즈업 샷, 소스와 함께 제공되는 접시 구성"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "crave",
+   "text": "굴이 거의 나지 않는",
+   "purpose": "여성이 고급 굴을 직접 먹는 장면으로 식욕을 자극하고 품질을 간접 증명한다",
+   "seconds": 10.0,
+   "note": "여성 얼굴 중심 구도, 손으로 굴을 입에 가져가는 모습, 접시에 여러 개의 굴"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "origin",
+   "text": "메트를 법니다",
+   "purpose": "대량 생산 현장을 보여주며 한국 굴과의 차이점을 부각시킨다",
+   "seconds": 12.0,
+   "note": "추정: 작업자가 노란 바구니에 굴을 담는 현장 작업 장면, 대량 생산 시스템"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "crave",
+   "text": "굴이 거의 나지 않는",
+   "purpose": "다시 한번 시식 장면으로 마무리하며 고급 굴의 이미지를 각인시킨다",
+   "seconds": 10.0,
+   "note": "썸네일과 동일한 장면, 여성이 굴을 먹는 클로즈업"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "부정형 제목('수출 못하는 이유')으로 호기심을 유발하고 클릭을 유도함",
+  "양식장 현장-고급 레스토랑-시식의 3단 구성으로 품질과 가치를 입체적으로 전달함",
+  "먹방 요소(여성 시식 장면)를 활용해 감각적 만족과 정보를 동시에 제공함"
+ ],
+ "copy_style": "핵심어를 노란색으로 강조하는 간결한 서술형 자막",
+ "template": "현장리포트",
+ "item": "굴",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "UMtD-0lX09E",
+  "title": "우리나라가 굴 수출 못하는 이유",
+  "length": 54,
+  "channel": "더농부",
+  "views": 2560000,
+  "description": "#굴 #양식장 #양식굴 #굴양식 #oysters #바다굴"
+ },
+ "via": "fal"
+}

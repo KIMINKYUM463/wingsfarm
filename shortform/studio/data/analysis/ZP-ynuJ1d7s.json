@@ -1,0 +1,85 @@
+{
+ "summary": "마트 연어를 소금으로 절여 식초 물에 씻으면 일식집처럼 담백한 맛을 낼 수 있다는 손질법을 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "마트 연어를 일식집 맛으로 만드는 방법",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "앞으로 절에서",
+   "purpose": "마트에서 산 연어를 손에 들고 일식집처럼 만드는 방법이 있다고 흥미를 유발한다",
+   "seconds": 8.0,
+   "note": "주방에서 출연자가 연어 팩을 들고 설명하는 모습, 얼굴과 상체가 보임 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "반을 갈라서",
+   "purpose": "연어에 소금을 뿌려 절이는 첫 번째 단계를 보여준다",
+   "seconds": 10.0,
+   "note": "도마 위 연어를 칼로 자르는 클로즈업 장면, 손만 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "detail",
+   "text": "(식초 소금절인 연어) (생연어)",
+   "purpose": "소금으로 절인 연어와 생연어를 식초 물에 씻은 결과를 비교해 보여준다",
+   "seconds": 12.0,
+   "note": "나무 테이블 위 두 개의 접시에 각각 처리한 연어와 생연어가 담겨 있는 오버헤드 샷 (추정)"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "(생연어 시식)",
+   "purpose": "직접 시식하며 맛의 차이를 확인하고 만족스러운 반응을 보인다",
+   "seconds": 8.0,
+   "note": "출연자가 연어를 먹는 모습, 얼굴 클로즈업"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hero",
+   "text": "(식초 소금절인 연어) (생연어)",
+   "purpose": "완성된 두 가지 연어를 최종 비교하며 효과를 강조한다",
+   "seconds": 21.0,
+   "note": "썸네일 이미지, 두 접시의 연어를 오버헤드로 촬영한 대표 컷 (추정)"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "마트 연어라는 접근성 높은 재료를 일식집 퀄리티로 업그레이드할 수 있다는 실용적 가치 제공",
+  "소금 절임과 식초 세척이라는 간단하지만 효과적인 꿀팁을 단계별로 명확히 제시",
+  "처리 전후를 직접 비교하고 시식 반응까지 보여줘 신뢰도와 설득력 확보"
+ ],
+ "copy_style": "반말 존댓말 혼용, 단계별 지시형 말투로 따라하기 쉽게 설명",
+ "template": "손질법",
+ "item": "연어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "ZP-ynuJ1d7s",
+  "title": "마트 연어, 꼭 이렇게 하셔야 일식집 그 담백한 연어맛이 납니다! #shorts",
+  "length": 59,
+  "channel": "수부해TV subuhae",
+  "views": 3060000,
+  "description": "#연어 #생연어 #꿀팁"
+ },
+ "via": "fal"
+}

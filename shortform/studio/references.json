@@ -1,0 +1,81 @@
+{
+  "collected": "2026-11-01 유튜브 쇼츠 검색(검색어 47개) 조회수 상위에서 골랐다. 조회수는 수집 당시 기준.",
+  "hooks": {
+    "부정경고": {"label": "부정 경고", "formula": "제발 이런 {품목} 사지 마세요 / {행동}할 때 절대 {X} 하지 마세요"},
+    "숫자리스트": {"label": "숫자 리스트", "formula": "{품목} 고르는 법 N가지 / 딱 N가지만 보세요"},
+    "다들속았다": {"label": "다들 속았다", "formula": "전국민이 속았습니다 / 의외로 모르는 / 98%가 모르는"},
+    "내부자권위": {"label": "현장 사람의 비법", "formula": "농부님이 알려준 / 10년 장사꾼도 / 과수원 사장님의"},
+    "실패없음": {"label": "실패 없음", "formula": "이것만 보면 실패 없습니다 / 1초 만에 고르는"},
+    "질문리빌": {"label": "질문 → 공개", "formula": "{품목} 한 박스 얼마나 들어갈까요? / {X} 달라고 했더니..?!"},
+    "쉬움": {"label": "이렇게 쉬웠어?", "formula": "가위 필요 없어요 / 10초면 끝 / 세상 쉬운 {품목} 손질"},
+    "가격대비": {"label": "가격 대비", "formula": "{싼 것} vs {비싼 것} / 비쌀수록 맛있을까?"},
+    "만족감": {"label": "보는 맛 (만족감)", "formula": "말 없이 손 기술과 소리로 끝까지 보게 만든다"},
+    "현장": {"label": "현장 공개", "formula": "새벽 경매장 / 아무나 못하는 이유 / {장소} 꿀팁"},
+    "직접판매": {"label": "직접 판매", "formula": "{산지} {품목} 드셔보세요 / 판매합니다"}
+  },
+  "items": [
+    {"id": "QUwUTuEriXo", "template": "고르는법", "item": "수박", "category": "과일", "hook": "숫자리스트", "views": 25820000, "title": "수박 고르는 법 3가지", "why": "15초. 기준 3가지를 손으로 짚으며 빠르게. 1위 포맷의 정석"},
+    {"id": "MH2xdcK9mUo", "template": "고르는법", "item": "수박", "category": "과일", "hook": "다들속았다", "views": 4070000, "title": "의외로 모르는 꿀 수박 고르는 법 3가지", "why": "'의외로 모르는'으로 아는 사람도 붙잡는다"},
+    {"id": "lok22pKNLgg", "template": "고르는법", "item": "수박", "category": "과일", "hook": "다들속았다", "views": 4000000, "title": "수박 고르는 법(전국민이 속았습니다)", "why": "상식을 뒤집는 제목. 끝까지 봐야 답이 나온다"},
+    {"id": "lWG56cmEyKo", "template": "고르는법", "item": "수박", "category": "과일", "hook": "부정경고", "views": 3490000, "title": "절대 이런 수박 사지마세요! 완전 물수박 입니다", "why": "나쁜 예부터 보여 주는 부정 경고형"},
+    {"id": "UjIOdjdbOSI", "template": "고르는법", "item": "과일", "category": "과일", "hook": "내부자권위", "views": 3160000, "title": "10년 장사꾼도 울고 간 과일 고르는 비법", "why": "말하는 사람의 경력이 곧 훅"},
+    {"id": "8Y1ub1PXQDc", "template": "고르는법", "item": "샤인머스캣", "category": "과일", "hook": "숫자리스트", "views": 4010000, "title": "샤인머스켓 잘 고르는 방법!", "why": "제철 직전 검색량을 그대로 받는 고르는 법"},
+    {"id": "Lc_fuu81eT0", "template": "고르는법", "item": "귤", "category": "과일", "hook": "다들속았다", "views": 2670000, "title": "내가 산 귤은 무조건 맛있는 이유", "why": "'나만 아는 이유' 프레임. 품목명만 바꿔 쓰기 쉽다"},
+    {"id": "s78Z37vduqI", "template": "고르는법", "item": "사과", "category": "과일", "hook": "숫자리스트", "views": 1860000, "title": "단맛부터 새콤함까지! 사과 품종 총정리", "why": "품종 정리형. 여러 품종을 파는 가게에 맞다"},
+    {"id": "eQ1-EheSoBo", "template": "고르는법", "item": "과일", "category": "과일", "hook": "실패없음", "views": 1620000, "title": "과일 살 때 이것 만보면 실패 없습니다", "why": "'이것만'으로 짧고 확실한 약속"},
+    {"id": "uJKuXN3Ntbg", "template": "고르는법", "item": "참외", "category": "과일", "hook": "부정경고", "views": 1260000, "title": "이런 참외는 고르지 마세요", "why": "참외 1위. 부정 경고 한 줄"},
+    {"id": "8DjaypA0ZP4", "template": "고르는법", "item": "참외", "category": "과일", "hook": "숫자리스트", "views": 1120653, "title": "평생 요긴하게 써먹는 참외 고르는 방법!", "why": "'평생 써먹는'으로 저장을 부른다"},
+    {"id": "AcxzAp_a-ZE", "template": "고르는법", "item": "사과", "category": "과일", "hook": "내부자권위", "views": 680000, "title": "농부님의 맛있는 사과 고르는 꿀팁", "why": "농부가 직접 말하는 설정. 산지 판매자에게 가장 잘 맞는다"},
+    {"id": "w6Wn0_LuJxg", "template": "고르는법", "item": "딸기", "category": "과일", "hook": "실패없음", "views": 450000, "title": "1초만에 맛있는 딸기 고르는 법", "why": "'1초만에'로 시간 부담을 없앤다"},
+    {"id": "k5p8MbtjLNA", "template": "고르는법", "item": "귤", "category": "과일", "hook": "내부자권위", "views": 250000, "title": "과수원 사장님이 알려준 달디 단 귤 고르는 비법", "why": "출처를 밝히는 권위형. 위탁판매에 쓰기 좋다"},
+    {"id": "SCDMC4Z3dRQ", "template": "고르는법", "item": "복숭아", "category": "과일", "hook": "숫자리스트", "views": 200000, "title": "복숭아 잘 고르는 방법", "why": "제목이 곧 검색어. 검색 유입형"},
+    {"id": "yiOULOoSaZg", "template": "고르는법", "item": "고구마", "category": "채소", "hook": "숫자리스트", "views": 80000, "title": "고구마 잘 고르는 방법", "why": "채소 고르는 법. 경쟁이 적어 작은 계정도 노출되기 쉽다"},
+
+    {"id": "SPjvFC_UC10", "template": "보관경고", "item": "참외", "category": "과일", "hook": "부정경고", "views": 2180000, "title": "참외 보관할때 절대 베란다에 두지마세요!", "why": "흔한 습관을 콕 집어 경고. ※'당도 2배' 같은 수치는 따라 하지 않는다"},
+    {"id": "8LFCDY5dKo8", "template": "보관경고", "item": "감자", "category": "채소", "hook": "내부자권위", "views": 2590000, "title": "30년 감자 농사 시어머님 감자 보관 꿀팁", "why": "농사 경력 권위 + 보관법"},
+    {"id": "pLF-VwJt4Aw", "template": "보관경고", "item": "감자", "category": "채소", "hook": "부정경고", "views": 1720000, "title": "감자 베란다에 절대 두지 마세요! 평생 써먹는 감자 보관법", "why": "부정 경고 + '평생 써먹는' 저장 유도"},
+    {"id": "x0xQSYwZG1E", "template": "보관경고", "item": "귤", "category": "과일", "hook": "숫자리스트", "views": 3210000, "title": "귤, 이제 이렇게 보관하세요", "why": "'이제 이렇게'로 바로 방법을 약속"},
+    {"id": "Au7hio6ZSGA", "template": "보관경고", "item": "대파", "category": "채소", "hook": "실패없음", "views": 1630000, "title": "대파 냉장고 한달먹는방법", "why": "기간을 약속하는 보관법"},
+    {"id": "EWvaGTg_hLM", "template": "보관경고", "item": "대파·양파", "category": "채소", "hook": "실패없음", "views": 1240000, "title": "장보고 바로 이 방법! 대파 양파 오래갑니다", "why": "'장보고 바로'로 시점을 정해 준다"},
+    {"id": "p5kkar3fJoQ", "template": "보관경고", "item": "귤", "category": "과일", "hook": "실패없음", "views": 869150, "title": "다 먹을때까지 상하지 않는 귤 보관법", "why": "박스 단위로 사는 고객의 고민 그대로"},
+    {"id": "n-8dggPYBYI", "template": "보관경고", "item": "귤", "category": "과일", "hook": "부정경고", "views": 110000, "title": "귤 박스 이렇게 보관하세요!", "why": "택배 박스를 받은 직후 고객용"},
+
+    {"id": "rZa6k0zpkH8", "template": "손질법", "item": "갈치", "category": "수산", "hook": "만족감", "views": 17160000, "title": "k-솔트배 갈치 버전 1탄", "why": "산지 가게 사장님 캐릭터 + 손질 기술"},
+    {"id": "OBTwMVq4zIg", "template": "손질법", "item": "홍게", "category": "수산", "hook": "쉬움", "views": 9300000, "title": "홍게다리 가위 필요 없어요~", "why": "'도구 없이'로 손질 부담을 없앤다"},
+    {"id": "LFXbyzXCdAw", "template": "손질법", "item": "갈치", "category": "수산", "hook": "쉬움", "views": 5800000, "title": "갈치 초간편 손질법 - 쓰레기/비린내 걱정 없어", "why": "구매를 막는 걱정(냄새·쓰레기)을 먼저 말한다"},
+    {"id": "nkVCP8Tqc_U", "template": "손질법", "item": "전복", "category": "수산", "hook": "쉬움", "views": 5830000, "title": "세상쉬운 전복 손질, 이렇게 빨리 할 수 있었다니...", "why": "속도로 놀라게 하는 쉬움형"},
+    {"id": "XxXtgqk5TyA", "template": "손질법", "item": "망고", "category": "과일", "hook": "숫자리스트", "views": 4200000, "title": "손님 오셨을 때 망고 예쁘게 자르는 5가지 방법", "why": "상황(손님) + 숫자"},
+    {"id": "Elv9SzkA1lE", "template": "손질법", "item": "대게", "category": "수산", "hook": "실패없음", "views": 4120000, "title": "대게 깔끔하게 먹는 방법", "why": "비싼 품목일수록 '남김없이' 메시지가 통한다"},
+    {"id": "Hc9paYaMEp4", "template": "손질법", "item": "전복", "category": "수산", "hook": "숫자리스트", "views": 2970000, "title": "전복 손질 꼭 지켜야 하는 4가지", "why": "단계형 + 숫자"},
+    {"id": "GGti54GUQRo", "template": "손질법", "item": "귤", "category": "과일", "hook": "쉬움", "views": 2090000, "title": "귤 신박하게 까는 법", "why": "흔한 과일도 '신박한 방법'이면 공유된다"},
+    {"id": "UmgaiwN-a24", "template": "손질법", "item": "대게", "category": "수산", "hook": "쉬움", "views": 1800000, "title": "감자칼 하나면 대게 손질 전문가된다!", "why": "집에 있는 도구로 해결"},
+    {"id": "LNYhYYVdVBs", "template": "손질법", "item": "귤", "category": "과일", "hook": "다들속았다", "views": 840000, "title": "타지인 98.7%가 모르는 제주도민의 귤까는법", "why": "산지 사람만 아는 방법 = 산지직송 판매자에게 딱"},
+
+    {"id": "1ZdeLn_Cl5Q", "template": "물량리빌", "item": "굴", "category": "수산", "hook": "질문리빌", "views": 5730000, "title": "수산시장 '굴5kg' 달라고했더니..?!", "why": "양을 끝에 공개하는 구조. 박스 상품에 그대로"},
+    {"id": "lEzGhGDrszk", "template": "물량리빌", "item": "절임배추", "category": "채소", "hook": "질문리빌", "views": 1040000, "title": "괴산 절임배추 얼마나 들어갈까요?", "why": "14초. 질문 → 담기 → 개수. 산지 판매자가 만든 영상"},
+    {"id": "zMcS7aPJ4Jo", "template": "물량리빌", "item": "절임배추", "category": "채소", "hook": "질문리빌", "views": 700000, "title": "절임배추 10kg 주문하면 몇 포기 들어있을까요?", "why": "주문 단위(10kg)를 제목에 넣어 구매 직전 고객을 잡는다"},
+    {"id": "VL8iy0-S-Cg", "template": "물량리빌", "item": "새우", "category": "수산", "hook": "질문리빌", "views": 800000, "title": "선창포구 수산시장 '새우' 달라고 했더니..?!", "why": "같은 포맷을 품목만 바꿔 시리즈로"},
+
+    {"id": "YKWvIWHzrNs", "template": "비교", "item": "수박", "category": "과일", "hook": "가격대비", "views": 4200000, "title": "8000vs25000vs50000원 수박 비쌀수록 맛있을까?", "why": "가격대별 비교. 등급별 상품 설명에 쓴다"},
+    {"id": "jruhX1Dq13o", "template": "비교", "item": "소고기", "category": "축산", "hook": "가격대비", "views": 4680000, "title": "가격별 스테이크 솔직 후기", "why": "'솔직 후기'로 광고 느낌을 지운다"},
+    {"id": "7-Rv8FNzMag", "template": "비교", "item": "귤", "category": "과일", "hook": "부정경고", "views": 280000, "title": "마트에서 귤 사면 안되는 이유", "why": "※특정 업체 비방 없이 '차이'만 말할 때만 참고"},
+
+    {"id": "N2VQH9KkSKA", "template": "짧은루프", "item": "복숭아", "category": "과일", "hook": "직접판매", "views": 46000, "title": "금홍이복숭아 망고복숭아 (희귀품종)", "why": "희귀 품종은 짧은 상품 영상만으로도 반응이 온다"},
+    {"id": "NIOu8nqf1Mo", "template": "짧은루프", "item": "고구마", "category": "채소", "hook": "만족감", "views": 180000, "title": "길쭉길쭉 고구마! 하나! 둘! 쏙 나올까요?", "why": "수확 장면 한 컷 + 한 줄. 산지 판매자 계정"},
+    {"id": "q3q115STkEg", "template": "짧은루프", "item": "사과", "category": "과일", "hook": "직접판매", "views": 22000, "title": "청년농부가 키운 청송사과 드셔보세요", "why": "생산자 얼굴 + 한 줄 판매"},
+
+    {"id": "-1C8W3EG3io", "template": "판매형", "item": "사과", "category": "과일", "hook": "직접판매", "views": 8507, "title": "가정용(흠과) 청송사과판매 산지직송 직거래", "why": "전형적인 판매형. 조회수가 낮다 → 팔로워·광고용으로 쓴다"},
+    {"id": "iz_SS7LV7zU", "template": "판매형", "item": "사과", "category": "과일", "hook": "부정경고", "views": 1800, "title": "오늘부터 마트가서 사과 사지마세요. 안동사과 산지직송", "why": "부정 경고 훅을 판매형에 붙인 예. 정보 없이 판매만 하면 퍼지지 않는다"},
+    {"id": "vwA8Ez946Ls", "template": "판매형", "item": "사과", "category": "과일", "hook": "직접판매", "views": 18000, "title": "문경 감홍사과 농장 직송으로 택배 주문하는 곳?", "why": "질문형 제목 + 먹방 장면"},
+
+    {"id": "6yVoY5KjQ1I", "template": "깎기ASMR", "item": "멜론", "category": "과일", "hook": "만족감", "views": 94840000, "title": "달인의 신박한 멜론 자르기", "why": "말 없이 손 기술만으로 9천만 회"},
+    {"id": "jdERJ4SPdiA", "template": "깎기ASMR", "item": "멜론", "category": "과일", "hook": "만족감", "views": 21550000, "title": "과일 자르기 달인의 깔끔한 멜론 컷팅 스킬!", "why": "국내 과일가게 사장님 컷팅"},
+    {"id": "e2YHHl5XWk0", "template": "깎기ASMR", "item": "참외", "category": "과일", "hook": "만족감", "views": 4290000, "title": "과일가게 이모 참외깎기", "why": "가게 사장님의 손 기술. 매장에서 바로 찍을 수 있다"},
+    {"id": "yysfJ8BGJmg", "template": "깎기ASMR", "item": "사과", "category": "과일", "hook": "만족감", "views": 6530000, "title": "사과깍기 Lv.99 찍어버린 횟집사장", "why": "캐릭터(횟집 사장) + 기술"},
+
+    {"id": "EL1XIzn_u6k", "template": "현장리포트", "item": "연어", "category": "수산", "hook": "현장", "views": 12400000, "title": "연어 필렛 살 때 꿀팁 (노량진)", "why": "시장 현장 + 사는 법 정보"},
+    {"id": "kAtDFBq8yAo", "template": "현장리포트", "item": "경매", "category": "수산", "hook": "현장", "views": 130000, "title": "경매를 아무나 못하는 이유", "why": "경매 현장의 긴장감"},
+    {"id": "QeXZBJWvC30", "template": "현장리포트", "item": "과일 경매", "category": "과일", "hook": "현장", "views": 88000, "title": "과일 경매사와 중도매인의 기싸움", "why": "위탁판매 현장 그 자체. 신뢰를 쌓는 콘텐츠"},
+    {"id": "8c3NLM9nPVM", "template": "현장리포트", "item": "가락시장", "category": "과일", "hook": "현장", "views": 121736, "title": "가락농수산물시장 경매사의 랩소리", "why": "경매 소리 자체가 콘텐츠"}
+  ]
+}

@@ -1,0 +1,85 @@
+{
+ "summary": "구운 갈치의 가시를 깔끔하게 발라내는 손질 과정을 ASMR 형식으로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "식당",
+ "music": "없음",
+ "hook": {
+  "text": "고급스럽게 갈치 가시를 발라내는 장면",
+  "type": "만족감"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "하얀 셔츠를 입은 손이 구운 갈치를 손질하려는 장면으로 시청자의 시선을 사로잡는다",
+   "seconds": 8.0,
+   "note": "추정. 하얀 셔츠 소매, 양손이 갈치 위에 위치, 주변에 반찬 그릇들, 고급스러운 세팅"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "갈치의 등뼈 부분을 따라 손가락으로 살을 분리하기 시작한다",
+   "seconds": 11.0,
+   "note": "추정. 손가락으로 갈치 살을 누르며 가시와 분리하는 동작"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "갈치의 중심 뼈를 따라 살을 깔끔하게 분리해내는 디테일을 보여준다",
+   "seconds": 11.0,
+   "note": "추정. 계속해서 손가락으로 가시를 따라 살을 발라내는 클로즈업"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "가시가 완전히 분리된 갈치 뼈를 들어 올려 깨끗한 손질 결과를 보여준다",
+   "seconds": 11.0,
+   "note": "갈치 뼈대를 손으로 들어 올리는 장면, 살이 깨끗하게 분리됨"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "가시 없이 깔끔하게 발라진 갈치 살의 최종 모습을 보여준다",
+   "seconds": 11.0,
+   "note": "추정. 가시가 제거된 완성된 갈치 살을 보여주는 마무리 장면"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "ASMR 형식으로 갈치 손질 소리와 과정을 생생하게 전달하여 몰입감을 높였다",
+  "하얀 셔츠와 고급스러운 세팅으로 '포크와 나이프로 스테이크 써는 것 같은' 시각적 고급감을 연출했다",
+  "복잡해 보이는 갈치 가시 제거를 단계별로 명확하게 보여줘 '나도 할 수 있겠다'는 실용성을 제공했다"
+ ],
+ "copy_style": "자막 없이 손놀림만으로 설명하는 무언의 ASMR 스타일",
+ "template": "손질법",
+ "item": "갈치",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "rZa6k0zpkH8",
+  "title": "k-솔트배 갈치 버전 1탄",
+  "length": 52,
+  "channel": "냠사친 Yamsachin",
+  "views": 17160000,
+  "description": "고급스러워서 포크 나이프로 스테이크 써는 것 같지만\n사실은 숟가락으로 갈치 가시 바르는 영상입니다.\n\n가시 발라주는 거 편안..\n\nK-솔트배 갈치 버전 1탄 / #제주갈치 #춘심이네 #shorts\n\n· 냠사친 구독하기 → https://www.youtube.com/channel/UCXXEXIm3P8i31NzcqnKTK2w?sub_confirmation=1"
+ },
+ "via": "fal"
+}

@@ -1,0 +1,85 @@
+{
+ "summary": "가지를 1년 보관해도 신선하게 유지하는 건조 보관법을 손질부터 냉동까지 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "가지 이렇게 1년 두어도 금방 딴것같아요",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hold",
+   "text": "",
+   "purpose": "신선한 가지를 손으로 들어 보여주며 장기보관법을 소개한다",
+   "seconds": 8.0,
+   "note": "추정: 흰색 배경에 신선한 가지 5-6개를 손으로 잡고 보여주는 화면"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "",
+   "purpose": "가지를 얇게 슬라이스하는 손질 과정을 보여준다",
+   "seconds": 12.0,
+   "note": "추정: 도마 위에서 가지를 얇게 썰고 있는 손의 클로즈업"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "detail",
+   "text": "식혀서 냉동실에",
+   "purpose": "슬라이스한 가지를 건조기에 넣어 말리는 방법을 알려준다",
+   "seconds": 15.0,
+   "note": "건조기 트레이에 가지 슬라이스가 겹치지 않게 펼쳐져 있는 모습"
+  },
+  {
+   "role": "STEP",
+   "label": "3",
+   "shot": "store",
+   "text": "2가지요리는 영상아래 제모누르세요",
+   "purpose": "건조된 가지를 밀폐용기나 지퍼백에 담아 보관하는 모습을 보여준다",
+   "seconds": 12.0,
+   "note": "투명 밀폐용기에 건조 가지를 담고 있는 손의 모습"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "식혀서 냉동실에",
+   "purpose": "냉동 보관한 가지가 신선하게 유지되는 최종 결과물을 확인시킨다",
+   "seconds": 12.0,
+   "note": "건조기 트레이의 완성된 건조 가지를 다시 보여주는 화면"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "1년 보관이라는 구체적 기간 제시로 실용성을 강조해 클릭을 유도함",
+  "손질-건조-보관의 명확한 단계별 프로세스로 따라하기 쉽게 구성함",
+  "건조 전후 가지의 모습을 반복해서 보여주며 효과를 각인시킴"
+ ],
+ "copy_style": "반말로 친근하게, 결과를 먼저 제시하고 과정을 설명하는 구조",
+ "template": "손질법",
+ "item": "가지",
+ "category": "채소",
+ "relevant": true,
+ "meta": {
+  "id": "VSylkGuz8A4",
+  "title": "가지 이렇게 1년 두어도 금방 딴것같아요",
+  "length": 59,
+  "channel": "주부나라",
+  "views": 1950000,
+  "description": "#가지보관법#가지요리#레시피"
+ },
+ "via": "fal"
+}

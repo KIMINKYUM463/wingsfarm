@@ -106,3 +106,26 @@ export async function withTempDir<T>(task: (dir: string) => Promise<T>) {
     await rm(dir, { recursive: true, force: true });
   }
 }
+
+/** ffmpeg -i 의 stderr에서 길이(초)·해상도를 읽는다 (ffprobe 없이도 동작) */
+export async function probeVideo(filePath: string): Promise<{ duration: number; width: number; height: number }> {
+  const bin = await findFfmpeg();
+  if (!bin) throw new ApiError(503, 'ffmpeg를 찾지 못했어요.');
+  await ensureExecutable(bin);
+  let stderr = '';
+  try {
+    await exec(bin, ['-hide_banner', '-i', filePath], { timeout: 30_000, windowsHide: true, maxBuffer: 4 * 1024 * 1024 });
+  } catch (err) {
+    stderr = String((err as { stderr?: string }).stderr ?? '');
+  }
+  const dur = stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
+  const size = stderr.match(/Video:.*?\s(\d{2,5})x(\d{2,5})/);
+  if (!dur || !size) throw new ApiError(400, '영상 정보를 읽지 못했어요. mp4·mov·webm 파일을 올려 주세요.');
+  const duration = Number(dur[1]) * 3600 + Number(dur[2]) * 60 + Number(dur[3]);
+  const width = Number(size[1]);
+  const height = Number(size[2]);
+  if (!(duration > 0) || !(width > 0) || !(height > 0)) {
+    throw new ApiError(400, '영상 길이·크기를 확인하지 못했어요. 다른 파일을 올려 주세요.');
+  }
+  return { duration, width, height };
+}

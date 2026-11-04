@@ -1,0 +1,85 @@
+{
+ "summary": "항정살 굽는 과정을 재미있는 도구(마법봉)와 함께 보여주며 마지막에 고기 자르는 소리로 마무리하는 요리 쇼츠",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "평생 써먹는 항정살 레시피",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "평생 써먹는 항정살 레시피",
+   "purpose": "항정살 레시피를 알려주겠다고 시청자의 관심을 끈다",
+   "seconds": 3.0,
+   "note": "팬 위 항정살에 칼집 도구로 격자무늬 내는 모습, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "여기다 양파 하나 다져주고",
+   "purpose": "재미요소로 마법봉 같은 장난감 도구를 보여준다",
+   "seconds": 12.0,
+   "note": "도마 위 양파에 파란색 장난감 마법봉 같은 도구 사용, 손만 나옴"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "기름에 한번 싹~",
+   "purpose": "항정살 굽는 과정을 보여준다",
+   "seconds": 12.0,
+   "note": "팬에 기름 두르고 대파와 항정살 굽는 모습, 추정"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "한번 썰어 볼까요?",
+   "purpose": "완성된 윤기나는 항정살을 클로즈업으로 보여준다",
+   "seconds": 10.0,
+   "note": "윤기나는 구운 항정살 클로즈업, 칼로 찌르는 모습"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "기름에 한번 싹~",
+   "purpose": "완성된 요리를 다시 한번 보여준다",
+   "seconds": 19.0,
+   "note": "팬에 구운 항정살과 대파, 표지 이미지와 동일, 추정: 마지막 소음은 자르는 ASMR 소리"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "재미요소(마법봉 장난감)로 차별화해 시청자 기억에 남음",
+  "윤기나는 항정살 클로즈업으로 식욕 자극",
+  "제목에 '소음주의'로 호기심 유발하고 마지막 ASMR로 만족감 제공"
+ ],
+ "copy_style": "반말, 의성어 활용(싹~), 질문형 마무리",
+ "template": "짧은루프",
+ "item": "항정살",
+ "category": "축산",
+ "relevant": true,
+ "meta": {
+  "id": "X0ijVGo0v4Q",
+  "title": "이건 모르면 안됩니다.(마지막 소음주의)",
+  "length": 56,
+  "channel": "마법소년  김셰프",
+  "views": 7700000,
+  "description": "#요리 #레시피 #항정살 #마법소년김셰프 #shorts \n\n\n\n재료: 마법봉 1개, 마법소년"
+ },
+ "via": "fal"
+}

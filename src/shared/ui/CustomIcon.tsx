@@ -68,10 +68,23 @@ const CustomIcon: React.FC<CustomIconProps> = ({
   style,
   ...props
 }) => {
-  const SvgComponent = customIconMap[name];
+  const raw = customIconMap[name];
+
+  if (!raw) {
+    console.warn(`CustomIcon "${name}" not found`);
+    return null;
+  }
+
+  // SVGR 기본 export / default 래핑 / (드물게) 잘못된 asset 객체 모두 대응
+  const SvgComponent =
+    typeof raw === 'function'
+      ? raw
+      : raw && typeof raw === 'object' && 'default' in raw && typeof (raw as { default: unknown }).default === 'function'
+        ? (raw as { default: React.FC<React.SVGProps<SVGSVGElement>> }).default
+        : null;
 
   if (!SvgComponent) {
-    console.warn(`CustomIcon "${name}" not found`);
+    console.warn(`CustomIcon "${name}" is not a React component (SVG loader 설정을 확인하세요)`);
     return null;
   }
 

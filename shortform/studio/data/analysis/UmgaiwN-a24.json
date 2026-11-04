@@ -1,0 +1,85 @@
+{
+ "summary": "주방에서 감자칼 하나로 대게를 쉽고 깔끔하게 손질하는 방법을 단계별로 시연하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "대게 손질이 까다!",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "대게 손질이 까다!",
+   "purpose": "대게 손질이 어렵다는 문제를 제기하며 시청자의 관심을 끈다",
+   "seconds": 5.0,
+   "note": "출연자가 주방에서 대게를 들고 있으며 말하는 모습. 추정"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "(먼저 다리들을 잘라줍니다)",
+   "purpose": "먼저 대게 다리를 잘라내는 첫 단계를 보여준다",
+   "seconds": 12.0,
+   "note": "노란 도마 위 대게 다리를 감자칼로 절개하는 손의 클로즈업. 장갑 착용"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "hold",
+   "text": "감자칼이 필요하다",
+   "purpose": "감자칼이 필요하다는 핵심 도구를 강조한다",
+   "seconds": 15.0,
+   "note": "출연자가 감자칼을 손에 들고 카메라를 향해 보여주는 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "플레이팅 한 거 같게",
+   "purpose": "플레이팅한 최종 결과물을 보여주며 깔끔한 손질 결과를 강조한다",
+   "seconds": 15.0,
+   "note": "흰 접시에 깔끔하게 손질된 대게를 들고 있는 출연자의 모습"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hold",
+   "text": "감자칼이 필요하다",
+   "purpose": "완성된 손질 결과물을 다시 한번 보여주며 만족감을 전달한다",
+   "seconds": 10.0,
+   "note": "손질된 대게를 들고 있는 출연자의 최종 샷. 추정"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "감자칼이라는 단순하고 흔한 도구로 어려운 대게 손질을 쉽게 할 수 있다는 명확한 솔루션 제시",
+  "주방 현장에서 실제 손질 과정을 직접 보여주며 신뢰감과 따라하기 쉬운 느낌 전달",
+  "57초라는 짧은 시간 안에 문제-해결-결과를 압축적으로 보여주는 효율적인 구성"
+ ],
+ "copy_style": "반말 존댓말 혼용, 도구 강조형 단문",
+ "template": "손질법",
+ "item": "대게",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "UmgaiwN-a24",
+  "title": "감자칼 하나면 대게 손질 전문가된다!",
+  "length": 57,
+  "channel": "수부해TV subuhae",
+  "views": 1800000,
+  "description": "#대게 #대게손질 #대게손질법 #대게맛집 \n#대게식당 #수산물 #수산물정보 #요리#수부해"
+ },
+ "via": "fal"
+}

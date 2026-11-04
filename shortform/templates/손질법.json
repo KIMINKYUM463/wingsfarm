@@ -1,0 +1,87 @@
+{
+  "name": "손질·먹는 법 단계형",
+  "kind": "자동",
+  "layout": "letterbox",
+  "when": "수산·축산, 껍질 있는 과일. 구매 망설임(손질 귀찮음) 해소",
+  "evidence": "갈치 손질 1,716만 / 홍게다리 가위 필요 없어요 930만 / 전복 손질 583만 / 귤 신박하게 까는 법 209만",
+  "title": [
+    "{title1}",
+    "{title2}"
+  ],
+  "info": "{info|{name} 주문은 프로필 링크}",
+  "segments": [
+    {
+      "kind": "HOOK",
+      "say": "{hook}",
+      "source": "{hook_source|ai:crave}"
+    },
+    {
+      "each": "steps",
+      "kind": "TIP",
+      "say": "{text}",
+      "source": "{source}",
+      "label": "STEP {n}"
+    },
+    {
+      "kind": "CTA",
+      "say": "{outro|이렇게 하면 누구나 쉽게 드실 수 있어요.}",
+      "source": "{outro_source|ai:hero}"
+    }
+  ],
+  "fields": [
+    {
+      "key": "title1",
+      "label": "제목 1줄 (흰색)",
+      "type": "text",
+      "max": 13,
+      "hint": "품목명이 들어간 주제. 예: 꿀참외 고르는 법"
+    },
+    {
+      "key": "title2",
+      "label": "제목 2줄 (노란색)",
+      "type": "text",
+      "max": 13,
+      "hint": "궁금증을 만드는 한 마디. 예: 딱 3가지만 보세요"
+    },
+    {
+      "key": "hook",
+      "label": "첫 문장 (훅)",
+      "type": "text",
+      "hint": "쉬움 강조. 예: 갈치 손질, *가위* 하나면 끝나요."
+    },
+    {
+      "key": "hook_source",
+      "label": "첫 장면",
+      "type": "source",
+      "default": "ai:crave"
+    },
+    {
+      "key": "steps",
+      "label": "손질 단계",
+      "type": "list",
+      "min": 2,
+      "max": 4,
+      "count": 3,
+      "sources": [
+        "ai:hook",
+        "ai:prep",
+        "ai:crave",
+        "ai:detail"
+      ],
+      "hint": "STEP 순서대로 짧게"
+    },
+    {
+      "key": "outro",
+      "label": "마무리 문장",
+      "type": "text",
+      "hint": "예: 이렇게 하면 누구나 쉽게 드실 수 있어요."
+    },
+    {
+      "key": "info",
+      "label": "아래 노란 바",
+      "type": "text",
+      "max": 22,
+      "hint": "주문 안내 한 줄. 예: 이렇게 고른 참외, 프로필 링크에"
+    }
+  ]
+}

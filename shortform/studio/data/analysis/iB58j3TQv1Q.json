@@ -1,0 +1,85 @@
+{
+ "summary": "대방어를 맛있게 먹는 방법으로 특정 부위(와 개맞았어)를 미역의 산채로와 함께 먹는 조리법을 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "특 대방어",
+  "type": "현장"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "특 대방어",
+   "purpose": "대방어를 손에 들고 등장하며 시청자의 관심을 끈다",
+   "seconds": 3.0,
+   "note": "선글라스와 모자를 쓴 진행자가 대방어를 손에 들고 있음"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "(상씨 뭐냐인가???)",
+   "purpose": "대방어의 특정 부위를 강조하며 잘못된 조리법에 대한 경고를 한다",
+   "seconds": 25.0,
+   "note": "추정: 클로즈업으로 대방어 부위를 보여주며 설명, 광대 분장 효과 사용"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "hold",
+   "text": "와 개맞았어",
+   "purpose": "올바른 조리 방법을 제시한다",
+   "seconds": 30.0,
+   "note": "진행자가 정면을 보며 설명, 실제 방법을 알려주는 장면으로 추정"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "더욱 완벽해진 미녀쏘의 산채굥",
+   "purpose": "완벽하게 조리된 미역 산채를 클로즈업으로 보여준다",
+   "seconds": 35.0,
+   "note": "흰 접시에 담긴 미역과 대방어 조합 클로즈업, '산채굥'에서 '굥'이 빨간색으로 강조"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hold",
+   "text": "와 개맞았어",
+   "purpose": "최종 결과에 대한 만족을 표현하며 영상을 마무리한다",
+   "seconds": 32.0,
+   "note": "처음과 같은 구도로 돌아와 만족스러운 반응 표현"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "유니크한 캐릭터(선글라스+모자)와 광대 분장 등 강렬한 비주얼 요소로 주목도를 높임",
+  "단순히 회로 먹는 것이 아닌 미역 산채와의 조합이라는 차별화된 조리법 제시",
+  "'와 개맞았어'라는 반복되는 반응으로 맛에 대한 확신을 강하게 전달"
+ ],
+ "copy_style": "반말, 강한 반응 표현, 유행어 활용",
+ "template": "손질법",
+ "item": "대방어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "iB58j3TQv1Q",
+  "title": "대방어를 진짜 맛있게 먹는 방법",
+  "length": 125,
+  "channel": "마법소년  김셰프",
+  "views": 1980000,
+  "description": ""
+ },
+ "via": "fal"
+}

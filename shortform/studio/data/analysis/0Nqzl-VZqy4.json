@@ -1,0 +1,88 @@
+{
+ "summary": "일식 셰프가 스튜디오에서 큰 홍해삼의 내장을 제거하고 손질하는 과정을 단계별로 시연하는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "일식 셰프가 보여주는",
+  "엄청 큰 홍해삼 손질 방법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "hands",
+ "setting": "스튜디오",
+ "music": "경쾌한",
+ "hook": {
+  "text": "일식 셰프가 보여주는 엄청 큰 홍해삼 손질 방법",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "일식 셰프가 큰 홍해삼 손질을 시작한다는 것을 보여주며 시청자의 관심을 끈다",
+   "seconds": 5.0,
+   "note": "손이 홍해삼을 만지는 클로즈업, 주방 테이블 위, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "내장",
+   "purpose": "해삼의 내장 부분을 손으로 꺼내는 손질 과정을 자세히 보여준다",
+   "seconds": 7.0,
+   "note": "손이 해삼 내장을 제거하는 클로즈업, 파란 도마 위, 화면에 '내장' 자막"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "스튜디오 패널들의 반응을 보여주며 손질 과정의 흥미를 강화한다",
+   "seconds": 6.0,
+   "note": "스튜디오 출연자들이 앉아서 보는 장면, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "날로 먹어도 맛있어",
+   "purpose": "손질된 해삼을 클로즈업으로 보여주며 최종 결과물을 전달한다",
+   "seconds": 7.0,
+   "note": "손질된 홍해삼을 손으로 들고 있는 클로즈업, 투명하고 깨끗한 상태, 화면에 분홍색 자막"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "패널의 최종 반응을 보여주며 영상을 마무리한다",
+   "seconds": 7.0,
+   "note": "스튜디오 출연자 반응 컷, 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "유명 셰프의 전문성과 예능 프로그램 포맷이 결합되어 신뢰도와 엔터테인먼트를 동시에 제공",
+  "큰 홍해삼이라는 희귀한 재료의 손질 과정을 명확한 단계별 클로즈업으로 보여줘 교육적 가치 제공",
+  "스튜디오 패널의 반응 컷을 삽입해 시청자 대리만족과 몰입도를 높임"
+ ],
+ "copy_style": "셰프 권위 기반 설명형, 핵심어 강조",
+ "template": "손질법",
+ "item": "홍해삼",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "0Nqzl-VZqy4",
+  "title": "일식 셰프가 보여주는 엄청 큰 홍해삼 손질 방법 #shorts #냉장고를부탁해",
+  "length": 32,
+  "channel": "예능내컷",
+  "views": 16310000,
+  "description": "#shorts #냉장고를부탁해  #김성주 #안정환 #이연복 #최현석 \n#김풍 #정호영 #에드워드리 #최강록 #이미영 #박은영"
+ },
+ "via": "fal"
+}

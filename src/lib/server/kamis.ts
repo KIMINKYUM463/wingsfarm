@@ -50,7 +50,12 @@ export async function getKamisPrices(): Promise<KamisResponse> {
   }).toString();
 
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10_000), cache: "no-store" });
+    // KAMIS는 응답이 큰 편이라 여유를 둔다. 연결 자체가 안 되면(방화벽·서버 점검) timeout으로 떨어진다.
+    const res = await fetch(url.toString(), {
+      signal: AbortSignal.timeout(25_000),
+      cache: "no-store",
+      headers: { Accept: "application/json", "User-Agent": "WingsFarmAI/1.0" },
+    });
     if (!res.ok) return { items: [], updatedAt: "", error: `시세 서버 응답 오류(${res.status})` };
     const json = (await res.json()) as { error_code?: string; price?: unknown };
     if (json.error_code && json.error_code !== "000") return { items: [], updatedAt: "", error: `시세 서버 오류 코드 ${json.error_code} — 인증키·ID를 확인하세요.` };
@@ -63,6 +68,15 @@ export async function getKamisPrices(): Promise<KamisResponse> {
     return body;
   } catch (err) {
     console.error("[kamis]", err);
-    return { items: [], updatedAt: "", error: "시세 서버에 연결하지 못했습니다." };
+    const timedOut =
+      (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) ||
+      (typeof err === "object" && err !== null && "code" in err && (err as { code?: number }).code === 23);
+    return {
+      items: [],
+      updatedAt: "",
+      error: timedOut
+        ? "시세 서버(KAMIS)에 연결 시간이 초과됐어요. 네트워크·방화벽이 kamis.co.kr(443)을 막았거나 시세 서버 점검 중일 수 있어요."
+        : "시세 서버에 연결하지 못했습니다. 인터넷 연결과 KAMIS 서버 상태를 확인해 주세요.",
+    };
   }
 }

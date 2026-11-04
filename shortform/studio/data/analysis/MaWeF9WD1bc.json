@@ -1,0 +1,85 @@
+{
+ "summary": "명동 과일 가게 달인이 수박을 빠르고 현란하게 껍질 벗기고 컵에 담는 기술을 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "매장",
+ "music": "경쾌한",
+ "hook": {
+  "text": "수박을 빠르게 회전시키며 칼질 시작",
+  "type": "현장"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "수박을 빠르게 회전시키며 달인의 기술을 예고한다",
+   "seconds": 3.0,
+   "note": "수박을 손에 들고 빠르게 회전시키는 모션 블러 효과, 흰 티셔츠 입은 남성의 상반신과 수박만 보임 (추정: 주목을 끌기 위한 오프닝)"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "hold",
+   "text": "",
+   "purpose": "수박 전체를 보여주며 작업 준비 상태를 보여준다",
+   "seconds": 5.0,
+   "note": "수박을 정면으로 들고 있는 장면, 수박 표면의 무늬가 선명하게 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "껍질을 벗긴 수박에 칼집을 넣어 자르기 준비를 한다",
+   "seconds": 8.0,
+   "note": "비닐 장갑 낀 손으로 껍질 벗긴 빨간 수박에 세로 칼집을 넣는 클로즈업, 나무 도마 위"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "완성된 수박 과일컵 제품들을 진열하여 결과물을 보여준다",
+   "seconds": 10.0,
+   "note": "투명 플라스틱 컵에 담긴 수박 조각들이 여러 개 진열된 모습, 뚜껑이 덮인 상태의 완제품들"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "수박 자르기 작업 과정을 다시 한번 클로즈업으로 보여준다",
+   "seconds": 15.0,
+   "note": "썸네일용 이미지로 추정, 껍질 벗긴 수박에 칼집 넣는 장면의 클로즈업"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "달인의 빠르고 현란한 손기술이 시각적으로 매우 인상적이어서 반복 시청을 유도함",
+  "수박 회전 모션 블러로 시작하는 강렬한 오프닝이 스크롤을 멈추게 함",
+  "과정과 결과물(과일컵)을 모두 보여줘 실용성과 구매 욕구를 동시에 자극함"
+ ],
+ "copy_style": "자막 없이 현장음과 제목만으로 기술력 강조",
+ "template": "짧은루프",
+ "item": "수박",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "MaWeF9WD1bc",
+  "title": "명동 과일 자르기 달인의 현란한 수박 컷팅 스킬! Amazing Korean Watermelon Cutting Skills",
+  "length": 41,
+  "channel": "푸디런 FoodieRun",
+  "views": 19230000,
+  "description": "명동 과일 자르기 달인의 현란한 수박 컷팅 스킬! Amazing Korean Watermelon Cutting Skills\n\n💨 정보 (information) \n\n💲 가격 (Price) : 과일컵, 주스 KRW 5,000 (USD 3.90)                                                    \n\n💕화면 설정에서 화질을 고화질로 변경하시면 보다 더 선명하게 보실 수 있습니다.\n\n👍영상을 재밌게 보셨다면 구독과 좋아요 부탁드립니다.\n\n🎬FoodieRun 구독 : https://bit.ly/3bsJ3ZJ\n\n💌 촬영 요청 및 제보 이메일 (e-mail : foodierun77@naver.com)\n\n#명동과일 #과일자르기 #Shorts"
+ },
+ "via": "fal"
+}

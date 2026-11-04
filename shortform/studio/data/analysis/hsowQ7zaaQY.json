@@ -1,0 +1,85 @@
+{
+ "summary": "대용량 삼겹살을 소분 포장해서 보관하고 필요할 때 꺼내 쓰는 방법을 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "대용량으로 사 온 삼겹살",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hero",
+   "text": "대용량으로 사 온 삼겹살",
+   "purpose": "대용량으로 구매한 삼겹살을 보여주며 상황을 제시한다",
+   "seconds": 3.0,
+   "note": "트레이에 담긴 대용량 삼겹살 전체샷"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "그냥 알맞게 먹 두 손질해요",
+   "purpose": "삼겹살을 알맞은 두께로 잘라서 준비하라고 안내한다",
+   "seconds": 5.0,
+   "note": "손으로 삼겹살을 적당량씩 나누는 클로즈업, 추정: 칼로 자르거나 분리하는 과정"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "pack",
+   "text": "보관하면 싱거도 편하고",
+   "purpose": "소분한 고기를 지퍼백에 넣어 포장하는 방법을 보여준다",
+   "seconds": 5.0,
+   "note": "지퍼백에 삼겹살을 넣고 공기를 빼며 밀봉하는 손동작"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "대용량 삼겹살 사는 거",
+   "purpose": "소분 보관한 삼겹살로 만든 완성 요리를 보여주며 만족감을 준다",
+   "seconds": 6.0,
+   "note": "오븐이나 팬에 구워진 삼겹살 조각들, 위아래 두 개의 팬/트레이 병렬 배치"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "pack",
+   "text": "보관하면 싱거도 편하고",
+   "purpose": "다시 한번 소분 포장 방법을 강조하며 마무리한다",
+   "seconds": 7.0,
+   "note": "추정: 지퍼백 포장 장면 반복 또는 최종 정리 컷"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "외식비 절약이라는 실용적 혜택을 제목에 명확히 제시해 클릭을 유도했다",
+  "대용량 구매→소분→조리 완성의 선순환 구조를 26초 안에 압축해 지루할 틈이 없다",
+  "구워진 삼겹살 화면으로 식욕을 자극하며 행동 동기를 강화했다"
+ ],
+ "copy_style": "반말로 친근하게 단계를 설명하는 말투",
+ "template": "손질법",
+ "item": "삼겹살",
+ "category": "축산",
+ "relevant": true,
+ "meta": {
+  "id": "hsowQ7zaaQY",
+  "title": "외식 줄이는 방법 | 삼겹살 소분법 | 고기요리",
+  "length": 26,
+  "channel": "수준데일리 레시피",
+  "views": 1680000,
+  "description": ""
+ },
+ "via": "fal"
+}

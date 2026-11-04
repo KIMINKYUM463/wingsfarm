@@ -43,6 +43,20 @@ yarn-error.log*
 # 상세페이지 제작 로컬 저장소 (프로젝트·이미지·템플릿)
 /.data/
 
+# 숏폼 스튜디오 실행 산출물 (소스는 shortform/ 에 포함)
+/shortform/products/
+/shortform/output/
+/shortform/studio/data/tts_cache/
+/shortform/studio/data/bgm/
+/shortform/studio/data/frames/
+/shortform/studio/data/jobs.json
+/shortform/motion/node_modules/
+/shortform/**/__pycache__/
+/shortform/.env
+
+# 로컬 임시
+.tmp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

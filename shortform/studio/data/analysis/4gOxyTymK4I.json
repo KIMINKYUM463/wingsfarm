@@ -1,0 +1,85 @@
+{
+ "summary": "새우젓을 냉장고가 아닌 상온에 보관해야 숙성되고 맛있다는 것을 알려주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "밝은",
+ "hook": {
+  "text": "새우젓은 냉장고에서 당장 꺼내세요!",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "새우젓은",
+   "purpose": "새우젓을 냉장고에 넣으면 안 된다는 충격적인 사실로 시선을 끈다",
+   "seconds": 3.0,
+   "note": "출연자가 냉장고 옆에서 새우젓 통을 들고 카메라를 보며 말하는 구도"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hold",
+   "text": "새우젓은 쓰어버립니다!",
+   "purpose": "새우젓을 냉장 보관하는 것이 잘못된 방법임을 강조한다",
+   "seconds": 8.0,
+   "note": "출연자가 새우젓 통을 클로즈업으로 보여주며 설명하는 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "hold",
+   "text": "달면 안된다",
+   "purpose": "새우젓은 달면 안 된다는 품질 기준을 알려준다",
+   "seconds": 8.0,
+   "note": "추정: 출연자가 새우젓 통을 들고 맛이나 품질에 대해 설명하는 장면"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "detail",
+   "text": "이렇게 따라야",
+   "purpose": "새우젓을 이렇게 따라야 한다는 올바른 사용법을 시연한다",
+   "seconds": 10.0,
+   "note": "손이 작은 그릇에 새우젓을 따르는 클로즈업 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hold",
+   "text": "달면 안된다",
+   "purpose": "새우젓은 달면 안 된다는 핵심 메시지를 반복하여 각인시킨다",
+   "seconds": 9.0,
+   "note": "추정: 출연자가 다시 한번 핵심 메시지를 강조하며 마무리하는 장면"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "냉장고에 넣으면 안 된다는 상식을 깨는 충격적 훅으로 초반 이탈을 막음",
+  "수산물 전문가의 권위 있는 말투와 직접 시연으로 신뢰도를 높임",
+  "짧은 38초 안에 잘못된 방법-올바른 방법을 명확히 대비하여 전달"
+ ],
+ "copy_style": "반말 경고형, 단정적 어조로 잘못된 상식을 바로잡는 말투",
+ "template": "보관경고",
+ "item": "새우젓",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "4gOxyTymK4I",
+  "title": "새우젓 냉장고에서 당장 꺼내세요!",
+  "length": 38,
+  "channel": "수부해TV subuhae",
+  "views": 7620000,
+  "description": "#새우젓 #젓갈 #새우젓갈 #수산물 #요리 #수산물정보 #수부해"
+ },
+ "via": "fal"
+}

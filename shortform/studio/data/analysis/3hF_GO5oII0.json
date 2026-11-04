@@ -1,0 +1,76 @@
+{
+ "summary": "돌문어를 빨간 바구니에 담긴 상태에서 머리와 다리를 분리하고 내장을 제거하는 손질 과정을 순서대로 보여준다",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "선상작업대",
+ "music": "없음",
+ "hook": {
+  "text": "돌문어 손질법",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "빨간 바구니에 담긴 신선한 돌문어를 보여주며 손질 대상을 소개한다",
+   "seconds": 3.0,
+   "note": "녹색 작업대 위 빨간 바구니에 돌문어, 흰 장갑 낀 손이 프레임 하단에 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "",
+   "purpose": "문어 머리 부분을 잡고 다리와 분리하기 위해 손을 댄다",
+   "seconds": 7.0,
+   "note": "추정: 양손으로 문어 머리와 다리 연결 부위를 잡는 동작, 녹색 작업대에서 진행"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "detail",
+   "text": "",
+   "purpose": "문어 머리에서 내장과 먹물주머니를 제거하는 과정을 클로즈업으로 보여준다",
+   "seconds": 10.0,
+   "note": "추정: 문어 머리를 뒤집어 내부 내장을 손으로 빼내는 장면, 갈색 내장물이 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "3",
+   "shot": "prep",
+   "text": "",
+   "purpose": "손질 완료된 문어를 다시 빨간 바구니에 담는 마무리 동작을 보여준다",
+   "seconds": 11.0,
+   "note": "빨간 바구니에 손질된 문어를 넣는 손 동작, 문어 다리가 분리되어 있음"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "현장감 있는 ASMR 사운드와 흰 장갑을 낀 손의 위생적인 이미지가 신뢰감을 준다",
+  "손질 과정을 빠르게 생략 없이 순서대로 보여줘 실용성이 높다",
+  "빨간 바구니와 녹색 작업대의 색 대비가 강해 시각적으로 눈에 잘 띈다"
+ ],
+ "copy_style": "자막 없이 영상 제목만으로 설명하는 무음 실용형",
+ "template": "손질법",
+ "item": "돌문어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "3hF_GO5oII0",
+  "title": "돌문어 손질법",
+  "length": 31,
+  "channel": "live fish fillet 거제도 수아아빠TV_ (dress Fish)",
+  "views": 1820000,
+  "description": ""
+ },
+ "via": "fal"
+}

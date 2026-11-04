@@ -1,0 +1,85 @@
+{
+ "summary": "냉동 참치를 집에서 해동하고 손질하는 과정을 단계별로 보여주는 실용 정보 영상",
+ "layout": "letterbox",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "green",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "집에서 먹는 참치 손질법",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "진공포장된 냉동 참치를 보여주며 집에서 손질 가능함을 제시한다",
+   "seconds": 8.0,
+   "note": "주방 싱크대 위, 파란 장갑 낀 손이 진공포장된 참치를 들고 있음. 추정: 영상 시작 부분"
+  },
+  {
+   "role": "STEP",
+   "label": "1초",
+   "shot": "prep",
+   "text": "",
+   "purpose": "포장을 뜯고 참치를 꺼내는 첫 단계를 보여준다",
+   "seconds": 12.0,
+   "note": "파란 장갑 낀 손으로 참치 필렛을 양손에 들고 있음. 추정: 해동 또는 포장 제거 과정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "참치를 물에 씻거나 얼음물에 담가 해동하는 방법을 알려준다",
+   "seconds": 12.0,
+   "note": "싱크대에 얼음과 함께 펼쳐진 참치, 손으로 정리하는 모습. 추정: 해동 과정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "칼로 참치를 손질하는 과정을 클로즈업으로 보여준다",
+   "seconds": 12.0,
+   "note": "칼을 들고 참치 필렛을 손질하는 장면, 얼음 위에 놓여있음. 추정: 껍질 제거 또는 부위 분리"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "손질이 완료된 깨끗한 참치 살의 단면을 보여준다",
+   "seconds": 12.0,
+   "note": "손질된 참치를 손에 들고 있는 마무리 장면. 추정: 최종 결과물 제시"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "주방 싱크대라는 친근한 공간에서 촬영해 시청자가 따라하기 쉽다고 느끼게 함",
+  "파란 위생장갑 착용으로 청결하고 전문적인 이미지를 전달함",
+  "단계별 손질 과정을 명확하게 보여줘 실용성이 높음"
+ ],
+ "copy_style": "단계별 숫자 라벨로 명확하게 구분하는 튜토리얼 스타일",
+ "template": "손질법",
+ "item": "참치",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "irWKVcAL7fs",
+  "title": "참치 손질 : 집에서 먹는 참치",
+  "length": 56,
+  "channel": "참새방앗간",
+  "views": 1510000,
+  "description": "#참치 #튜나 #참치해동"
+ },
+ "via": "fal"
+}

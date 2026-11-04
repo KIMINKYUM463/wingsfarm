@@ -1,0 +1,88 @@
+{
+ "summary": "김치를 비닐 대신 키친타월로 덮어 보관하면 식감과 맛이 오래 유지된다는 보관 팁을 단계별로 보여주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "김치보관 비닐대신",
+  "\"이렇게\" 하세요"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "김치보관 비닐대신 이렇게 하세요",
+  "type": "다들속았다"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "김치통에 김치 담고",
+   "purpose": "김치통에 비닐을 씌운 기존 방식을 보여주며 문제를 환기시킨다",
+   "seconds": 4.0,
+   "note": "김치통 위에 비닐이 씌워진 모습, 손 일부 보임 (추정)"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "김치통에 김치 담고",
+   "purpose": "비닐로 덮는 기존 방식을 잘못된 방법으로 제시한다",
+   "seconds": 4.0,
+   "note": "손이 김치통 위에 비닐을 씌우는 장면, 지퍼백이나 밀폐용 비닐 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "비닐 대신",
+   "purpose": "비닐 대신 사용할 올바른 재료를 보여준다",
+   "seconds": 5.0,
+   "note": "김치 위를 클로즈업, 장갑 낀 손이 김치를 정리하는 모습 (추정)"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "detail",
+   "text": "김치를 꽉 눌러 담아 위에 걸쳐(배추잎)으로 보여주기",
+   "purpose": "키친타월을 김치 위에 올려 보관하는 올바른 방법을 시연한다",
+   "seconds": 5.0,
+   "note": "김치통 위에 흰색 키친타월이 덮여있는 모습, 자막 일부 흐림"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "store",
+   "text": "비닐 대신",
+   "purpose": "최종 완성된 보관 상태를 보여주며 시청자에게 실천을 권유한다",
+   "seconds": 4.0,
+   "note": "키친타월로 덮인 김치통 전체 샷, 완성된 보관 모습"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "기존 방식(비닐)과 새로운 방식(키친타월)을 명확히 대비해 차별점이 즉각 이해됨",
+  "누구나 집에 있는 재료(키친타월)로 즉시 실천 가능한 실용성",
+  "22초의 짧은 러닝타임에 문제-해결을 압축해 쇼츠 알고리즘에 최적화"
+ ],
+ "copy_style": "명령형 반말로 간결하게 행동 지시",
+ "template": "보관경고",
+ "item": "김치",
+ "category": "가공",
+ "relevant": true,
+ "meta": {
+  "id": "i997ettxl9Y",
+  "title": "김치보관 비닐대신 이렇게 하세요.식감.맛 오래 유지하는 비법!!#김치보관방법 #김치보관 #김치 #음식꿀팁 #김치보관꿀팁",
+  "length": 22,
+  "channel": "똑순이비타민",
+  "views": 3010000,
+  "description": ""
+ },
+ "via": "fal"
+}

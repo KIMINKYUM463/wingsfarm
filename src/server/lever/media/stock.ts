@@ -1,17 +1,27 @@
 import 'server-only';
 import type { HeroMotionCredit, StockSource, StockVideo } from '@/shared/types/heroMotion';
 import { ApiError } from '../http';
+import { loadFile, publicUrl } from '../storage';
 import type { StockOrientation } from './motion';
 import { pexelsProvider, searchPexelsPhotos } from './pexels';
 import { pixabayProvider, searchPixabayPhotos } from './pixabay';
 import { expandStockQuery } from './stockQuery';
-import { interleave, type StockProvider } from './stockSources';
+import {
+  interleave,
+  uploadMetaPath,
+  uploadThumbPath,
+  uploadVideoPath,
+  type StockClipSource,
+  type StockProvider,
+} from './stockSources';
 
 /**
  * 무료 영상 — 키가 있는 사이트(Pexels·Pixabay)를 함께 검색하고, 고른 영상 파일을 안전하게 내려받는다
  */
-const PROVIDERS: Record<StockSource, StockProvider> = { pexels: pexelsProvider, pixabay: pixabayProvider };
-const SOURCES = Object.keys(PROVIDERS) as StockSource[];
+type ExternalStock = 'pexels' | 'pixabay';
+const PROVIDERS: Record<ExternalStock, StockProvider> = { pexels: pexelsProvider, pixabay: pixabayProvider };
+const SOURCES = Object.keys(PROVIDERS) as ExternalStock[];
+const isExternalStock = (source: StockSource): source is ExternalStock => source === 'pexels' || source === 'pixabay';
 
 const NO_KEY =
   '무료 영상을 쓰려면 Pexels 또는 Pixabay API 키(무료)가 필요해요. .env.local에 PEXELS_API_KEY=키 또는 PIXABAY_API_KEY=키 를 넣고 서버를 다시 켜 주세요.';
@@ -21,7 +31,7 @@ const CACHE_MS = 24 * 60 * 60 * 1000;
 const CACHE_MAX = 200;
 const searchCache = new Map<string, { at: number; videos: StockVideo[] }>();
 
-async function cachedSearch(source: StockSource, query: string, orientation: StockOrientation) {
+async function cachedSearch(source: ExternalStock, query: string, orientation: StockOrientation) {
   const key = `${source}:${orientation}:${query.toLowerCase()}`;
   const hit = searchCache.get(key);
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.videos;
@@ -100,15 +110,56 @@ export async function searchStockPhotos(query: string): Promise<StockPhoto[]> {
   return photos;
 }
 
-export const getStockClipSource = (source: StockSource, id: number) => PROVIDERS[source].clipSource(id);
+interface UploadMeta {
+  duration: number;
+  width: number;
+  height: number;
+  name?: string;
+}
+
+/** 스톡 사이트 또는 프로젝트에 올린 내 영상 */
+export async function getStockClipSource(source: StockSource, id: number, projectId?: string): Promise<StockClipSource> {
+  if (source === 'upload') {
+    if (!projectId) throw new ApiError(400, '올린 영상을 쓰려면 프로젝트가 필요해요.');
+    const metaRaw = await loadFile(uploadMetaPath(projectId, id));
+    if (!metaRaw) throw new ApiError(404, '올린 영상을 찾지 못했어요. 다시 첨부해 주세요.');
+    const meta = JSON.parse(metaRaw.toString('utf8')) as UploadMeta;
+    const videoPath = uploadVideoPath(projectId, id);
+    if (!(await loadFile(videoPath))) throw new ApiError(404, '올린 영상 파일이 없어요. 다시 첨부해 주세요.');
+    return {
+      duration: meta.duration,
+      // link에 storage path를 넣어 두고 downloadStockFile 대신 loadFile 한다
+      files: [{ link: videoPath, width: meta.width, height: meta.height }],
+      credit: { source: 'upload', author: meta.name?.trim() || '내 영상', url: publicUrl(videoPath) },
+    };
+  }
+  if (!isExternalStock(source)) throw new ApiError(400, '지원하지 않는 영상 출처예요.');
+  return PROVIDERS[source].clipSource(id);
+}
+
+/** 업로드 메타 → 선택 UI용 StockVideo */
+export function uploadMetaToStock(projectId: string, id: number, meta: UploadMeta): StockVideo {
+  return {
+    source: 'upload',
+    id,
+    thumbnail: publicUrl(uploadThumbPath(projectId, id)),
+    duration: Math.max(1, Math.round(meta.duration)),
+    width: meta.width,
+    height: meta.height,
+    author: meta.name?.trim() || '내 영상',
+    pageUrl: publicUrl(uploadVideoPath(projectId, id)),
+  };
+}
 
 const MAX_VIDEO_BYTES = 150 * 1024 * 1024;
 const TOO_BIG = '영상 파일이 너무 커요. 다른 영상을 골라 주세요.';
 
 /** 그 사이트가 준 https 영상 주소만 받는다 (용량 제한) */
 export async function downloadStockFile(source: StockSource, link: string) {
+  if (!isExternalStock(source)) throw new ApiError(400, '내 영상은 저장소에서 직접 불러와요.');
   const url = new URL(link);
-  const allowed = url.protocol === 'https:' && PROVIDERS[source].hosts.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`));
+  const allowed =
+    url.protocol === 'https:' && PROVIDERS[source].hosts.some((host: string) => url.hostname === host || url.hostname.endsWith(`.${host}`));
   if (!allowed) throw new ApiError(502, '영상 파일 주소가 올바르지 않아요.');
   const data = await fetchVideo(url);
   if (data.length > MAX_VIDEO_BYTES) throw new ApiError(413, TOO_BIG);

@@ -1,0 +1,85 @@
+{
+ "summary": "복숭아 껍질을 끓는 물에 데친 후 손으로 쉽게 벗기는 방법을 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "text_only",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "초초간단 복숭아 깍는법",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hold",
+   "text": "",
+   "purpose": "껍질을 벗기지 않은 복숭아를 들어 보여주며 영상 주제를 시작한다",
+   "seconds": 3.0,
+   "note": "왼손에 복숭아를 들고 있고, 접시와 칼, 끓는 물 준비된 주방 환경 / 추정: 재료 소개"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "",
+   "purpose": "복숭아를 접시에 올려놓고 칼을 준비하는 단계를 보여준다",
+   "seconds": 8.0,
+   "note": "복숭아가 접시 위에 놓여있고 칼이 보임, 뒤편에 끓는 물 주전자와 양파 껍질 벗겨진 모습 / 추정: 끓는 물에 데치는 준비 과정"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "prep",
+   "text": "",
+   "purpose": "복숭아를 손에 들고 특정 처리를 하는 과정을 보여준다",
+   "seconds": 15.0,
+   "note": "복숭아를 양손으로 잡고 있고 칼 날이 보임 / 추정: 끓는 물에 데친 후 꺼내는 장면"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "복숭아 껍질이 손으로 쉽게 벗겨지는 모습을 클로즈업으로 보여준다",
+   "seconds": 13.0,
+   "note": "복숭아를 손으로 돌리며 껍질이 벗겨지는 과정, 껍질이 일부 벗겨진 상태 클로즈업"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "껍질이 깨끗하게 벗겨진 완성된 복숭아를 최종 결과물로 보여준다",
+   "seconds": 13.0,
+   "note": "손에 들린 복숭아, 껍질이 매끄럽게 벗겨진 최종 결과물"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "제목에 '초초간단'과 느낌표를 사용해 쉬움을 강조하고 클릭을 유도함",
+  "복잡한 칼질 없이 끓는 물만으로 껍질을 벗기는 실용적인 팁을 명확하게 전달함",
+  "손질 전후 대비가 명확하고 과정이 단순해 따라하기 쉬움"
+ ],
+ "copy_style": "느낌표로 강조하는 간결한 제목형",
+ "template": "손질법",
+ "item": "복숭아",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "SGJfJEfoplQ",
+  "title": "초초간단 복숭아 깍는법 !!!🍑",
+  "length": 52,
+  "channel": "우쭈쭈네",
+  "views": 7810000,
+  "description": "#shorts \n\n🎵Music provided by 브금대통령\n🎵Track : 귀염뽀짝 - https://youtu.be/8TCbMCZMZOs"
+ },
+ "via": "fal"
+}

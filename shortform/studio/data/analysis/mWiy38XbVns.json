@@ -1,0 +1,85 @@
+{
+ "summary": "바지락·동죽 해감 시 소금을 많이 넣어도 효과가 없고, 올바른 방법은 검은 봉지로 덮는 것이라는 것을 실연하며 알려주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "아무리 중일 해감해도 모래가 씹혔던 이유?",
+  "type": "다들속았다"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "아무리 중일 해감해도 모래가 씹혔던 이유?",
+   "purpose": "소금을 아무리 많이 넣어도 해감이 제대로 안 되는 문제를 제기하여 시청자의 관심을 끈다",
+   "seconds": 3.0,
+   "note": "검은 물이 담긴 볼을 위에서 내려다본 클로즈업 샷. 추정"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hold",
+   "text": "으이구~ 고작이건 소금물?",
+   "purpose": "잘못된 방법인 소금물만 사용하는 해감법을 보여준다",
+   "seconds": 7.0,
+   "note": "체크무늬 셔츠 입은 남성이 주방에서 바지락 담긴 유리볼을 들고 설명. 아래 스테인리스 볼 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "소금을 물에 넣는 과정을 클로즈업으로 보여준다",
+   "seconds": 6.0,
+   "note": "손이 소금을 유리 용기에서 스테인리스 볼로 붓는 클로즈업. 바지락 담긴 유리볼 보임. 추정"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "hold",
+   "text": "해감이",
+   "purpose": "올바른 해감 방법의 핵심인 검은 봉지 덮기를 제시한다",
+   "seconds": 8.0,
+   "note": "남성이 검은 비닐봉지를 들고 강조하며 설명하는 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "검은 봉지로 덮는 올바른 해감법의 실제 적용 방법을 시연한다",
+   "seconds": 10.0,
+   "note": "남성이 검은 봉지를 조개 위로 덮으면서 최종 방법을 실연하는 장면. 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "일반인이 흔히 하는 실수(소금만 넣는 것)를 지적하여 공감대를 형성함",
+  "간단한 해결책(검은 봉지)을 명확히 제시하여 실용성이 높음",
+  "얼굴을 보이며 직접 시연하여 신뢰감과 친근감을 동시에 줌"
+ ],
+ "copy_style": "반말 구어체로 친근하게 설명하며 감탄사 사용",
+ "template": "손질법",
+ "item": "바지락·동죽",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "mWiy38XbVns",
+  "title": "소금 아무리 많이 넣어봤자 #해감 안됩니다‼️ #바지락해감 #동죽해감 #조개해감 #해감하는법 #해감소금양 #shorts",
+  "length": 34,
+  "channel": "땡큐파머스",
+  "views": 1610000,
+  "description": ""
+ },
+ "via": "fal"
+}

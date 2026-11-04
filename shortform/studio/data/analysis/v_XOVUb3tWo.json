@@ -1,0 +1,88 @@
+{
+ "summary": "임성근 셰프가 겉절이용 배추를 빠르고 효율적으로 자르는 손질법을 시연하는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "임성근 셰프의",
+  "겉절이 배추자르는 법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "red",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "임성근 셰프의 겉절이 배추자르는 법",
+  "type": "내부자권위"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "유명 셰프가 배추 손질법을 알려준다는 권위를 내세워 시청자의 주의를 끈다",
+   "seconds": 3.0,
+   "note": "배추 밑둥을 칼로 자르는 클로즈업, 장갑 낀 손만 보임 (추정: 시작 후크 장면)"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "detail",
+   "text": "",
+   "purpose": "배추의 심지 부분을 확대해서 어디를 제거해야 하는지 보여준다",
+   "seconds": 10.0,
+   "note": "배추 단면 클로즈업, 심지 부분이 선명하게 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "prep",
+   "text": "",
+   "purpose": "셰프가 직접 배추를 손으로 찢는 손질 방법을 시연한다",
+   "seconds": 15.0,
+   "note": "셰프 전신샷, 주방에서 배추를 들고 손으로 찢는 동작 시연"
+  },
+  {
+   "role": "STEP",
+   "label": "3",
+   "shot": "prep",
+   "text": "",
+   "purpose": "찢어진 배추 잎을 펼쳐서 완성 상태를 보여준다",
+   "seconds": 12.0,
+   "note": "셰프가 손으로 찢은 배추 잎을 들어올려 보여주는 장면"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "최종 손질된 배추의 모습을 한번 더 확인시킨다",
+   "seconds": 13.0,
+   "note": "셰프가 배추를 들고 있는 장면, 썸네일용 컷으로 추정"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "유명 셰프의 권위를 활용해 신뢰도를 높이고 클릭을 유도함",
+  "배추 심지 클로즈업으로 일반인이 놓치기 쉬운 디테일을 명확히 보여줌",
+  "칼 대신 손으로 찢는 차별화된 방법을 제시해 참신함을 줌"
+ ],
+ "copy_style": "셰프가 직접 설명하는 전문가 톤, '겉절이용'처럼 목적을 명확히 제시",
+ "template": "손질법",
+ "item": "배추",
+ "category": "채소",
+ "relevant": true,
+ "meta": {
+  "id": "v_XOVUb3tWo",
+  "title": "임성근 셰프의  겉절이용 배추 자르는법#겉절이#배추#배추자르기#봄동 #임성근",
+  "length": 53,
+  "channel": "임성근 임짱TV",
+  "views": 5430000,
+  "description": "-요리로 \"금손\", \"은손\"이 되고 싶은 절박하신 분들만 클릭해주세요. 임짱이 함께하겠습니다. \nhttps://www.youtube.com/channel/UCRMWrRIcsVtOVKuIvC4Icvg/join"
+ },
+ "via": "fal"
+}

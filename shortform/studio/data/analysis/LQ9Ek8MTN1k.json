@@ -1,0 +1,88 @@
+{
+ "summary": "207kg 대형 참치를 1분 안에 빠르게 해체하는 과정을 압축해서 보여주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "207kg 참치",
+  "1분 해체쇼"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "text_only",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "207kg 참치 1분 해체쇼",
+  "type": "숫자리스트"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "자연치",
+   "purpose": "207kg 대형 참치를 1분 만에 해체한다는 강렬한 첫인상을 심어준다",
+   "seconds": 8.0,
+   "note": "주방 작업대 위 거대한 참치 원물, 셰프 2명이 준비하는 모습. 위아래 레터박스에 제목 고정"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 1",
+   "shot": "prep",
+   "text": "자연치",
+   "purpose": "참치 해체 시작 단계로 칼을 들고 작업을 준비하는 모습을 보여준다",
+   "seconds": 10.0,
+   "note": "추정: 셰프가 칼을 들고 참치 머리 부분부터 손질 시작. 화면 하단에 자막"
+  },
+  {
+   "role": "STEP",
+   "label": "STEP 2",
+   "shot": "detail",
+   "text": "그 위로 타고 내려가야",
+   "purpose": "참치 머리를 분리하고 내부 살점이 드러나는 디테일을 클로즈업으로 보여준다",
+   "seconds": 10.0,
+   "note": "참치 머리 부분 클로즈업, 칼로 자르면서 붉은 살이 드러나는 모습"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "완벽하게 해체된 참치 등뼈와 갈비뼈 전체를 들어올려 결과물을 자랑스럽게 보여준다",
+   "seconds": 12.0,
+   "note": "셰프가 웃으며 해체된 참치 뼈 전체를 들어올린 영웅샷"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "detail",
+   "text": "그 위로 타고 내려가야",
+   "purpose": "최종 해체 결과물의 디테일을 한 번 더 강조하며 마무리한다",
+   "seconds": 10.0,
+   "note": "추정: 다시 한번 해체된 참치 뼈와 살의 클로즈업. 표지(썸네일)와 동일한 장면"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "207kg이라는 구체적 숫자와 '1분 해체'라는 시간 압축이 강력한 호기심을 유발함",
+  "레터박스에 고정된 큰 제목이 전 구간 노출되어 콘텐츠 정체성을 명확히 각인시킴",
+  "거대한 참치 원물→해체 과정→완성된 뼈 들어올리기로 이어지는 서사가 만족감을 줌"
+ ],
+ "copy_style": "숫자 강조, 짧고 강렬한 명사형 제목",
+ "template": "손질법",
+ "item": "참치",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "LQ9Ek8MTN1k",
+  "title": "1분만에 보는 참치 해체",
+  "length": 50,
+  "channel": "마스터셰프 신동민",
+  "views": 6110000,
+  "description": "#참치 #축양참치 #생선 #생선손질 #손질법 #오마카세 #참치해체 #신동민셰프 #레시피 #요리 #포항 #게으른해적 #현수산 #죽도시장 #캐비어 #초호화 #호화 #도로 #오도로 #쥬도로 #참치뱃살 #초밥 #200 #207 #대왕참치 #대형참치 #초대형참치 \n\n🌠 instagram : https://www.instagram.com/chef.shindongmin/\n✉️ 문의 : lia@3ycorp.kr"
+ },
+ "via": "fal"
+}

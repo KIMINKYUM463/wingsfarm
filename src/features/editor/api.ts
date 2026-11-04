@@ -367,6 +367,18 @@ export const searchHeroStock = async (projectId: string, query: string) =>
   (await httpClient.get<ExternalApiResponse<HeroStockResult>>(ENDPOINTS.PROJECTS.HERO_MOTION_STOCK(projectId, query), { withAuth: true }))
     .data;
 
+/** 내 영상 첨부 (multipart) — 스톡과 같이 골라 AI 컷 편집에 넣는다 */
+export async function uploadHeroStockVideo(projectId: string, file: File) {
+  const body = new FormData();
+  body.append('file', file);
+  const res = await fetch(`/api/lever${ENDPOINTS.PROJECTS.HERO_MOTION_UPLOAD(projectId)}`, { method: 'POST', body });
+  const json = (await res.json().catch(() => null)) as ExternalApiResponse<{ video: StockVideo }> | null;
+  if (!res.ok || !json?.isSuccess || !json.data?.video) {
+    throw new CustomError(res.status, json?.message ?? '영상을 올리지 못했어요.');
+  }
+  return json.data.video;
+}
+
 /** 움직이는 컷 → 상세페이지 폭 GIF (응답이 JSON이 아니라 파일이라 fetch로 직접 받는다) */
 export async function requestHeroGif(projectId: string, outWidth: number) {
   const res = await fetch(`/api/lever${ENDPOINTS.PROJECTS.HERO_MOTION_GIF(projectId)}`, {

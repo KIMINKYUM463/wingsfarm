@@ -1,0 +1,85 @@
+{
+ "summary": "가리비를 삶지 말고 쪄서 먹는 올바른 조리법을 단계별로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "제발 가리비 삶아서 먹지 마세요",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "crave",
+   "text": "가리비는 절대",
+   "purpose": "잘못된 조리법(삶기)에 대해 경고하며 시청자의 주의를 끈다",
+   "seconds": 3.0,
+   "note": "조리된 가리비 클로즈업, 노란색 강조 자막. 추정: 잘못된 방법을 경고하는 오프닝"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hook",
+   "text": "흐르는 물에",
+   "purpose": "흐르는 물에 씻는 것도 잘못된 방법임을 알려준다",
+   "seconds": 8.0,
+   "note": "주방에서 출연자가 카메라를 보며 설명하는 장면"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "hero",
+   "text": "물도 채반도",
+   "purpose": "생 홍가리비의 모습을 보여주며 올바른 재료 상태를 확인시킨다",
+   "seconds": 10.0,
+   "note": "흰색 그릇에 담긴 신선한 홍가리비 전체 샷"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "숙숙 비벼보세요",
+   "purpose": "가리비를 쪄서 조리하는 올바른 방법을 시연한다",
+   "seconds": 10.0,
+   "note": "녹색 냄비에서 가리비를 젓가락으로 다루는 클로즈업, 양념이 발라진 상태. 추정: 찌는 과정 또는 마무리 단계"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "물도 채반도",
+   "purpose": "완성된 찐 홍가리비의 최종 결과물을 보여준다",
+   "seconds": 11.0,
+   "note": "썸네일과 동일한 완성된 홍가리비 그릇 전체 샷"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "제목에서 '삶지 마세요'라는 강한 부정 경고로 일반적인 조리법의 오류를 지적해 클릭을 유도함",
+  "출연자가 직접 등장해 신뢰감을 주면서도 조리 과정을 단계별로 명확하게 보여줌",
+  "홍가리비의 선명한 색상과 완성 샷을 반복 노출해 식욕을 자극함"
+ ],
+ "copy_style": "명령형 반말로 강한 경고와 지시를 전달(~마세요, ~보세요)",
+ "template": "손질법",
+ "item": "홍가리비",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "Pcg35_PPTaU",
+  "title": "제발 가리비 삶아서 먹지 마세요",
+  "length": 42,
+  "channel": "배정길의 비밀레시피",
+  "views": 1610000,
+  "description": "#shorts #가리비 #맛집 \n홍가리비를 제대로 쪄서 먹는 방법을 알려드릴게요"
+ },
+ "via": "fal"
+}

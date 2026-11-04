@@ -1,0 +1,85 @@
+{
+ "summary": "아버지가 수박을 낭비 없이 깔끔하게 자르는 천재적인 방법을 단계별로 시연하는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "green",
+  "size": "big"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "이 남자는",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "이 남자는",
+   "purpose": "아버지가 특별한 수박 자르는 방법을 소개할 것임을 예고한다",
+   "seconds": 3.0,
+   "note": "주방에서 할아버지가 손짓하며 말하는 모습, 수박은 보이지 않음 (추정)"
+  },
+  {
+   "role": "STEP",
+   "label": "1",
+   "shot": "prep",
+   "text": "옥, 제가 잘라드릴게요",
+   "purpose": "수박을 도마 위에 놓고 자를 준비를 한다는 것을 보여준다",
+   "seconds": 6.0,
+   "note": "할아버지가 도마 위 통수박을 가리키며 설명, 정면 풀샷"
+  },
+  {
+   "role": "STEP",
+   "label": "2",
+   "shot": "prep",
+   "text": "남작한 점시 하나 뒤",
+   "purpose": "수박을 반으로 자르지 않고 특정 방식으로 칼집을 낸다는 것을 설명한다",
+   "seconds": 7.0,
+   "note": "할아버지가 칼로 수박에 세로 칼집을 넣은 모습, 수박 전체가 보이는 구도"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "보기 좋고, 쉽고, 깨끗하고",
+   "purpose": "자른 수박 조각을 보기 좋고 먹기 좋게 깨끗하게 손질하는 팁을 알려준다",
+   "seconds": 8.0,
+   "note": "할아버지가 손으로 수박 한 조각을 들고 보여주는 클로즈업, 접시 위 세로로 자른 수박 반쪽이 보임"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "남작한 점시 하나 뒤",
+   "purpose": "최종 결과물인 깔끔하게 자른 수박의 완성된 모습을 보여준다",
+   "seconds": 8.0,
+   "note": "할아버지가 다시 통수박을 가리키며 마무리 설명, 같은 구도 반복으로 완결성 강조 (추정)"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "할아버지라는 권위 있는 인물이 직접 등장해 신뢰도를 높임",
+  "수박을 낭비 없이 자르는 실용적인 팁이라 즉시 따라 할 수 있음",
+  "단계별로 명확하게 보여주고 '보기 좋고 쉽고 깨끗하다'는 혜택을 강조함"
+ ],
+ "copy_style": "존댓말과 반말 혼용, 단계별 설명형, 결과의 장점을 나열",
+ "template": "손질법",
+ "item": "수박",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "EzcEh9IMYFM",
+  "title": "아버지의 천재적인 수박 자르는 방법",
+  "length": 32,
+  "channel": "지구별",
+  "views": 16880000,
+  "description": ""
+ },
+ "via": "fal"
+}

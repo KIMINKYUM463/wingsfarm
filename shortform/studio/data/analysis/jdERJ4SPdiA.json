@@ -1,0 +1,85 @@
+{
+ "summary": "시장 과일가게 달인이 멜론을 손질하여 꼬치를 꽂아 판매 가능한 형태로 만드는 과정을 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "시장",
+ "music": "없음",
+ "hook": {
+  "text": "멜론 겉면을 칼로 깎아내기 시작",
+  "type": "현장"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "",
+   "purpose": "멜론 겉껍질을 칼로 깎아내는 모습으로 손질 과정의 시작을 보여준다",
+   "seconds": 8.0,
+   "note": "흰 접시 위 멜론, 손이 칼로 껍질 깎기 시작, 시장 매대 앞 - 추정: 칼질 시작 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "멜론 껍질을 깔끔하게 벗겨내는 손질 기술을 보여준다",
+   "seconds": 10.0,
+   "note": "칼로 멜론 껍질을 벗기는 클로즈업, 손의 움직임 집중 - 추정: 껍질 제거 과정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "껍질이 벗겨진 멜론에 꼬치를 꽂는 준비를 한다",
+   "seconds": 8.0,
+   "note": "껍질 벗겨진 연두색 멜론, 흰 꼬치 여러 개, 손에 꼬치 들고 있음 - 추정: 꼬치 준비"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "멜론에 꼬치를 균등하게 꽂아 먹기 편한 형태로 만든다",
+   "seconds": 10.0,
+   "note": "멜론에 꼬치 5-6개 균등 간격으로 꽂힌 모습, 손이 꼬치 추가 중"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "완성된 멜론 꼬치 상품의 최종 모습을 보여준다",
+   "seconds": 7.0,
+   "note": "꼬치 꽂힌 멜론 완성품, 비닐 포장 일부 보임, 판매 준비된 상태 - 추정: 최종 완성 장면"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "달인의 능숙한 칼 솜씨와 빠른 손놀림이 보는 재미를 주고 전문성을 드러낸다",
+  "별도 자막 없이 ASMR 방식으로 과정만 집중해서 보여줘 짧은 시간에 몰입도가 높다",
+  "2천원이라는 저렴한 가격 정보가 클릭과 공유를 유도했다"
+ ],
+ "copy_style": "자막 없음, 현장음과 과정만으로 전달",
+ "template": "손질법",
+ "item": "멜론",
+ "category": "과일",
+ "relevant": true,
+ "meta": {
+  "id": "jdERJ4SPdiA",
+  "title": "과일 자르기 달인의 깔끔한 멜론 컷팅 스킬!",
+  "length": 43,
+  "channel": "푸디런 FoodieRun",
+  "views": 21550000,
+  "description": "과일 자르기 달인의 깔끔한 멜론 컷팅 스킬! Amazing Korean Melon Cutting Skills\n\n💨 정보 (information)\n\n💲 가격 (Price) : 멜론 KRW 2,000                                                  \n\n💕화면 설정에서 화질을 고화질로 변경하시면 보다 더 선명하게 보실 수 있습니다.\n\n👍영상을 재밌게 보셨다면 구독과 좋아요 부탁드립니다.\n\n🎬FoodieRun 구독 : https://bit.ly/3bsJ3ZJ\n\n💌 촬영 요청 및 제보 이메일 (e-mail : foodierun77@naver.com)\n\n#남대문과일 #과일자르기 #Shorts"
+ },
+ "via": "fal"
+}

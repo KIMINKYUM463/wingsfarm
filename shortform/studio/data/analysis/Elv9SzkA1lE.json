@@ -1,0 +1,87 @@
+{
+ "summary": "대게를 깔끔하게 발라먹는 방법을 단계별로 시연하며 물병을 활용한 팁을 소개하는 영상",
+ "layout": "full",
+ "title_lines": [
+  "대게 살 아무지게 발라내는 법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "medium"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "식당",
+ "music": "경쾌한",
+ "hook": {
+  "text": "대게 살 아무지게 발라내는 법",
+  "type": "쉬움"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "대게 살 아무지게 발라내는 법",
+   "purpose": "대게를 깔끔하게 먹는 방법이 있다고 관심을 유도한다",
+   "seconds": 15.0,
+   "note": "식당 배경에 사람들이 보이고 대게 이모티콘과 제목이 상단에 고정. 추정: 프로그램 소개 및 문제 제기"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "대게 다리를 손으로 잡고 있는 모습을 클로즈업으로 보여준다",
+   "seconds": 30.0,
+   "note": "검은 장갑을 낀 손이 대게 다리를 들고 있는 클로즈업. 추정: 첫 번째 단계 시연"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "당기면서 살짝 이렇게 내요",
+   "purpose": "물병을 이용한 특별한 팁을 알려준다",
+   "seconds": 30.0,
+   "note": "대게 다리를 손으로 잡고 당기는 동작 클로즈업. 물병 활용 장면 추정"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "",
+   "purpose": "깔끔하게 발라낸 대게 살의 결과물을 보여준다",
+   "seconds": 30.0,
+   "note": "접시 위에 깔끔하게 발라진 대게 살이 놓여 있는 완성 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "detail",
+   "text": "당기면서 살짝 이렇게 나요",
+   "purpose": "시청자에게 방송 시청을 유도한다",
+   "seconds": 25.0,
+   "note": "다시 한번 대게 다리를 들고 있는 클로즈업과 하단에 [월] 밤 9시 방송 정보 표시 추정"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "대게라는 고급 수산물의 실용적인 팁이 술자리 인싸라는 공감 가능한 목표와 연결되어 클릭을 유도함",
+  "물병이라는 간단한 도구만으로 해결할 수 있다는 쉬움을 강조해 시청 동기를 높임",
+  "검은 장갑과 클로즈업 샷으로 전문성과 위생을 동시에 보여줌"
+ ],
+ "copy_style": "평서형 설명체, 실용적 팁 강조, 인싸 등 친근한 용어 사용",
+ "template": "손질법",
+ "item": "대게",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "Elv9SzkA1lE",
+  "title": "대게 깔끔하게 먹는 방법",
+  "length": 130,
+  "channel": "SBS",
+  "views": 4120000,
+  "description": "술자리 인싸가 되고 싶은 사람 일반 물병만 준비하세요\n#SBS교양 #생활의달인 #AMasterOfLiving\n\nSBS '생활의 달인'\n☞ [월] 밤 9시\n\nCopyright Ⓒ SBS. All rights reserved. 무단 전재, 재배포 및 AI학습 이용 금지"
+ },
+ "via": "fal"
+}

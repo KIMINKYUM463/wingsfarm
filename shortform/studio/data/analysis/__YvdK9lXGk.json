@@ -1,0 +1,87 @@
+{
+ "summary": "한 사람이 카메라를 보며 '무조건 제일 맛있는 숯불김'이라는 제목으로 숯불김을 소개하고 추천하는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "무조건 제일 맛있는 숯불김"
+ ],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "스튜디오",
+ "music": "경쾌한",
+ "hook": {
+  "text": "무조건 제일 맛있는 숯불김",
+  "type": "실패없음"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "아이~~",
+   "purpose": "무조건 제일 맛있는 숯불김이라는 강한 주장으로 시청자의 관심을 끈다",
+   "seconds": 15.0,
+   "note": "안경 쓴 남성이 정면을 보며 말하는 장면, 배경은 칠판이 있는 스튜디오"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "hook",
+   "text": "내가",
+   "purpose": "제품에 대해 설명하며 시청자의 궁금증을 유발한다",
+   "seconds": 12.0,
+   "note": "손을 머리 쪽으로 올리며 설명하는 장면 (추정)"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "hook",
+   "text": "그거 장인이야",
+   "purpose": "제품의 특징이나 장점을 강조하며 설명을 이어간다",
+   "seconds": 12.0,
+   "note": "손가락으로 가리키며 강조하는 제스처 (추정)"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "hold",
+   "text": "알아?",
+   "purpose": "실제 숯불김 제품을 손에 들고 보여주며 신뢰성을 높인다",
+   "seconds": 12.0,
+   "note": "손에 제품(추정: 숯불김 포장)을 들고 보여주는 장면 (추정)"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hook",
+   "text": "그거 장인이야",
+   "purpose": "다시 한번 제품의 우수성을 강조하며 구매를 유도한다",
+   "seconds": 12.0,
+   "note": "손가락으로 가리키며 마무리 멘트를 하는 장면 (추정)"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "'무조건 제일 맛있는'이라는 강력한 단언형 제목으로 즉각적인 관심 유발",
+  "친근한 말투와 제스처로 시청자와의 거리감을 좁히며 신뢰감 형성",
+  "짧은 63초 안에 제품을 소개하고 추천하는 빠른 전개로 집중력 유지"
+ ],
+ "copy_style": "반말, 단언형, 친근한 대화체",
+ "template": "판매형",
+ "item": "숯불김",
+ "category": "가공",
+ "relevant": true,
+ "meta": {
+  "id": "__YvdK9lXGk",
+  "title": "무조건 제일 맛있는 숯불김",
+  "length": 63,
+  "channel": "생선꾹",
+  "views": 2570000,
+  "description": "무조건 제일 맛있는 숯불김"
+ },
+ "via": "fal"
+}

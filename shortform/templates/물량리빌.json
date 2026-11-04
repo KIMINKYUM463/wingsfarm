@@ -1,0 +1,116 @@
+{
+  "name": "물량·개수 리빌",
+  "kind": "자동",
+  "layout": "letterbox",
+  "when": "박스 단위 상품. '몇 개 들어가요?' 질문이 많을 때",
+  "evidence": "괴산 절임배추 얼마나 들어갈까요 104만(14초) / 수산시장 'X' 달라고 했더니 31만·10만 / 부사사과 한그루 몇 개 6.2만",
+  "title": [
+    "{title1}",
+    "{title2}"
+  ],
+  "info": "{info|{price_text|주문은 프로필 링크}}",
+  "segments": [
+    {
+      "kind": "HOOK",
+      "say": "{hook}",
+      "source": "{hook_source|ai:hero}"
+    },
+    {
+      "each": "steps",
+      "kind": "TIP",
+      "say": "{text}",
+      "source": "{source}"
+    },
+    {
+      "kind": "REVEAL",
+      "say": "{reveal}",
+      "source": "{reveal_source|ai:pack}",
+      "counter": "{count}",
+      "unit": "{unit}"
+    },
+    {
+      "kind": "CTA",
+      "say": "{outro|이 구성 그대로 보내드려요. 프로필 링크에서 주문하세요.}",
+      "source": "{outro_source|ai:hero}"
+    }
+  ],
+  "fields": [
+    {
+      "key": "title1",
+      "label": "제목 1줄 (흰색)",
+      "type": "text",
+      "max": 13,
+      "hint": "품목명이 들어간 주제. 예: 꿀참외 고르는 법"
+    },
+    {
+      "key": "title2",
+      "label": "제목 2줄 (노란색)",
+      "type": "text",
+      "max": 13,
+      "hint": "궁금증을 만드는 한 마디. 예: 딱 3가지만 보세요"
+    },
+    {
+      "key": "hook",
+      "label": "첫 문장 (훅)",
+      "type": "text",
+      "hint": "질문형. 예: {품목} *한 박스*, 몇 개 들어가는지 세어 볼게요."
+    },
+    {
+      "key": "hook_source",
+      "label": "첫 장면",
+      "type": "source",
+      "default": "ai:hero"
+    },
+    {
+      "key": "steps",
+      "label": "담는 과정",
+      "type": "list",
+      "min": 1,
+      "max": 2,
+      "count": 1,
+      "sources": [
+        "ai:hold",
+        "ai:pack"
+      ],
+      "hint": "담는 장면 설명"
+    },
+    {
+      "key": "count",
+      "label": "개수 (숫자)",
+      "type": "number",
+      "hint": "실제 박스 구성 숫자"
+    },
+    {
+      "key": "unit",
+      "label": "단위",
+      "type": "text",
+      "max": 4,
+      "hint": "개, 과, 마리, 포기"
+    },
+    {
+      "key": "reveal",
+      "label": "공개 문장",
+      "type": "text",
+      "hint": "예: *열두 개*가 꽉 차게 들어가요. 숫자는 한글로"
+    },
+    {
+      "key": "reveal_source",
+      "label": "공개 장면",
+      "type": "source",
+      "default": "ai:pack"
+    },
+    {
+      "key": "outro",
+      "label": "마무리 문장",
+      "type": "text",
+      "hint": "예: 이 구성 그대로 보내드려요. 프로필 링크에서 주문하세요."
+    },
+    {
+      "key": "info",
+      "label": "아래 노란 바",
+      "type": "text",
+      "max": 22,
+      "hint": "주문 안내 한 줄. 예: 이렇게 고른 참외, 프로필 링크에"
+    }
+  ]
+}

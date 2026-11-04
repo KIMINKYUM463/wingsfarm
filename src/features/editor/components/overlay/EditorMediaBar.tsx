@@ -235,7 +235,7 @@ function MotionCredits({ motion }: { motion: HeroMotionInfo }) {
           <a href={credit.url} target="_blank" rel="noreferrer" className="underline">
             {credit.author}
           </a>
-          ({STOCK_SITES[credit.source ?? 'pexels'].label})
+          ({STOCK_SITES[credit.source ?? 'pexels']?.label ?? '영상'})
         </span>
       ))}{' '}
       무료 영상
@@ -347,7 +347,7 @@ function HeroMotionModal({
         </div>
 
         <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
-          <div className="text-sm font-semibold text-gray-900">무료 영상 최대 {MAX_STOCK_PICKS}개로 AI 컷 편집</div>
+          <div className="text-sm font-semibold text-gray-900">무료·내 영상 최대 {MAX_STOCK_PICKS}개로 AI 컷 편집</div>
           <StockVideoPicker
             projectId={projectId}
             disabled={busy}

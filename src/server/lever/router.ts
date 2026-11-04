@@ -46,7 +46,7 @@ import {
   updateFrame,
 } from './frames';
 import { isValidGeminiKey } from './gemini';
-import { applyHeroMotion, buildHeroGif, getHeroMotion, searchHeroStock, startHeroMotion } from './media/heroMotion';
+import { applyHeroMotion, buildHeroGif, getHeroMotion, searchHeroStock, startHeroMotion, uploadHeroStockVideo } from './media/heroMotion';
 import { confirmGeneration, getGenerationJob, getGenerationJobStatus, startGeneration } from './generation';
 import { ApiError, badRequest, createContext, fail, noContent, notFound, ok, toResponse, type RouteHandler } from './http';
 import {
@@ -106,6 +106,7 @@ const ROUTES: [Method, string, RouteHandler][] = [
   }],
   ['POST', 'projects/:id/hero-motion/apply', async ({ params, body }) => applyHeroMotion(params.id, await body())],
   ['GET', 'projects/:id/hero-motion/stock', ({ params, query }) => searchHeroStock(params.id, query.get('q'))],
+  ['POST', 'projects/:id/hero-motion/upload', ({ params, req }) => uploadHeroStockVideo(params.id, req)],
   ['POST', 'projects/:id/hero-motion/gif', async ({ params, body }) => buildHeroGif(params.id, await body())],
 
   // ===== 초안 (입력 → 무료 기획 초안 → 생성) =====

@@ -1,0 +1,88 @@
+{
+ "summary": "LA갈비를 사거나 먹을 때 속지 않도록 잘못된 구분 방법을 경고하고 올바른 구분법을 보여 주는 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "속지마세요",
+  "LA갈비 사기 구분법"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "속지마세요 LA갈비 사기 구분법",
+  "type": "다들속았다"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "속지마세요 LA갈비 사기 구분법",
+   "purpose": "LA갈비를 구매할 때 속지 말라는 경고로 시청자의 주의를 끈다",
+   "seconds": 6.0,
+   "note": "흰 접시 위 구운 LA갈비 전체샷, 뼈가 보이는 구도, 추정: 오프닝"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "이방법으로",
+   "purpose": "잘못 알려진 구분 방법을 제시하여 시청자가 흔히 착각하는 부분을 지적한다",
+   "seconds": 8.0,
+   "note": "구운 LA갈비 클로즈업, 양념 묻은 표면과 뼈 단면이 보임, 추정: 잘못된 방법 소개 장면"
+  },
+  {
+   "role": "COMPARE",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "두 가지 LA갈비를 나란히 비교하며 차이점을 시각적으로 명확히 보여 준다",
+   "seconds": 10.0,
+   "note": "상단: 왼쪽 갈비에 빨간 원 표시, 하단: 펼쳐진 갈비 비교샷, 추정: 잘못된 갈비와 제대로 된 갈비 구분"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "올바른 LA갈비의 특징을 클로즈업으로 보여 주며 핵심을 전달한다",
+   "seconds": 8.0,
+   "note": "펼쳐진 갈비의 클로즈업, 뼈와 고기 단면 디테일, 추정: 정답 리빌 장면"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "hook",
+   "text": "이방법으로",
+   "purpose": "썸네일용 대표 컷으로 영상의 핵심 메시지를 다시 한번 각인시킨다",
+   "seconds": 5.0,
+   "note": "구운 LA갈비 전체샷, 첫 장면과 유사한 구도, 추정: 마무리 또는 썸네일"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "제목에 '속지마세요', '당한겁니다' 등 부정 경고 문구로 불안감을 자극해 클릭을 유도했다",
+  "화면 상단에 노란색 큰 글씨로 고정 제목을 배치해 쇼츠 피드에서 가독성을 극대화했다",
+  "잘못된 방법과 올바른 방법을 명확히 대비시켜 정보의 가치를 높이고 끝까지 시청하게 만들었다"
+ ],
+ "copy_style": "반말 경고형, 부정 어조로 긴장감 조성",
+ "template": "비교",
+ "item": "LA갈비",
+ "category": "축산",
+ "relevant": true,
+ "meta": {
+  "id": "_88X5hfuLr4",
+  "title": "LA갈비 먹을때 속지마세요(이건 당한겁니다)",
+  "length": 37,
+  "channel": "인생2회차",
+  "views": 4480000,
+  "description": "LA갈비 속지마세요(이건 당한겁니다)"
+ },
+ "via": "fal"
+}

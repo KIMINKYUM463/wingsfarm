@@ -1,0 +1,57 @@
+{
+  "name": "판매형 (훅 → 산지 → 특징 → 가격 → 주문)",
+  "kind": "자동",
+  "engine": "short",
+  "layout": "full",
+  "when": "이미 관심 있는 사람(팔로워·광고 재타기팅)에게. 가격·구성을 분명히 보여 줄 때",
+  "evidence": "산지직송 판매 쇼츠는 대부분 100~4천 회. 정보형으로 데려온 사람에게 보여 주는 용도",
+  "fields": [
+    {
+      "key": "hook_text",
+      "label": "첫 문장 (훅)",
+      "type": "text",
+      "hint": "예: 마트에서 산 과일, 맛없어서 실망하신 적 있으시죠?"
+    },
+    {
+      "key": "origin",
+      "label": "산지",
+      "type": "text",
+      "max": 12,
+      "hint": "예: 제주 서귀포"
+    },
+    {
+      "key": "features",
+      "label": "특징",
+      "type": "list",
+      "min": 1,
+      "max": 3,
+      "count": 3,
+      "sources": [],
+      "hint": "사실인 특징만. 숫자는 확인된 것만"
+    },
+    {
+      "key": "price",
+      "label": "판매가 (원)",
+      "type": "number"
+    },
+    {
+      "key": "original_price",
+      "label": "정가 (원, 선택)",
+      "type": "number"
+    },
+    {
+      "key": "unit",
+      "label": "구성",
+      "type": "text",
+      "max": 20,
+      "hint": "예: 5kg 한 박스 · 무료배송"
+    },
+    {
+      "key": "cta",
+      "label": "마무리 문장",
+      "type": "text",
+      "hint": "예: 수량이 한정돼 있어요. 프로필 링크에서 지금 주문하세요."
+    }
+  ],
+  "segments": []
+}

@@ -1,0 +1,89 @@
+{
+ "summary": "랍스터를 먹기 전 꼬리 특정 부위를 제거해야 유발할 수 있는 문제를 예방할 수 있다고 알려주는 팁 영상",
+ "layout": "full",
+ "title_lines": [
+  "랍스터를 먹기 전",
+  "꼭 해야하는 것"
+ ],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "yellow",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "배 위",
+ "music": "경쾌한",
+ "hook": {
+  "text": "랍스터를 먹기 전 꼭 해야하는 것",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "랍스터를 먹기 전",
+   "purpose": "랍스터를 먹기 전에 반드시 해야 할 일이 있다고 주의를 끈다",
+   "seconds": 2.0,
+   "note": "손에 든 랍스터 전체 모습, 배 위 야외 촬영. 추정: 첫 장면"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "바로 랍스터의",
+   "purpose": "랍스터 꼬리 끝의 특정 부위를 빨간 화살표로 지목하여 보여준다",
+   "seconds": 3.0,
+   "note": "랍스터 꼬리 끝 부분을 클로즈업, 빨간 화살표로 특정 부위 강조"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "prep",
+   "text": "이걸 제거하지 않으면",
+   "purpose": "해당 부위를 제거하지 않으면 문제가 생긴다고 경고한다",
+   "seconds": 3.0,
+   "note": "손으로 랍스터 꼬리를 잡고 있는 모습, 바다 배경. 추정: 제거 전 상태"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "hold",
+   "text": "유발할 수 있다고 하고",
+   "purpose": "제거하지 않았을 때의 부정적 결과를 설명한다",
+   "seconds": 3.0,
+   "note": "랍스터를 들고 있는 손 클로즈업, 배 위. 추정: 경고 내용 전달"
+  },
+  {
+   "role": "RIGHT",
+   "label": "",
+   "shot": "prep",
+   "text": "이걸 제거하지 않으면",
+   "purpose": "올바른 방법으로 해당 부위를 제거해야 한다고 마무리한다",
+   "seconds": 4.0,
+   "note": "다시 랍스터를 손에 든 모습, 같은 구도 반복. 추정: 올바른 방법 강조 또는 루프"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "랍스터라는 고급 식재료에 대한 숨은 팁이라는 희소성",
+  "부정 경고('안 하면 문제 생김') 훅으로 클릭 유도",
+  "15초 짧은 러닝타임에 핵심 정보만 압축하여 재시청 유도",
+  "배 위 현장감과 큰 랍스터 비주얼로 시선 집중"
+ ],
+ "copy_style": "경고형 문장, 핵심어 노란색 강조, 짧고 단정적인 어투",
+ "template": "손질법",
+ "item": "랍스터",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "fvrL2M947B4",
+  "title": "랍스터를 먹기 전 꼭 해야하는 것",
+  "length": 15,
+  "channel": "띠용띠용 엄띠용",
+  "views": 3970000,
+  "description": ""
+ },
+ "via": "fal"
+}

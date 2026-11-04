@@ -1,0 +1,88 @@
+{
+ "summary": "킹크랩을 굽고 갈릭버터소스를 곁들여 먹는 방법을 단계별로 보여주는 조리법 영상",
+ "layout": "letterbox",
+ "title_lines": [
+  "\"다들 미쳤다~!\"고 칭찬받는",
+  "킹크랩 먹는법"
+ ],
+ "caption": {
+  "style": "plain",
+  "color": "white",
+  "size": "medium"
+ },
+ "voice": "talking_head",
+ "presenter": "face",
+ "setting": "주방",
+ "music": "경쾌한",
+ "hook": {
+  "text": "다들 미쳤다고 칭찬받는 킹크랩 먹는법",
+  "type": "만족감"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "먼저 다리부터 차곡차곡입니다",
+   "purpose": "갈릭버터소스를 활용한 킹크랩 먹는법이 특별하다는 것을 알린다",
+   "seconds": 10.0,
+   "note": "주방에서 출연자가 앉아 설명하는 모습, 앞에 킹크랩 다리가 놓여 있음"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "킹크랩 다리에 갈릭버터소스를 바른 상태로 굽는 과정을 보여준다",
+   "seconds": 12.0,
+   "note": "그릴망 위에 갈릭버터가 발라진 킹크랩 다리들이 굽혀지는 클로즈업, 추정"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "달을 줄 낫주고요",
+   "purpose": "킹크랩 다리를 뒤집어 살이 보이도록 굽는 과정을 보여준다",
+   "seconds": 12.0,
+   "note": "그릴망 위에 뒤집혀진 킹크랩 다리, 붉은 살과 흰 살이 드러난 클로즈업"
+  },
+  {
+   "role": "SHOW",
+   "label": "",
+   "shot": "crave",
+   "text": "",
+   "purpose": "완성된 킹크랩을 먹는 장면으로 맛있음을 전달한다",
+   "seconds": 11.0,
+   "note": "출연자가 킹크랩 다리를 입에 가져가 먹는 장면, 추정"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "detail",
+   "text": "달을 줄 낫주고요",
+   "purpose": "완성된 킹크랩의 비주얼을 최종적으로 보여준다",
+   "seconds": 12.0,
+   "note": "그릴망 위 완성된 킹크랩 다리들의 클로즈업, 썸네일용 장면"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "권위있는 칭찬('다들 미쳤다')을 제목에 배치해 호기심을 자극함",
+  "갈릭버터소스 레시피를 설명란에 상세히 제공해 실용성을 높임",
+  "조리 과정을 클로즈업으로 보여주며 먹는 장면까지 포함해 식욕을 자극함"
+ ],
+ "copy_style": "반말·친근한 설명투",
+ "template": "손질법",
+ "item": "킹크랩",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "w0XCsc2WjvQ",
+  "title": "\"다들 미쳤다~!\"고 칭찬받는 킹크랩 먹는법 #shorts",
+  "length": 57,
+  "channel": "입질의추억TV jiminTV",
+  "views": 4420000,
+  "description": "풀영상 보러가기 : https://youtu.be/SEmUx8Lgs3s\n\n※ 갈릭버터소스 레시피\n- 무염버터 2~3큰술 \n- 볶은 간마늘 반스푼\n- 레몬즙 1~2스푼(입맛에 맞게 가감. 너무 시지 않게)\n- 꿀 1~2스푼(입맛에 맞게 가감)\n- 소금, 후추(버터양과 입맛에 맞게 가감)\n- 파슬리 톡톡\n\n비즈니스 문의 : fishingman@tmcentkorea.co.kr\n입질의추억 유튜브 구독하기 : https://www.youtube.com/입질의추억tv\n입질의 추억 티스토리 블로그 : https://slds2.tistory.com\n입질의 추억 네이버 블로그 : https://blog.naver.com/slds2\n입질의 추억 페이스북 : https://www.facebook.com/slds22\n입질의 추억"
+ },
+ "via": "fal"
+}

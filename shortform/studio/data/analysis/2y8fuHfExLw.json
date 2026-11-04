@@ -1,0 +1,85 @@
+{
+ "summary": "빨간 작업대 위에서 바다장어를 손질하는 과정을 손 클로즈업으로 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "none",
+  "color": "none",
+  "size": "medium"
+ },
+ "voice": "asmr",
+ "presenter": "hands",
+ "setting": "작업장",
+ "music": "없음",
+ "hook": {
+  "text": "바다장어 손질 시작",
+  "type": "현장"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "빨간 작업대와 손질 도구를 보여주며 바다장어 손질 현장임을 알린다",
+   "seconds": 2.0,
+   "note": "빨간 작업대, 칼 고정 장치, 물 흐르는 시스템 보임. 추정: 손질 시작 전 준비 장면"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "바다장어를 작업대 위에 올려놓고 손질을 준비하는 모습을 보여준다",
+   "seconds": 2.0,
+   "note": "손이 바다장어를 작업대에 올림. 핑크색 장갑 착용"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "바다장어를 펼쳐서 손질하기 좋은 상태로 만드는 과정을 보여준다",
+   "seconds": 2.0,
+   "note": "긴 바다장어를 작업대 위에서 펼치는 장면. 핑크색 장갑 낀 손 보임"
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "칼로 바다장어를 손질하는 실제 작업 과정을 클로즈업으로 보여준다",
+   "seconds": 3.0,
+   "note": "칼로 바다장어 손질하는 손 클로즈업. 전문적인 손질 기술 보임"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "손질된 바다장어를 보여주며 주문 연락처를 제공한다",
+   "seconds": 2.0,
+   "note": "추정: 손질 완료된 바다장어 마무리 장면. 제목에 연락처 포함"
+  }
+ ],
+ "pacing": "보통",
+ "why": [
+  "ASMR 형식의 현장 손질 과정이 전문성과 신선함을 동시에 전달한다",
+  "빨간 작업대가 시각적으로 눈에 띄고 청결한 작업 환경을 강조한다",
+  "11초의 짧은 길이에 손질 전 과정을 압축해 반복 시청을 유도한다"
+ ],
+ "copy_style": "자막 없이 현장음과 해시태그로만 소통",
+ "template": "손질법",
+ "item": "바다장어",
+ "category": "수산",
+ "relevant": true,
+ "meta": {
+  "id": "2y8fuHfExLw",
+  "title": "바다장어손질택배 010 2895 2882 #바다장어 #붕장어 #아나고",
+  "length": 11,
+  "channel": "신진호수산",
+  "views": 13500000,
+  "description": ""
+ },
+ "via": "fal"
+}

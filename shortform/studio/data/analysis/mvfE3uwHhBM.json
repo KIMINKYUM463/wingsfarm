@@ -1,0 +1,85 @@
+{
+ "summary": "신선하지 않은 고기를 구별하는 방법을 마블링 패턴을 통해 경고하며 보여주는 영상",
+ "layout": "full",
+ "title_lines": [],
+ "caption": {
+  "style": "keyword_highlight",
+  "color": "white",
+  "size": "big"
+ },
+ "voice": "narration",
+ "presenter": "hands",
+ "setting": "매장",
+ "music": "없음",
+ "hook": {
+  "text": "절대 이런 고기 사지마세요! 관계자들은 줘도 안먹습니다",
+  "type": "부정경고"
+ },
+ "scenes": [
+  {
+   "role": "HOOK",
+   "label": "",
+   "shot": "hook",
+   "text": "취도 안먹는데",
+   "purpose": "손으로 고기 팩을 들어 보여주며 구매하면 안 되는 고기가 있다고 경고한다",
+   "seconds": 5.0,
+   "note": "매장 진열대에서 손이 고기 팩을 들고 있는 모습, 추정: 시작 경고 멘트"
+  },
+  {
+   "role": "WRONG",
+   "label": "",
+   "shot": "detail",
+   "text": "더 신선하니까",
+   "purpose": "고기를 클로즈업하며 신선하지 않다는 것을 강조한다",
+   "seconds": 8.0,
+   "note": "고기 표면을 클로즈업으로 보여주는 장면"
+  },
+  {
+   "role": "TIP",
+   "label": "",
+   "shot": "detail",
+   "text": "딱 이것만 보세요",
+   "purpose": "먹지 말아야 할 이유를 시각적으로 제시한다",
+   "seconds": 8.0,
+   "note": "고기를 다시 한 번 클로즈업하며 핵심 포인트 제시"
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "detail",
+   "text": "안심 / 변개모양 마블링",
+   "purpose": "마블링 패턴이 변개모양인 것을 그림으로 표시하여 나쁜 고기의 특징을 알려준다",
+   "seconds": 10.0,
+   "note": "고기 위에 노란색 선으로 변개 모양 마블링 패턴을 그려 표시한 썸네일형 프레임"
+  },
+  {
+   "role": "CTA",
+   "label": "",
+   "shot": "detail",
+   "text": "딱 이것만 보세요",
+   "purpose": "다시 한번 핵심 메시지를 반복하여 기억하도록 유도한다",
+   "seconds": 6.0,
+   "note": "추정: 마지막 장면에서 핵심 메시지 반복"
+  }
+ ],
+ "pacing": "빠름",
+ "why": [
+  "부정 경고('절대 사지마세요', '줘도 안먹습니다')로 강력한 호기심 유발",
+  "변개모양 마블링이라는 구체적이고 시각적인 판별 기준 제시",
+  "37초 짧은 러닝타임에 핵심 메시지만 반복하여 전달력 극대화"
+ ],
+ "copy_style": "반말·경고형·부정 강조",
+ "template": "고르는법",
+ "item": "소고기(안심)",
+ "category": "축산",
+ "relevant": true,
+ "meta": {
+  "id": "mvfE3uwHhBM",
+  "title": "절대 이런 고기 사지마세요!(관계자들은 줘도 안먹습니다)",
+  "length": 37,
+  "channel": "1분미만",
+  "views": 6430000,
+  "description": "#1분미만 #꿀팁"
+ },
+ "via": "fal"
+}
