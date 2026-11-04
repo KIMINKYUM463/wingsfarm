@@ -27,7 +27,6 @@ import {
   sampleTimes,
   singleCutRenderArgs,
   stockOrientation,
-  totalSeconds,
   VIDEO_PROMPT_RULES,
   videoAspect,
   videoClipArgs,
@@ -206,7 +205,9 @@ async function makeStockMontage(inputs: StockInput[], target: Target, productNam
     );
 
     const captions = withText ? plan.cuts.flatMap((cut) => (cut.caption ? [cut.caption] : [])) : [];
-    const edit = `컷 ${plan.cuts.length}개 · ${totalSeconds(plan.cuts)}초 · 자막 ${captions.length}개`;
+    // concat이라 컷 길이 합이 실제 영상 길이 (xfade 겹침 없음)
+    const seconds = Math.floor(plan.cuts.reduce((s, c) => s + c.duration, 0) * 10) / 10;
+    const edit = `컷 ${plan.cuts.length}개 · ${seconds}초 · 자막 ${captions.length}개`;
     const notice =
       [plan.notice, withText ? null : '자막 글꼴을 찾지 못해 자막 없이 만들었어요.'].filter(Boolean).join(' ') || null;
     return { clip: await readFile(output), summary: plan.summary ? `${plan.summary} (${edit})` : edit, captions, notice };

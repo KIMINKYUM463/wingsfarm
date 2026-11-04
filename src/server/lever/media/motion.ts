@@ -91,13 +91,15 @@ const encodeArgs = [
 ];
 
 /**
- * xfade 직전 스트림 정규화.
- * settb=AVTB는 Linux static 빌드에서 frame_rate를 1/0으로 만들어
- * "The inputs needs to be a constant frame rate; current rate of 1/0 is invalid" 를 낸다.
- * fps + setpts 만으로 CFR·타임라인을 맞춘다.
+ * 컷 입력을 같은 크기·CFR로 맞춘다.
+ * 배포 Linux ffmpeg-static의 xfade는 frame_rate 1/0 입력을 거절하므로
+ * 전환은 xfade 대신 concat + fade in/out 을 쓴다.
  */
-const cfrNormalize = (inputLabel: string, outputLabel: string, width: number, height: number) =>
-  `[${inputLabel}]scale=${width}:${height}:flags=bilinear,fps=${CLIP_FPS},format=yuv420p,setsar=1,setpts=PTS-STARTPTS[${outputLabel}]`;
+const prepareCut = (inputLabel: string, outputLabel: string, width: number, height: number, duration: number) => {
+  const fade = MONTAGE.transition;
+  const fadeOutAt = floor1(Math.max(0, duration - fade));
+  return `[${inputLabel}]scale=${width}:${height}:flags=bilinear,fps=${CLIP_FPS},format=yuv420p,setsar=1,setpts=PTS-STARTPTS,fade=t=in:st=0:d=${fade},fade=t=out:st=${fadeOutAt}:d=${fade}[${outputLabel}]`;
+};
 
 /** PNG 정지 이미지를 영상 입력으로 넣을 때 — framerate 없으면 배포에서 1/0 rate가 된다 */
 const pngInputArgs = (file: string, seconds: number) => [
@@ -110,6 +112,9 @@ const pngInputArgs = (file: string, seconds: number) => [
   '-i',
   file,
 ];
+
+/** concat 기준 총 길이 (컷을 겹치지 않고 이어 붙인다) */
+const concatTotal = (cuts: { duration: number }[]) => floor1(cuts.reduce((sum, c) => sum + c.duration, 0) + 1e-9);
 
 /** 정지 사진 → 천천히 확대(1.0→1.12)하며 왼쪽에서 오른쪽으로 흐르는 클립 */
 export function panClipArgs(input: string, output: string, width: number, height: number) {
@@ -318,7 +323,6 @@ export function singleCutRenderArgs(
 ) {
   const w = even(width);
   const h = even(height);
-  const frames = Math.max(1, Math.round(cut.duration * CLIP_FPS));
   const base = [
     '-y',
     ...DECODE_THREADS,
@@ -330,13 +334,14 @@ export function singleCutRenderArgs(
     cut.path,
   ];
   const motion = `${cutFilter(cut, index, w, h)},format=yuv420p`;
+  // -frames:v 대신 -t 사용: 프레임 수 불일치 시 Linux에서 rate 1/0 메타데이터가 생기는 경우가 있다
   if (!captionPng) {
     return [
       ...base,
       '-vf',
       `${motion},fps=${CLIP_FPS},setpts=PTS-STARTPTS`,
-      '-frames:v',
-      String(frames),
+      '-t',
+      String(cut.duration),
       ...encodeArgs,
       output,
     ];
@@ -354,15 +359,16 @@ export function singleCutRenderArgs(
     ].join(';'),
     '-map',
     '[out]',
-    '-frames:v',
-    String(frames),
+    '-t',
+    String(cut.duration),
     ...encodeArgs,
     output,
   ];
 }
 
 /**
- * 2단계: 이미 같은 크기·프레임으로 맞춰 둔 컷들을 전환·태그 PNG·진행 막대로 잇는다.
+ * 2단계: 컷을 fade in/out 후 concat으로 잇고, 태그 PNG·진행 막대를 올린다.
+ * xfade는 배포 Linux ffmpeg-static에서 rate 1/0 으로 자주 실패해 쓰지 않는다.
  */
 export function joinRenderedCutsArgs({
   cuts,
@@ -379,26 +385,15 @@ export function joinRenderedCutsArgs({
 }) {
   const w = even(width);
   const h = even(height);
-  const total = totalSeconds(cuts);
-  const inputs = cuts.flatMap((c) => [...DECODE_THREADS, '-i', c.path]);
+  const total = concatTotal(cuts);
+  // -r 을 입력 앞에 두면 디코더가 CFR로 읽는다 (배포 xfade/concat 안정화)
+  const inputs = cuts.flatMap((c) => [...DECODE_THREADS, '-r', String(CLIP_FPS), '-i', c.path]);
   if (tagPng) inputs.push(...DECODE_THREADS, ...pngInputArgs(tagPng, total));
   const tagIndex = cuts.length;
 
-  // 컷마다 CFR로 맞춘 뒤 xfade (배포 Linux에서 rate 1/0 방지)
-  const chains = cuts.map((_, i) => cfrNormalize(`${i}:v`, `v${i}`, w, h));
-
-  let joined = 'v0';
-  let length = cuts[0]?.duration ?? 0;
-  for (let i = 1; i < cuts.length; i++) {
-    const offset = floor1(length - MONTAGE.transition + 1e-9);
-    const transition = TRANSITIONS[(i - 1) % TRANSITIONS.length];
-    // xfade 출력도 다음 xfade 입력용으로 다시 CFR 고정
-    chains.push(
-      `[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset},fps=${CLIP_FPS},setpts=PTS-STARTPTS[x${i}]`,
-    );
-    joined = `x${i}`;
-    length += cuts[i]!.duration - MONTAGE.transition;
-  }
+  const chains = cuts.map((c, i) => prepareCut(`${i}:v`, `v${i}`, w, h, c.duration));
+  chains.push(`${cuts.map((_, i) => `[v${i}]`).join('')}concat=n=${cuts.length}:v=1:a=0,fps=${CLIP_FPS},setpts=PTS-STARTPTS[cat]`);
+  let joined = 'cat';
 
   if (tagPng) {
     const x = Math.round(w * 0.045);
@@ -418,14 +413,16 @@ export function joinRenderedCutsArgs({
 
 /**
  * 한 번에 돌리는 고급 편집(테스트·로컬 참고용). 자막은 PNG overlay 경로를 쓰지 않고 모션만 넣는다.
- * 실제 생성은 singleCut + join 경로를 쓴다.
+ * 실제 생성은 singleCut + join 경로를 쓴다. (배포와 같이 xfade 없이 concat)
  */
 export function montageArgs({ cuts, output, width, height }: MontageRender) {
   const w = even(width);
   const h = even(height);
-  const total = totalSeconds(cuts);
+  const total = concatTotal(cuts);
   const inputs = cuts.flatMap((c) => [
     ...DECODE_THREADS,
+    '-r',
+    String(CLIP_FPS),
     '-ss',
     String(c.start),
     '-t',
@@ -433,25 +430,16 @@ export function montageArgs({ cuts, output, width, height }: MontageRender) {
     '-i',
     c.path,
   ]);
-  const chains = cuts.map(
-    (cut, i) => `[${i}:v]${cutFilter(cut, i, w, h)},format=yuv420p,fps=${CLIP_FPS},setpts=PTS-STARTPTS[v${i}]`,
-  );
-
-  let joined = 'v0';
-  let length = cuts[0]?.duration ?? 0;
-  for (let i = 1; i < cuts.length; i++) {
-    const offset = floor1(length - MONTAGE.transition + 1e-9);
-    const transition = TRANSITIONS[(i - 1) % TRANSITIONS.length];
-    chains.push(
-      `[${joined}][v${i}]xfade=transition=${transition}:duration=${MONTAGE.transition}:offset=${offset},fps=${CLIP_FPS},setpts=PTS-STARTPTS[x${i}]`,
-    );
-    joined = `x${i}`;
-    length += cuts[i]!.duration - MONTAGE.transition;
-  }
+  const chains = cuts.map((cut, i) => {
+    const fade = MONTAGE.transition;
+    const fadeOutAt = floor1(Math.max(0, cut.duration - fade));
+    return `[${i}:v]${cutFilter(cut, i, w, h)},format=yuv420p,fps=${CLIP_FPS},setpts=PTS-STARTPTS,fade=t=in:st=0:d=${fade},fade=t=out:st=${fadeOutAt}:d=${fade}[v${i}]`;
+  });
+  chains.push(`${cuts.map((_, i) => `[v${i}]`).join('')}concat=n=${cuts.length}:v=1:a=0,fps=${CLIP_FPS},setpts=PTS-STARTPTS[cat]`);
 
   const barHeight = Math.max(4, Math.round(h * 0.008));
   chains.push(`color=c=${POINT_COLOR}:s=${w}x${barHeight}:r=${CLIP_FPS}[bar]`);
-  chains.push(`[${joined}]null[base]`);
+  chains.push(`[cat]null[base]`);
   chains.push(`[base][bar]overlay=x=-w+w*t/${total}:y=H-h:shortest=1,fps=${CLIP_FPS},format=yuv420p[out]`);
 
   return ['-y', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-t', String(total), ...encodeArgs, output];

@@ -104,34 +104,36 @@ describe('무료 영상 컷 편집', () => {
 
     it('컷마다 구간을 빠르게 찾고(끝 0.1초 여유) 완성 길이로 자른다', () => {
       const args = montageArgs(render);
-      assert.deepEqual(args.slice(1, 9), ['-threads', '2', '-ss', '1.5', '-t', '1.3', '-i', 'a.mp4']);
-      assert.equal(args[args.indexOf('-t', args.indexOf('-filter_complex')) + 1], String(totalSeconds(cuts)));
+      assert.deepEqual(args.slice(1, 11), ['-threads', '2', '-r', '24', '-ss', '1.5', '-t', '1.3', '-i', 'a.mp4']);
+      assert.equal(args[args.indexOf('-t', args.indexOf('-filter_complex')) + 1], '4.7');
       assert.ok(args.includes('-an'));
     });
 
-    it('줌(번갈아 확대·축소) → 전환 효과로 잇고 → 진행 막대 (CFR 유지, settb=AVTB 금지)', () => {
+    it('줌 → fade → concat으로 잇고 → 진행 막대 (배포에서 xfade 금지)', () => {
       const filter = filterOf(montageArgs(render));
       assert.match(filter, /\[0:v\]scale=1720:1280:force_original_aspect_ratio=increase,crop=1720:1280/);
       assert.match(filter, /zoompan=z='1\+0\.08\*on\/29'/);
       assert.match(filter, /zoompan=z='1\.08-0\.08\*on\/48'/);
-      assert.ok(!filter.includes('settb=AVTB'), 'Linux xfade가 settb=AVTB 뒤 1/0 rate를 거절함');
-      assert.match(filter, /\[v0\]\[v1\]xfade=transition=fade:duration=0\.3:offset=0\.9,fps=24,setpts=PTS-STARTPTS\[x1\]/);
-      assert.match(filter, /\[x1\]\[v2\]xfade=transition=slideleft:duration=0\.3:offset=2\.6,fps=24,setpts=PTS-STARTPTS\[x2\]/);
-      assert.match(filter, /overlay=x=-w\+w\*t\/4\.1:y=H-h/);
+      assert.ok(!filter.includes('xfade'), 'Linux ffmpeg-static xfade rate 1/0 회피');
+      assert.ok(!filter.includes('settb=AVTB'));
+      assert.match(filter, /\[v0\]\[v1\]\[v2\]concat=n=3:v=1:a=0/);
+      assert.match(filter, /overlay=x=-w\+w\*t\/4\.7:y=H-h/);
       assert.ok(!filter.includes('drawtext'), '배포 ffmpeg에 drawtext 없음 — 모션만');
     });
 
-    it('컷 하나면 전환 없이', () => {
+    it('컷 하나도 concat 경로', () => {
       const filter = filterOf(montageArgs({ ...render, cuts: cuts.slice(0, 1) }));
+      assert.match(filter, /concat=n=1:v=1:a=0/);
       assert.ok(!filter.includes('xfade'));
       assert.ok(!filter.includes('drawtext'));
     });
 
-    it('배포용: 컷 단건은 자막 PNG를 overlay로, 조인은 태그 PNG + 전환', () => {
+    it('배포용: 컷 단건은 자막 PNG overlay, 조인은 concat + 태그 PNG', () => {
       const plain = singleCutRenderArgs(cuts[0]!, 0, 'cut-0.mp4', 860, 640, null);
       assert.ok(plain.includes('-vf'));
       assert.match(plain[plain.indexOf('-vf') + 1]!, /zoompan/);
       assert.ok(!plain.join(' ').includes('drawtext'));
+      assert.ok(plain.includes('-t'));
 
       const withCaption = singleCutRenderArgs(cuts[0]!, 0, 'cut-0.mp4', 860, 640, 'caption-0.png');
       const captionFilter = filterOf(withCaption);
@@ -139,7 +141,6 @@ describe('무료 영상 컷 편집', () => {
       assert.ok(withCaption.includes('caption-0.png'));
       assert.equal(withCaption[withCaption.indexOf('-framerate') + 1], '24');
       assert.ok(!captionFilter.includes('drawtext'));
-      assert.ok(!captionFilter.includes('settb=AVTB'));
 
       const join = joinRenderedCutsArgs({
         cuts: [
@@ -152,14 +153,14 @@ describe('무료 영상 컷 편집', () => {
         tagPng: 'tag.png',
       });
       const filter = filterOf(join);
-      assert.match(filter, /xfade=transition=fade/);
+      assert.ok(!filter.includes('xfade'));
+      assert.match(filter, /\[v0\]\[v1\]concat=n=2:v=1:a=0/);
       assert.ok(join.includes('tag.png'));
       assert.equal(join[join.indexOf('-framerate') + 1], '24');
       assert.match(filter, /\[0:v\]scale=860:640:flags=bilinear,fps=24/);
       assert.match(filter, /\[2:v\]fps=24,format=rgba,fade=t=in:st=0\.3:d=0\.5:alpha=1\[tag\]/);
       assert.match(filter, /overlay=x=39:y=38:format=auto,fps=24,setpts=PTS-STARTPTS\[tagged\]/);
-      assert.match(filter, /overlay=x=-w\+w\*t\/2\.9:y=H-h/);
-      assert.ok(!filter.includes('settb=AVTB'));
+      assert.match(filter, /overlay=x=-w\+w\*t\/3\.2:y=H-h/);
       assert.ok(!filter.includes('drawtext'));
     });
   });
