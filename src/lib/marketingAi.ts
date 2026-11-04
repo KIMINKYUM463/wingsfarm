@@ -20,7 +20,7 @@ export const MARKETING_FORMAT_META: Record<
     blurb: "릴스·숏츠·틱톡 — 레퍼런스 복제·템플릿 영상 제작",
     icon: "🎬",
     accent: "from-rose-600 via-orange-500 to-amber-400",
-    studio: "숏폼 스튜디오",
+    studio: "윙스팜 숏폼 Studio",
     stage: "reach",
     gets: ["레퍼런스 분석", "템플릿 영상", "올릴 글"],
   },
