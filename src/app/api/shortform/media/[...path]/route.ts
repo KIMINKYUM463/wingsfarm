@@ -2,7 +2,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { NextResponse } from 'next/server';
-import { shortformRoots } from '@/server/shortform/engine';
+import { shortformRoots } from '@/server/shortform/paths';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

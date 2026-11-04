@@ -41,6 +41,14 @@ import {
   uploadVideoPath,
   type StockClipSource,
 } from './stockSources';
+
+type Target = Pick<HeroMotionRecord, 'frameId' | 'elementId' | 'assetId' | 'width' | 'height'>;
+
+/** 무료 영상 컷은 사진과 무관 — 첫 섹션 위에 들어갈 크기만 정한다 */
+const STOCK_TARGET: Target = { frameId: '', elementId: '', assetId: '', ...HERO_CLIP_SIZE };
+
+/** 사진으로 만드는 컷의 원본: 페이지 맨 위 사진 자리의 사진 (클립은 첫 섹션 위에 따로 들어간다) */
+function findHeroPhoto(project: ProjectRecord): Target | null {
   for (const frame of sortFrames(project.frames)) {
     if (frame.status !== 'active') continue;
     const slot = [...walk(asNode(frame.frameData))].find(isImageSlot);

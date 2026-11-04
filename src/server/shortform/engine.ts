@@ -192,13 +192,4 @@ export async function shortformCall(method: string, params: Record<string, unkno
   });
 }
 
-export function shortformRoots() {
-  return {
-    root: ROOT,
-    products: path.join(ROOT, 'products'),
-    output: path.join(ROOT, 'output'),
-    frames: path.join(ROOT, 'studio', 'data', 'frames'),
-    analysis: path.join(ROOT, 'studio', 'data', 'analysis'),
-    static: path.join(ROOT, 'studio', 'static'),
-  };
-}
+export { shortformRoots } from '@/server/shortform/paths';

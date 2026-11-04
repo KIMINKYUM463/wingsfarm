@@ -57,7 +57,7 @@ export function captureScenes(vid: string, force = false): Promise<CapturedScene
   return new Promise((resolve, reject) => {
     const args = [script, vid];
     if (force) args.push('--force');
-    const child = spawn(pythonBin(), args, {
+    const child = spawn(/*turbopackIgnore: true*/ pythonBin(), args, {
       cwd: path.join(process.cwd(), 'shortform'),
       windowsHide: true,
       env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUNBUFFERED: '1' },
