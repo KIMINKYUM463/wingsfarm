@@ -3,9 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // 레버페이지 에디터가 쓰는 React Compiler (자동 메모이제이션)
   reactCompiler: true,
-  // ffmpeg-static은 자기 폴더 기준으로 실행 파일 경로를 계산하므로 번들하지 않고 node_modules에서 그대로 불러온다
-  serverExternalPackages: ["ffmpeg-static"],
+  // 네이티브 바이너리는 번들하지 않고 node_modules에서 그대로 불러온다 (ffmpeg 경로 계산·canvas 네이티브 바인딩)
+  serverExternalPackages: ["ffmpeg-static", "@napi-rs/canvas"],
   // 실행 파일·자막 글꼴은 코드에서 import되지 않아 자동으로 배포 묶음에 안 들어가므로 직접 포함시킨다 (Vercel 움직이는 컷)
+  // 자막은 drawtext 대신 @napi-rs/canvas로 PNG를 그려 overlay — 글꼴 파일이 배포에 있어야 한다
   outputFileTracingIncludes: {
     "/api/lever/**": [
       "./node_modules/ffmpeg-static/ffmpeg",

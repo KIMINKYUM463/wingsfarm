@@ -99,7 +99,7 @@ describe('무료 영상 컷 편집', () => {
       { path: 'b.mp4', start: 0, duration: 2, caption: null },
       { path: 'c.mp4', start: 3, duration: 1.5, caption: '지금 만나보세요' },
     ];
-    const render = { cuts, output: 'out.mp4', width: 860, height: 640, withText: true, tag: '영덕 홍게' };
+    const render = { cuts, output: 'out.mp4', width: 860, height: 640 };
     const filterOf = (args: string[]) => args[args.indexOf('-filter_complex') + 1];
 
     it('컷마다 구간을 빠르게 찾고(끝 0.1초 여유) 완성 길이로 자른다', () => {
@@ -118,29 +118,27 @@ describe('무료 영상 컷 편집', () => {
       assert.match(filter, /\[v0\]\[v1\]xfade=transition=fade:duration=0\.3:offset=0\.9\[x1\]/);
       assert.match(filter, /\[x1\]\[v2\]xfade=transition=slideleft:duration=0\.3:offset=2\.6\[x2\]/);
       assert.match(filter, /overlay=x=-w\+w\*t\/4\.1:y=H-h/);
-    });
-
-    it('자막·상품명 태그는 상대 경로 파일로 (글꼴이 없으면 빼고 만든다)', () => {
-      const filter = filterOf(montageArgs(render));
-      assert.match(filter, /fontfile=font\.otf:textfile=caption-0\.txt:expansion=none/);
-      assert.ok(!filter.includes('caption-1.txt'), '자막 없는 컷은 글자 없음');
-      assert.match(filter, /textfile=caption-2\.txt/);
-      assert.match(filter, /textfile=tag\.txt/);
-      const plain = filterOf(montageArgs({ ...render, withText: false }));
-      assert.ok(!plain.includes('drawtext'));
+      assert.ok(!filter.includes('drawtext'), '배포 ffmpeg에 drawtext 없음 — 모션만');
     });
 
     it('컷 하나면 전환 없이', () => {
       const filter = filterOf(montageArgs({ ...render, cuts: cuts.slice(0, 1) }));
       assert.ok(!filter.includes('xfade'));
-      assert.match(filter, /drawtext/);
+      assert.ok(!filter.includes('drawtext'));
     });
 
-    it('배포용: 컷 단건 렌더 → 전환 조인 인자를 만든다', () => {
-      const one = singleCutRenderArgs(cuts[0]!, 0, 'cut-0.mp4', 860, 640, true);
-      assert.ok(one.includes('-vf'));
-      assert.match(one[one.indexOf('-vf') + 1]!, /zoompan/);
-      assert.match(one[one.indexOf('-vf') + 1]!, /settb=AVTB/);
+    it('배포용: 컷 단건은 자막 PNG를 overlay로, 조인은 태그 PNG + 전환', () => {
+      const plain = singleCutRenderArgs(cuts[0]!, 0, 'cut-0.mp4', 860, 640, null);
+      assert.ok(plain.includes('-vf'));
+      assert.match(plain[plain.indexOf('-vf') + 1]!, /zoompan/);
+      assert.ok(!plain.join(' ').includes('drawtext'));
+
+      const withCaption = singleCutRenderArgs(cuts[0]!, 0, 'cut-0.mp4', 860, 640, 'caption-0.png');
+      const captionFilter = filterOf(withCaption);
+      assert.match(captionFilter, /overlay=\(W-w\)\/2:461/);
+      assert.ok(withCaption.includes('caption-0.png'));
+      assert.ok(!captionFilter.includes('drawtext'));
+
       const join = joinRenderedCutsArgs({
         cuts: [
           { path: 'cut-0.mp4', duration: 1.2 },
@@ -149,13 +147,15 @@ describe('무료 영상 컷 편집', () => {
         output: 'out.mp4',
         width: 860,
         height: 640,
-        withText: true,
-        tag: '영덕 홍게',
+        tagPng: 'tag.png',
       });
       const filter = filterOf(join);
       assert.match(filter, /xfade=transition=fade/);
-      assert.match(filter, /textfile=tag\.txt/);
-      assert.match(filter, /overlay=x=-w\+w\*t\/2\.9/);
+      assert.ok(join.includes('tag.png'));
+      assert.match(filter, /\[2:v\]format=rgba,fade=t=in:st=0\.3:d=0\.5:alpha=1\[tag\]/);
+      assert.match(filter, /overlay=x=39:y=38:format=auto\[tagged\]/);
+      assert.match(filter, /overlay=x=-w\+w\*t\/2\.9:y=H-h/);
+      assert.ok(!filter.includes('drawtext'));
     });
   });
 

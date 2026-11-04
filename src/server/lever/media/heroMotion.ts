@@ -1,5 +1,5 @@
 import 'server-only';
-import { copyFile, readFile, stat, writeFile } from 'node:fs/promises';
+import { readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { HERO_CLIP_SIZE, MAX_STOCK_PICKS, type HeroMotionKind, type StockPick } from '@/shared/types/heroMotion';
 import { findAssetRecord } from '../assets';
@@ -10,6 +10,7 @@ import { getProject, isMotionRunning, sortFrames, toHeroMotionInfo, updateProjec
 import { loadFile, mimeFromPath, saveFile } from '../storage';
 import { runInBackground } from '../background';
 import { nowIso } from '../store';
+import { renderCaptionPng, renderTagPng } from './captionPng';
 import { ffmpeg, withTempDir } from './ffmpeg';
 import {
   cleanCaption,
@@ -20,7 +21,6 @@ import {
   heroGifArgs,
   joinRenderedCutsArgs,
   MONTAGE,
-  MONTAGE_FILES,
   montagePrompt,
   normalizePlan,
   panClipArgs,
@@ -51,16 +51,6 @@ function findHeroPhoto(project: ProjectRecord): Target | null {
   }
   return null;
 }
-
-/** 자막 글꼴 (Pretendard Bold, OFL) — Vercel에도 함께 올라가도록 next.config의 outputFileTracingIncludes에 등록 */
-const CAPTION_FONT = path.join(process.cwd(), 'assets', 'fonts', 'Pretendard-Bold.otf');
-
-/** 작업 폴더에 글꼴을 복사한다 — 없으면 자막 없이 만든다 */
-const prepareFont = (dir: string) =>
-  copyFile(CAPTION_FONT, path.join(dir, MONTAGE_FILES.font)).then(
-    () => true,
-    (err) => (console.error('[lever] caption font missing', err), false),
-  );
 
 const setMotion = (projectId: string, motion: HeroMotionRecord) => updateProject(projectId, (p) => ({ ...p, heroMotion: motion }));
 
@@ -167,23 +157,38 @@ async function planMontage(files: string[], clips: MontageClip[], productName: s
  */
 async function makeStockMontage(inputs: StockInput[], target: Target, productName: string) {
   return withTempDir(async (dir) => {
-    const [files, withText] = await Promise.all([downloadStockInputs(inputs, target, dir), prepareFont(dir)]);
+    const files = await downloadStockInputs(inputs, target, dir);
     const clips = inputs.map(({ video }) => ({ duration: video.duration }));
     const plan = await planMontage(files, clips, productName, dir);
     if (!plan.cuts.length) throw new ApiError(400, '고른 영상이 너무 짧아요. 2초 넘는 영상을 골라 주세요.');
 
+    // 배포 ffmpeg에 drawtext가 없어 자막·태그는 PNG로 그려 overlay 한다
     const tag = cleanCaption(productName, 20);
-    const texts = [
-      ...plan.cuts.map((cut, i) => [MONTAGE_FILES.caption(i), cut.caption] as const),
-      [MONTAGE_FILES.tag, tag] as const,
-    ].filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
-    await Promise.all(texts.map(([name, text]) => writeFile(path.join(dir, name), text, 'utf8')));
+    const captionPngs = await Promise.all(
+      plan.cuts.map(async (cut, i) => {
+        if (!cut.caption) return null;
+        const png = await renderCaptionPng(cut.caption, target.width);
+        if (!png) return null;
+        const file = path.join(dir, `caption-${i}.png`);
+        await writeFile(file, png);
+        return file;
+      }),
+    );
+    let tagPng: string | null = null;
+    if (tag) {
+      const png = await renderTagPng(tag, target.width);
+      if (png) {
+        tagPng = path.join(dir, 'tag.png');
+        await writeFile(tagPng, png);
+      }
+    }
+    const withText = captionPngs.some(Boolean) || Boolean(tagPng);
 
     const cuts = plan.cuts.map((cut) => ({ ...cut, path: files[cut.clip]! }));
     const rendered: { path: string; duration: number }[] = [];
     for (let i = 0; i < cuts.length; i++) {
       const cutPath = path.join(dir, `cut-${i}.mp4`);
-      await ffmpeg(singleCutRenderArgs(cuts[i]!, i, cutPath, target.width, target.height, withText), 90_000, dir);
+      await ffmpeg(singleCutRenderArgs(cuts[i]!, i, cutPath, target.width, target.height, captionPngs[i] ?? null), 90_000, dir);
       rendered.push({ path: cutPath, duration: cuts[i]!.duration });
     }
 
@@ -194,8 +199,7 @@ async function makeStockMontage(inputs: StockInput[], target: Target, productNam
         output,
         width: target.width,
         height: target.height,
-        withText,
-        tag,
+        tagPng,
       }),
       120_000,
       dir,
