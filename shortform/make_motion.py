@@ -26,12 +26,37 @@ from sources import get_clip
 ROOT = Path(__file__).resolve().parent
 MOTION = ROOT / "motion"
 FPS = 30
-LEAD = 0.2
-PAD = {"HOOK": 0.6, "TIP": 0.5, "REVEAL": 1.4, "PRICE": 1.6, "CTA": 1.0}
+# 대사가 끝나면 바로 다음 장면. 가격 숫자만 조금 더 보여 준다.
+LEAD = 0.05
+PAD = {"HOOK": 0.12, "TIP": 0.12, "REVEAL": 0.12, "PRICE": 0.35, "CTA": 0.12}
 BROWSER = Path(os.environ.get("LOCALAPPDATA", "")) / "remotion-chs" / "chrome-headless-shell.exe"
 # 판매형 장면 → 모션 장면
 SHORT_KIND = {"HOOK": ("HOOK", None), "ORIGIN": ("TIP", "산지"), "PROOF": ("TIP", None), "CRAVE": ("TIP", None),
               "PRICE": ("PRICE", None), "CTA": ("CTA", None)}
+
+
+def seal_scene_edges(scenes, run):
+    """장면 소리의 시작과 끝을 0으로 만든다. 0이 아닌 샘플에서 자르면 '픽'이 난다."""
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        return
+    for i, sc in enumerate(scenes):
+        rel_audio = sc.get("audio")
+        if not rel_audio:
+            continue
+        src = MOTION / "public" / rel_audio
+        if not src.exists():
+            continue
+        dst = run / f"s{i}-sealed.wav"
+        r = subprocess.run(
+            [ffmpeg, "-y", "-i", str(src), "-vn", "-ac", "1", "-ar", "48000",
+             "-af", "afade=t=in:d=0.012,areverse,afade=t=in:d=0.04,areverse",
+             "-c:a", "pcm_s16le", str(dst)],
+            capture_output=True, text=True,
+        )
+        if r.returncode == 0 and dst.exists():
+            sc["audio"] = dst.relative_to(MOTION / "public").as_posix()
+        sc.pop("sfx", None)
 
 
 def find_node():
@@ -92,15 +117,18 @@ def plan_short(p, cfg):
 
 
 def scene_bg(source, p, photos, pdir, mode, run, i):
-    """장면 그림: AI 모드면 장면 영상을 (없으면 만들어) 쓰고, 사진 모드면 이미 만든 장면만 쓴다."""
+    """장면 그림: AI/스마트면 장면 영상을 (없으면 만들어) 쓰고, 사진 모드면 이미 만든 장면만 쓴다."""
     clip = None
     if source and not source.startswith("photo"):
         kind, _, shot = source.partition(":")
         cached = pdir / "_clips" / f"{kind}_{shot}.mp4"
+        smart_cached = pdir / "_clips" / f"stock_{shot}.mp4"
         if cached.exists():
             clip = cached
-        elif mode == "ai":
-            clip = get_clip(source, p, photos[0], pdir)
+        elif smart_cached.exists():
+            clip = smart_cached
+        elif mode in ("ai", "smart"):
+            clip = get_clip(source, p, photos[0], pdir, smart=(mode == "smart"))
     if clip:
         dst = run / f"bg{i}.mp4"
         shutil.copy(clip, dst)
@@ -165,10 +193,13 @@ def build(pdir, cfg):
         if kind in ("PRICE", "CTA") and i == len(segs) - 1:
             sec = max(sec, 3.4)
         bg_type, bg, bg_len = scene_bg(seg.get("source", ""), p, photos, pdir, cfg.get("mode", "photo"), run, i)
+        # 장면 시작 효과음은 앞 대사가 끝나는 지점에서 '찍'으로 들린다. 모션(글자·전환)만 쓴다.
         sc.update(frames=round(sec * FPS), bg=rel(bg), bgType=bg_type, bgFrames=round(bg_len * FPS) if bg_len else None)
+        sc.pop("sfx", None)
         scenes.append(sc)
         log.append(f"[{kind}] {line}")
         print(f"  [{kind:6}] {sec:4.1f}s  {bg.name:10}  {line}", flush=True)
+    seal_scene_edges(scenes, run)
 
     price = None
     q = {**p, **cfg}
@@ -176,12 +207,29 @@ def build(pdir, cfg):
         price = {"now": int(q["price"]), "unit": q.get("unit") or ""}
         if str(q.get("original_price") or "").isdigit() and int(q["original_price"]) > int(q["price"]):
             price["before"] = int(q["original_price"])
+    # 작업마다 다른 카메라·효과음이 나오도록 시드 (job id 등)
+    seed_raw = str(cfg.get("id") or cfg.get("render_seed") or pdir.name)
+    seed = abs(hash(seed_raw)) % 10_000_000
+    motion_style = str(cfg.get("motion_style") or "clean")
+    if motion_style not in ("clean", "focus", "strip", "corners", "bold", "soft"):
+        motion_style = "clean"
     props = {**{k: screen[k] for k in ("title1", "title2", "info", "highlight", "vs")},
              "aiLabel": bool(cfg.get("ai_label")) and cfg.get("mode") == "ai",
-             "price": price, "scenes": scenes, "bgmVolume": screen["bgm_volume"]}
+             "price": price, "scenes": scenes, "bgmVolume": screen["bgm_volume"],
+             "seed": seed, "motionStyle": motion_style}
+    print(f"  모션 템플릿: {motion_style}", flush=True)
     if cfg.get("bgm_file") and Path(cfg["bgm_file"]).exists():
         shutil.copy(cfg["bgm_file"], run / "bgm.mp3")
         props["bgm"] = rel(run / "bgm.mp3")
+    # 다양한 효과음 파일을 Remotion public 아래 runs와 공유 (staticFile('sfx/...'))
+    sfx_src = ROOT / "studio" / "data" / "sfx"
+    sfx_dst = MOTION / "public" / "sfx"
+    if sfx_src.is_dir():
+        sfx_dst.mkdir(parents=True, exist_ok=True)
+        for f in sfx_src.glob("*.mp3"):
+            dst = sfx_dst / f.name
+            if not dst.exists() or dst.stat().st_size != f.stat().st_size:
+                shutil.copy2(f, dst)
     return props, run, log
 
 

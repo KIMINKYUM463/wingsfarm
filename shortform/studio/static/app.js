@@ -881,6 +881,8 @@ async function startRender() {
 async function showJob(id) {
   clearTimeout(S.poll);
   const box = $("#job"); if (!box) return;
+  // 2초마다 HTML을 다시 그리면 <details>가 닫히므로, 펼친 상태를 기억한다
+  const logOpen = !!box.querySelector("details.log-panel[open], details[open]");
   let j;
   try { j = await api("/api/jobs/" + encodeURIComponent(id)); } catch (e) { box.innerHTML = ""; return; }
   const btn = $("#render");
@@ -888,7 +890,7 @@ async function showJob(id) {
     if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 만드는 중…`; }
     box.innerHTML = `<div class="progress"><div class="bar"><i></i></div>
       <div style="margin-top:6px"><b>${j.status === "queued" ? "앞 작업이 끝나면 시작해요" : esc(friendlyStep(j.log))}</b></div>
-      <details><summary class="muted">자세한 진행 기록</summary><div class="log">${esc(j.log.slice(-14).join("\n")) || "시작하는 중…"}</div></details></div>`;
+      <details class="log-panel"${logOpen ? " open" : ""}><summary class="muted">자세한 진행 기록</summary><div class="log">${esc(j.log.slice(-14).join("\n")) || "시작하는 중…"}</div></details></div>`;
     S.poll = setTimeout(() => showJob(id), 2000);
     return;
   }
@@ -896,7 +898,7 @@ async function showJob(id) {
   refreshBadge();
   if (j.status === "error") {
     box.innerHTML = `<div class="progress"><div class="status error">만들지 못했어요</div><p>${esc(j.error || "")}</p>
-      <details><summary class="muted">자세한 기록 (문제를 알릴 때 보여 주세요)</summary><div class="log">${esc(j.log.slice(-30).join("\n"))}</div></details></div>`;
+      <details class="log-panel"${logOpen ? " open" : ""}><summary class="muted">자세한 기록 (문제를 알릴 때 보여 주세요)</summary><div class="log">${esc(j.log.slice(-30).join("\n"))}</div></details></div>`;
     return;
   }
   box.innerHTML = resultHtml(j) + fidelityHtml(j) + chatHtml();

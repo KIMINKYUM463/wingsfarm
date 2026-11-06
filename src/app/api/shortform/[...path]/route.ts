@@ -53,6 +53,12 @@ const POST_MAP: Record<string, string> = {
   plan: 'plan',
   lint: 'lint',
   reshoot: 'reshoot',
+  product_upload: 'product_upload',
+  product_assets: 'product_assets',
+  product_asset_delete: 'product_asset_delete',
+  ref_search: 'ref_search',
+  cc_search: 'cc_search',
+  cc_import: 'cc_import',
 };
 
 export async function POST(req: Request, ctx: RouteContext<'/api/shortform/[...path]'>) {
@@ -64,6 +70,14 @@ export async function POST(req: Request, ctx: RouteContext<'/api/shortform/[...p
     if (head === 'clone' && sub === 'draft') return run('clone_draft', body);
     if (head === 'plan' && sub === 'run') return run('plan_run', body);
     if (head === 'jobs' && sub === 'hide') return run('jobs_hide', body);
+    if (head === 'product' && sub === 'upload') return run('product_upload', body);
+    if (head === 'product' && sub === 'assets' && !parts[2]) return run('product_assets', body);
+    if (head === 'product' && sub === 'assets' && parts[2] === 'delete') {
+      return run('product_asset_delete', body);
+    }
+    if (head === 'ref' && sub === 'search') return run('ref_search', body);
+    if (head === 'cc' && sub === 'search') return run('cc_search', body);
+    if (head === 'cc' && sub === 'import') return run('cc_import', body);
     if (POST_MAP[head] && !sub) return run(POST_MAP[head], body);
     return NextResponse.json({ error: '없는 API예요' }, { status: 404 });
   } catch (err) {

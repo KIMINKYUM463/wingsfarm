@@ -22,8 +22,14 @@
    "shot": "hook",
    "text": "",
    "purpose": "멜론 겉껍질을 칼로 깎아내는 모습으로 손질 과정의 시작을 보여준다",
-   "seconds": 8.0,
-   "note": "흰 접시 위 멜론, 손이 칼로 껍질 깎기 시작, 시장 매대 앞 - 추정: 칼질 시작 장면"
+   "seconds": 6.04,
+   "note": "흰 접시 위 멜론, 손이 칼로 껍질 깎기 시작, 시장 매대 앞 - 추정: 칼질 시작 장면",
+   "t0": 0.0,
+   "t1": 6.04,
+   "keyframe": "jdERJ4SPdiA/scene_00.jpg",
+   "file": "jdERJ4SPdiA/scene_00.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "STEP",
@@ -31,8 +37,29 @@
    "shot": "prep",
    "text": "",
    "purpose": "멜론 껍질을 깔끔하게 벗겨내는 손질 기술을 보여준다",
-   "seconds": 10.0,
-   "note": "칼로 멜론 껍질을 벗기는 클로즈업, 손의 움직임 집중 - 추정: 껍질 제거 과정"
+   "seconds": 9.78,
+   "note": "칼로 멜론 껍질을 벗기는 클로즈업, 손의 움직임 집중 - 추정: 껍질 제거 과정",
+   "t0": 6.04,
+   "t1": 15.82,
+   "keyframe": "jdERJ4SPdiA/scene_01.jpg",
+   "file": "jdERJ4SPdiA/scene_01.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "멜론 껍질을 깔끔하게 벗겨내는 손질 기술을 보여준다",
+   "seconds": 2.14,
+   "note": "칼로 멜론 껍질을 벗기는 클로즈업, 손의 움직임 집중 - 추정: 껍질 제거 과정",
+   "t0": 15.82,
+   "t1": 17.95,
+   "keyframe": "jdERJ4SPdiA/scene_02.jpg",
+   "file": "jdERJ4SPdiA/scene_02.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "STEP",
@@ -40,8 +67,29 @@
    "shot": "detail",
    "text": "",
    "purpose": "껍질이 벗겨진 멜론에 꼬치를 꽂는 준비를 한다",
-   "seconds": 8.0,
-   "note": "껍질 벗겨진 연두색 멜론, 흰 꼬치 여러 개, 손에 꼬치 들고 있음 - 추정: 꼬치 준비"
+   "seconds": 3.8,
+   "note": "껍질 벗겨진 연두색 멜론, 흰 꼬치 여러 개, 손에 꼬치 들고 있음 - 추정: 꼬치 준비",
+   "t0": 17.95,
+   "t1": 21.76,
+   "keyframe": "jdERJ4SPdiA/scene_03.jpg",
+   "file": "jdERJ4SPdiA/scene_03.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "껍질이 벗겨진 멜론에 꼬치를 꽂는 준비를 한다",
+   "seconds": 2.24,
+   "note": "껍질 벗겨진 연두색 멜론, 흰 꼬치 여러 개, 손에 꼬치 들고 있음 - 추정: 꼬치 준비",
+   "t0": 21.76,
+   "t1": 23.99,
+   "keyframe": "jdERJ4SPdiA/scene_04.jpg",
+   "file": "jdERJ4SPdiA/scene_04.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "STEP",
@@ -49,8 +97,29 @@
    "shot": "detail",
    "text": "",
    "purpose": "멜론에 꼬치를 균등하게 꽂아 먹기 편한 형태로 만든다",
-   "seconds": 10.0,
-   "note": "멜론에 꼬치 5-6개 균등 간격으로 꽂힌 모습, 손이 꼬치 추가 중"
+   "seconds": 3.4,
+   "note": "멜론에 꼬치 5-6개 균등 간격으로 꽂힌 모습, 손이 꼬치 추가 중",
+   "t0": 23.99,
+   "t1": 27.39,
+   "keyframe": "jdERJ4SPdiA/scene_05.jpg",
+   "file": "jdERJ4SPdiA/scene_05.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "멜론에 꼬치를 균등하게 꽂아 먹기 편한 형태로 만든다",
+   "seconds": 8.38,
+   "note": "멜론에 꼬치 5-6개 균등 간격으로 꽂힌 모습, 손이 꼬치 추가 중",
+   "t0": 27.39,
+   "t1": 35.77,
+   "keyframe": "jdERJ4SPdiA/scene_06.jpg",
+   "file": "jdERJ4SPdiA/scene_06.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "REVEAL",
@@ -58,8 +127,14 @@
    "shot": "hero",
    "text": "",
    "purpose": "완성된 멜론 꼬치 상품의 최종 모습을 보여준다",
-   "seconds": 7.0,
-   "note": "꼬치 꽂힌 멜론 완성품, 비닐 포장 일부 보임, 판매 준비된 상태 - 추정: 최종 완성 장면"
+   "seconds": 7.14,
+   "note": "꼬치 꽂힌 멜론 완성품, 비닐 포장 일부 보임, 판매 준비된 상태 - 추정: 최종 완성 장면",
+   "t0": 35.77,
+   "t1": 42.91,
+   "keyframe": "jdERJ4SPdiA/scene_07.jpg",
+   "file": "jdERJ4SPdiA/scene_07.jpg",
+   "measured": true,
+   "estimated": false
   }
  ],
  "pacing": "빠름",
@@ -81,5 +156,10 @@
   "views": 21550000,
   "description": "과일 자르기 달인의 깔끔한 멜론 컷팅 스킬! Amazing Korean Melon Cutting Skills\n\n💨 정보 (information)\n\n💲 가격 (Price) : 멜론 KRW 2,000                                                  \n\n💕화면 설정에서 화질을 고화질로 변경하시면 보다 더 선명하게 보실 수 있습니다.\n\n👍영상을 재밌게 보셨다면 구독과 좋아요 부탁드립니다.\n\n🎬FoodieRun 구독 : https://bit.ly/3bsJ3ZJ\n\n💌 촬영 요청 및 제보 이메일 (e-mail : foodierun77@naver.com)\n\n#남대문과일 #과일자르기 #Shorts"
  },
- "via": "fal"
+ "via": "fal",
+ "capture": {
+  "mode": "scene_detect",
+  "count": 8,
+  "total": 42.92
+ }
 }

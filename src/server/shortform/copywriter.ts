@@ -14,6 +14,42 @@ const RULES = `규칙:
 - 건강·효능 주장, 과장 수치, 특정 업체 비방은 쓰지 않습니다.
 - 레퍼런스는 훅 공식과 말투만 빌리고 문장을 베끼지 않습니다.`;
 
+/** 숏폼 대본: 후킹 + 스토리/소개 흐름 */
+const STORY_HOOK_RULES = `대본 스타일 (필수):
+- 1장면(훅)은 스크롤을 멈추게 만드세요. 질문·반전·구체적 숫자·'이것만은' 중 하나로 시작.
+  예: '이 *오렌지*, 껍질만 보고 고르면 실패해요.' / '산지에서 *당일* 따서 보내는 이유.'
+- 전체는 '스토리형' 또는 '소개형' 중 하나로 통일하세요.
+  · 스토리형: 문제(고르기 실패) → 산지/이유 → 맛·모습 → 보관·주문 마무리
+  · 소개형: 한 줄 후킹 → 산지·특징 → 이렇게 먹어요 → CTA
+- 장면마다 말이 바뀌되, 한 사람이 쉬지 않고 이어서 말하는 나레이션이어야 합니다.
+  2장면부터는 앞 문장을 받아 '그래서/근데/그러니까/이때/막상'처럼 이어지거나, 같은 주어가 다음 행동으로 넘어가야 합니다.
+  장면마다 주제가 리셋되거나 서로 안 붙는 문장 나열은 금지입니다.
+- 추상어('신선해요','좋아요')만 쓰지 말고, 보이는 장면이 떠오르게 쓰세요(껍질·자르기·한 입·박스·밭).
+- 각 장면 say와 함께 shot·visual을 꼭 주세요. 영상이 그 말에 맞게 붙습니다.
+  shot 후보: hook(자르기·대표컷) | detail(클로즈업) | crave(먹는장면) | origin(산지) | hold(손에들기) | pack(포장) | prep(손질) | hero(진열) | store(보관) | photo(상품사진)`;
+
+/** 문장 내용으로 장면 유형 추정 — 영상이 대본과 맞게 */
+export function inferShotFromSay(say: string, fallback = 'hero'): string {
+  const t = say.replace(/\*/g, '');
+  if (/산지|농장|밭|수확|과수원|바다|어장|직송|따서|캐서/.test(t)) return 'origin';
+  if (/씻|헹구|썰|손질|다듬|필렛|껍질\s*벗/.test(t)) return 'prep';
+  if (/먹|한\s*입|시식|달콤|즙|맛보|드셔|입에/.test(t)) return 'crave';
+  if (/자르|반\s*가르|칼|깎/.test(t)) return 'hook';
+  if (/클로즈|자세히|표면|무늬|결|광택|알갱이/.test(t)) return 'detail';
+  if (/박스|포장|담아|출고|보내/.test(t) && !/산지|직송/.test(t)) return 'pack';
+  if (/손(?:에|으로)|들어\s*보|보여\s*드릴/.test(t)) return 'hold';
+  if (/보관|냉장고|베란다|두지\s*마/.test(t)) return 'store';
+  if (/진열|한\s*박스|가득|쌓여|시장/.test(t)) return 'hero';
+  if (/주문|프로필|저장해|링크|장\s*볼/.test(t)) return 'photo';
+  return fallback;
+}
+
+function sourceFromShot(shot: string) {
+  if (shot === 'origin') return 'stock:origin';
+  if (shot === 'photo') return 'photo:1';
+  return `ai:${shot}`;
+}
+
 type FieldDef = {
   key: string;
   label: string;
@@ -225,8 +261,9 @@ export async function cloneDraft(
     })),
   };
   const n = scenes.length || 1;
-  const prompt = `당신은 한국 농수산물 산지직송 숏폼 카피라이터입니다.
-아래 '레퍼런스 영상 분석'의 장면 구조와 말투를 그대로 따라, 판매자의 상품으로 장면별 문장을 새로 써 주세요.
+  const name = String(product.name || '상품');
+  const prompt = `당신은 한국 농수산물 산지직송 숏폼(쇼츠·릴스) 전문 카피라이터입니다.
+레퍼런스의 *장면 수·역할·템포*만 빌리고, 문장은 내 상품용으로 새로 쓰세요. 베끼지 마세요.
 
 [레퍼런스 분석]
 ${JSON.stringify(brief, null, 1)}
@@ -235,13 +272,16 @@ ${JSON.stringify(brief, null, 1)}
 ${JSON.stringify(facts, null, 0)}
 
 ${RULES}
-- 장면 수와 순서는 레퍼런스와 같게 ${n}개. 각 장면의 역할(role)·라벨·전달 내용(purpose)을 지킵니다.
-- 각 장면 문장은 그 장면의 purpose를 '내 상품'에 맞게 다시 쓴 완결 문장입니다.
-- 모든 문장은 10자 이상. 채널 홍보·구독 유도는 '저장해 두세요' / '주문은 프로필 링크'로 바꿉니다.
-- voice가 text_only/asmr이면 각 문장 16자 안팎.
+${STORY_HOOK_RULES}
+- 장면 수는 레퍼런스와 같게 정확히 ${n}개.
+- 1장면은 반드시 강한 훅. 마지막은 CTA(저장·주문)로 자연스럽게.
+- 형식은 story(스토리) 또는 intro(소개) 중 하나를 format에 적으세요.
+- voice가 text_only/asmr이면 각 문장 16자 안팎, 아니면 15~28자.
+- visual은 영어 4~8단어. 한국 품목의 실제 생김새를 쓰세요. 참외는 oriental melon / chamoe / yellow stripes 이지 cantaloupe·honeydew·melon 단독이 아닙니다. 꽃·패션 금지.
 
 JSON 하나로만:
-{"title1":"13자 이내 또는 빈 문자열","title2":"13자 이내 또는 빈 문자열","info":"22자 이내","lines":[{"say":"장면 문장","label":"라벨 또는 빈 문자열"}, ... ${n}개]}`;
+{"format":"story|intro","title1":"13자 이내","title2":"13자 이내 또는 빈 문자열","info":"22자 이내",
+ "lines":[{"say":"후킹되는 완결 문장","label":"라벨 또는 빈 문자열","shot":"hook|detail|crave|origin|hold|pack|prep|hero|store|photo","visual":"english search phrase"}, ... ${n}개]}`;
 
   try {
     const text = await askOpenAI(prompt);
@@ -255,22 +295,30 @@ JSON 하나로만:
     lines = lines.slice(0, scenes.length);
     const caption = analysis.caption as { style?: string } | undefined;
     const fields = {
-      title1: String(d.title1 || '').slice(0, 16),
+      title1: String(d.title1 || name).slice(0, 16),
       title2: String(d.title2 || '').slice(0, 16),
       info: String(d.info || '주문은 프로필 링크').slice(0, 26),
+      story_format: String(d.format || 'story'),
       voice_mode: analysis.voice === 'text_only' || analysis.voice === 'asmr' ? 'text_only' : 'narration',
       lines: lines.map((l, i) => {
         const s = scenes[i] ?? {};
         let say = String(l.say || '');
         if (caption?.style !== 'keyword_highlight') say = say.replace(/\*/g, '');
-        const shot = String(s.shot || 'hero');
-        const source =
-          shot === 'origin' ? 'stock:origin' : shot === 'photo' ? 'photo:1' : `ai:${shot}`;
+        if (!say.trim()) {
+          say = storyFallbackLine(name, i, scenes.length, String(product.origin || ''));
+        }
+        const aiShot = String(l.shot || '').toLowerCase();
+        const shot = ['hook', 'detail', 'crave', 'origin', 'hold', 'pack', 'prep', 'hero', 'store', 'photo'].includes(aiShot)
+          ? aiShot
+          : inferShotFromSay(say, String(s.shot || (i === 0 ? 'hook' : 'hero')));
+        const visual = String(l.visual || '').slice(0, 80);
         return {
           say,
           label: String(l.label || s.label || ''),
-          role: String(s.role || 'TIP'),
-          source,
+          role: String(s.role || (i === 0 ? 'HOOK' : i === scenes.length - 1 ? 'CTA' : 'TIP')),
+          shot,
+          visual,
+          source: sourceFromShot(shot),
           seconds: Number(s.seconds) || 3,
           keyframe: String(s.keyframe || ''),
         };
@@ -279,21 +327,24 @@ JSON 하나로만:
     return { fields, via: 'openai' };
   } catch (err) {
     console.error('[shortform] cloneDraft fallback', err);
-    const name = String(product.name || '상품');
     return {
       via: '규칙',
       fields: {
         title1: name.slice(0, 13),
         title2: '산지에서 바로',
         info: '주문은 프로필 링크',
+        story_format: 'intro',
         voice_mode: analysis.voice === 'text_only' || analysis.voice === 'asmr' ? 'text_only' : 'narration',
         lines: scenes.map((s, i) => {
-          const shot = String(s.shot || 'hero');
+          const say = storyFallbackLine(name, i, scenes.length, String(product.origin || ''));
+          const shot = inferShotFromSay(say, String(s.shot || (i === 0 ? 'hook' : 'hero')));
           return {
-            say: String(s.purpose || `${name} 장면 ${i + 1}`),
+            say,
             label: String(s.label || ''),
-            role: String(s.role || 'TIP'),
-            source: shot === 'origin' ? 'stock:origin' : shot === 'photo' ? 'photo:1' : `ai:${shot}`,
+            role: String(s.role || (i === 0 ? 'HOOK' : 'TIP')),
+            shot,
+            visual: '',
+            source: sourceFromShot(shot),
             seconds: Number(s.seconds) || 3,
             keyframe: String(s.keyframe || ''),
           };
@@ -301,6 +352,15 @@ JSON 하나로만:
       },
     };
   }
+}
+
+function storyFallbackLine(name: string, i: number, n: number, origin: string) {
+  const o = origin || '산지';
+  if (i === 0) return `이 *${name}*, 겉모습만 보고 고르면 후회해요.`;
+  if (i === n - 1) return `주문은 *프로필 링크*에서 바로 하세요.`;
+  if (i === 1) return `${o}에서 골라 *바로* 보내 드려요.`;
+  if (i === 2) return `한 입 베어 물면 *과즙*이 꽉 차요.`;
+  return `${name}, 이렇게 골라 *실패* 없어요.`;
 }
 
 export async function draftFields(
@@ -320,8 +380,9 @@ export async function draftFields(
     const h = hooks?.[String(ref.hook ?? '')] ?? {};
     refText = `제목 '${ref.title}' (조회수 ${Number(ref.views ?? 0).toLocaleString()}회)\n훅 유형: ${h.label ?? ref.hook} — 공식: ${h.formula ?? ''}\n참고할 점: ${ref.why ?? ''}`;
   }
-  const prompt = `당신은 한국 농수산물 산지직송 숏폼(유튜브 쇼츠·릴스·틱톡) 카피라이터입니다.
-아래 템플릿 칸을 채워 주세요.
+  const prompt = `당신은 한국 농수산물 산지직송 숏폼(유튜브 쇼츠·릴스·틱톡) 전문 카피라이터입니다.
+아래 템플릿 칸을 채우되, 시청자가 중간에 스크롤을 멈추게 만드는 *후킹 대본*으로 쓰세요.
+스토리형(문제→해결→마무리) 또는 소개형(한 줄 훅→특징→먹는 법→CTA) 중 하나로 통일하세요.
 
 [템플릿] ${tplName} — ${tpl.name ?? ''}
 쓰임: ${tpl.when ?? ''}
@@ -336,6 +397,9 @@ ${JSON.stringify(facts, null, 0)}
 ${fieldBrief(tpl)}
 
 ${RULES}
+${STORY_HOOK_RULES}
+- hook / line1 / hook_text / 첫 문장은 특히 강하게. '신선해요'만으로 시작 금지.
+- 리스트·단계 문장도 각각 장면이 보이게(자르기·산지·한 입·박스).
 
 JSON 객체 하나로만 답하세요. 키는 위 칸 이름 그대로.`;
 

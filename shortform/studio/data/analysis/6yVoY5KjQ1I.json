@@ -22,8 +22,14 @@
    "shot": "hook",
    "text": "",
    "purpose": "시장 달인이 멜론을 준비하는 첫 장면으로 시청자의 관심을 끈다",
-   "seconds": 3.0,
-   "note": "시장 매대 앞에서 상인 여성이 멜론을 꺼내는 모습. 추정: 영상 시작 장면"
+   "seconds": 4.67,
+   "note": "시장 매대 앞에서 상인 여성이 멜론을 꺼내는 모습. 추정: 영상 시작 장면",
+   "t0": 0.0,
+   "t1": 4.67,
+   "keyframe": "6yVoY5KjQ1I/scene_00.jpg",
+   "file": "6yVoY5KjQ1I/scene_00.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "STEP",
@@ -31,8 +37,29 @@
    "shot": "detail",
    "text": "",
    "purpose": "멜론 표면에 칼집을 내는 첫 번째 손질 과정을 보여준다",
-   "seconds": 7.0,
-   "note": "도마 위 멜론에 세로 칼집을 내는 손 클로즈업. 추정: 첫 번째 절단 과정"
+   "seconds": 3.6,
+   "note": "도마 위 멜론에 세로 칼집을 내는 손 클로즈업. 추정: 첫 번째 절단 과정",
+   "t0": 4.67,
+   "t1": 8.27,
+   "keyframe": "6yVoY5KjQ1I/scene_01.jpg",
+   "file": "6yVoY5KjQ1I/scene_01.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "detail",
+   "text": "",
+   "purpose": "멜론 표면에 칼집을 내는 첫 번째 손질 과정을 보여준다",
+   "seconds": 5.23,
+   "note": "도마 위 멜론에 세로 칼집을 내는 손 클로즈업. 추정: 첫 번째 절단 과정",
+   "t0": 8.27,
+   "t1": 13.5,
+   "keyframe": "6yVoY5KjQ1I/scene_02.jpg",
+   "file": "6yVoY5KjQ1I/scene_02.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "STEP",
@@ -40,8 +67,29 @@
    "shot": "prep",
    "text": "",
    "purpose": "칼집 낸 멜론을 특별한 방식으로 껍질을 분리하는 기술을 보여준다",
-   "seconds": 10.0,
-   "note": "손으로 멜론을 잡고 칼로 껍질과 과육 사이를 분리하는 장면. 추정: 달인의 신박한 기술"
+   "seconds": 5.23,
+   "note": "손으로 멜론을 잡고 칼로 껍질과 과육 사이를 분리하는 장면. 추정: 달인의 신박한 기술",
+   "t0": 13.5,
+   "t1": 18.73,
+   "keyframe": "6yVoY5KjQ1I/scene_03.jpg",
+   "file": "6yVoY5KjQ1I/scene_03.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "칼집 낸 멜론을 특별한 방식으로 껍질을 분리하는 기술을 보여준다",
+   "seconds": 2.57,
+   "note": "손으로 멜론을 잡고 칼로 껍질과 과육 사이를 분리하는 장면. 추정: 달인의 신박한 기술",
+   "t0": 18.73,
+   "t1": 21.3,
+   "keyframe": "6yVoY5KjQ1I/scene_04.jpg",
+   "file": "6yVoY5KjQ1I/scene_04.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "REVEAL",
@@ -49,8 +97,29 @@
    "shot": "crave",
    "text": "",
    "purpose": "깔끔하게 잘려진 멜론 조각을 막대에 꽂아 먹기 편한 형태로 완성했음을 보여준다",
-   "seconds": 8.0,
-   "note": "손에 막대를 꽂은 노란 멜론 조각을 들고 있는 클로즈업. 배경에 시장 매대 보임"
+   "seconds": 3.63,
+   "note": "손에 막대를 꽂은 노란 멜론 조각을 들고 있는 클로즈업. 배경에 시장 매대 보임",
+   "t0": 21.3,
+   "t1": 24.93,
+   "keyframe": "6yVoY5KjQ1I/scene_05.jpg",
+   "file": "6yVoY5KjQ1I/scene_05.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "crave",
+   "text": "",
+   "purpose": "깔끔하게 잘려진 멜론 조각을 막대에 꽂아 먹기 편한 형태로 완성했음을 보여준다",
+   "seconds": 3.17,
+   "note": "손에 막대를 꽂은 노란 멜론 조각을 들고 있는 클로즈업. 배경에 시장 매대 보임",
+   "t0": 24.93,
+   "t1": 28.1,
+   "keyframe": "6yVoY5KjQ1I/scene_06.jpg",
+   "file": "6yVoY5KjQ1I/scene_06.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "SHOW",
@@ -58,8 +127,14 @@
    "shot": "pack",
    "text": "",
    "purpose": "완성된 멜론을 포장하거나 다시 정리하는 마무리 과정을 보여준다",
-   "seconds": 7.0,
-   "note": "비닐로 싼 멜론을 손으로 정리하는 장면. 추정: 판매 준비 또는 마무리"
+   "seconds": 7.17,
+   "note": "비닐로 싼 멜론을 손으로 정리하는 장면. 추정: 판매 준비 또는 마무리",
+   "t0": 28.1,
+   "t1": 35.27,
+   "keyframe": "6yVoY5KjQ1I/scene_07.jpg",
+   "file": "6yVoY5KjQ1I/scene_07.jpg",
+   "measured": true,
+   "estimated": false
   }
  ],
  "pacing": "보통",
@@ -81,5 +156,10 @@
   "views": 94840000,
   "description": "달인의 신박한 멜론 자르기 - Satisfying!!! Master's Amazing Melon Cutting Skill \n\n\n- 가격 위치 정보 -\n▶Price : KRW 2,000  (USD 1.4)\n멜론 - 2,000원\n▶Location : 서울특별시 중구 남대문시장4길 28-12 (남대문시장 과일)\n- google map : https://goo.gl/maps/XnaJ3EPU4NzQKRjw7\n\n\n#멜론자르기 #과일자르기 #남대문시장 #shorts"
  },
- "via": "fal"
+ "via": "fal",
+ "capture": {
+  "mode": "scene_detect",
+  "count": 8,
+  "total": 35.27
+ }
 }

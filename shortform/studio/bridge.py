@@ -101,6 +101,13 @@ def handle(req: dict):
                         or os.environ.get("REPLICATE_API_KEY")
                         or os.environ.get("REPLICATE_TOKEN")
                     ),
+                    "serpapi": bool(os.environ.get("SERPAPI_API_KEY")),
+                    "youtubeCc": bool(os.environ.get("YOUTUBE_API_KEY") or os.environ.get("GOOGLE_API_KEY")),
+                    "ccSearch": bool(
+                        os.environ.get("YOUTUBE_API_KEY")
+                        or os.environ.get("GOOGLE_API_KEY")
+                        or os.environ.get("SERPAPI_API_KEY")
+                    ),
                 },
             })
 

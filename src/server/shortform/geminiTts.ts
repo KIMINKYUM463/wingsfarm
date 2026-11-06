@@ -12,6 +12,21 @@ const API = 'https://generativelanguage.googleapis.com/v1beta/models/{model}:gen
 const MODELS = ['gemini-3.8-flash-tts', 'gemini-2.5-pro-preview-tts', 'gemini-2.5-flash-preview-tts'];
 const RATE = 24_000;
 
+/**
+ * 말 앞뒤의 무음을 자르고, 끝 25ms만 0으로 내린다.
+ * 무음을 남겨 두면 장면 사이에 공백이 생기고, 무음으로 뚝 자르면 '픽'이 난다.
+ */
+export const TIGHT_SPEECH_AF = [
+  'silenceremove=start_periods=1:start_threshold=-36dB:start_silence=0.02:detection=peak',
+  'areverse',
+  'silenceremove=start_periods=1:start_threshold=-36dB:start_silence=0.05:detection=peak',
+  'areverse',
+  'afade=t=in:st=0:d=0.012',
+  'areverse',
+  'afade=t=in:st=0:d=0.025',
+  'areverse',
+].join(',');
+
 /** UI 라벨 → Gemini prebuilt voiceName */
 export const GEMINI_VOICE_MAP: Record<string, string> = {
   'Gemini 여성 · 또렷한': 'Kore',
@@ -92,24 +107,22 @@ async function requestPcm(text: string, voice: string): Promise<{ pcm: Buffer; m
   throw new Error(`Gemini 목소리를 만들지 못했어요: ${last instanceof Error ? last.message : String(last)}`);
 }
 
-/** text → outPath(mp3). Gemini 캐시 재사용. */
+/** text → outPath(wav). Gemini 캐시 재사용. */
 export async function synthesizeGeminiMp3(text: string, voiceName: string, outPath: string) {
-  const payload = JSON.stringify([MODELS[0], voiceName, text, 1.0, 'v3']);
+  const payload = JSON.stringify([MODELS[0], voiceName, text, 1.0, 'v6-tight']);
   const key = createHash('sha1').update(payload).digest('hex').slice(0, 20);
   const dir = cacheDir();
   await mkdir(dir, { recursive: true });
-  const mp3 = path.join(dir, `${key}.mp3`);
+  const mp3 = path.join(dir, `${key}.wav`);
 
   if (!existsSync(mp3)) {
     const { pcm, model } = await requestPcm(text.slice(0, 900), voiceName);
     const raw = path.join(dir, `${key}.pcm`);
     await writeFile(raw, pcm);
-    // 앞뒤 무음만 자름 (끝음절 보호)
-    const trim = 'silenceremove=start_periods=1:start_threshold=-55dB:start_silence=0.12';
-    const af = `${trim},areverse,${trim},areverse`;
+    // 앞뒤 무음을 남기지 않는다. 끝 25ms만 0으로 내려 '픽'이 다음 장면으로 넘어가지 않게 한다.
     try {
       await ffmpeg(
-        ['-y', '-f', 's16le', '-ar', String(RATE), '-ac', '1', '-i', raw, '-af', af, '-ar', '44100', '-b:a', '160k', mp3],
+        ['-y', '-f', 's16le', '-ar', String(RATE), '-ac', '1', '-i', raw, '-af', TIGHT_SPEECH_AF, '-f', 'wav', '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le', mp3],
         60_000,
       );
     } finally {

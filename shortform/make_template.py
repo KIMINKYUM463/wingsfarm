@@ -262,7 +262,11 @@ def make_video(tpl, video, p, photos, pdir, out_path, bgm, work):
     log = []
     for i, seg in enumerate(segs):
         source = seg.get("source", "")
-        clip = get_clip(source, p, photos[0], pdir) if source and not p.get("photos_only") else None
+        clip = (
+            get_clip(source, p, photos[0], pdir, smart=bool(p.get("smart_fill")))
+            if source and not p.get("photos_only")
+            else None
+        )
         bg = None
         if not clip:
             bg = str(work / f"{i:02d}_bg.jpg")

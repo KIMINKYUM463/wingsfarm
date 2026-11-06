@@ -54,6 +54,33 @@ export async function renderCaptionPng(text: string, videoWidth: number): Promis
   return out.toBuffer('image/png');
 }
 
+/** 화면 한가운데 짧은 강조 글자. 참고 숏츠의 '아삭' '쏙'처럼 테두리만 있는 큰 글씨 */
+export async function renderPunchPng(text: string, videoWidth: number): Promise<Buffer | null> {
+  const word = [...text.trim()].slice(0, 8).join('');
+  if (!(await ensureFont()) || !word) return null;
+  const fontSize = Math.round(videoWidth * (word.length <= 2 ? 0.16 : 0.11));
+  const pad = Math.round(fontSize * 0.35);
+  const canvas = createCanvas(8, 8);
+  const measure = canvas.getContext('2d');
+  measure.font = `700 ${fontSize}px "${FONT_FAMILY}"`;
+  const textW = Math.ceil(measure.measureText(word).width);
+  const width = textW + pad * 2;
+  const height = Math.ceil(fontSize * 1.35) + pad;
+  const out = createCanvas(width, height);
+  const ctx = out.getContext('2d');
+  ctx.clearRect(0, 0, width, height);
+  ctx.font = `700 ${fontSize}px "${FONT_FAMILY}"`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = Math.max(8, Math.round(fontSize * 0.14));
+  ctx.strokeStyle = 'rgba(0,0,0,0.82)';
+  ctx.strokeText(word, width / 2, height / 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(word, width / 2, height / 2);
+  return out.toBuffer('image/png');
+}
+
 /** 왼쪽 위 상품명 태그 PNG (포인트 색 배경) */
 export async function renderTagPng(text: string, videoWidth: number): Promise<Buffer | null> {
   if (!(await ensureFont()) || !text.trim()) return null;

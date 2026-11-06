@@ -38,8 +38,9 @@ load_env()
 
 # 한국 품목명 → (AI 프롬프트용 영어 설명, 스톡 검색어)
 EN_NAMES = {
-    "참외": ("Korean melon (chamoe), an oblong bright-yellow oriental melon with white stripes and crisp white flesh", "melon"),
+    "참외": ("Korean chamoe, an oblong bright-yellow oriental melon with white stripes and crisp white flesh, not cantaloupe", "oriental melon chamoe"),
     "사과": ("Korean apple", "apple"),
+    "오렌지": ("navel orange fruit", "orange citrus fruit"),
     "배": ("Korean pear (large round golden-brown Asian pear)", "pear"),
     "감귤": ("Jeju mandarin orange", "tangerine"),
     "귤": ("Jeju mandarin orange", "tangerine"),
@@ -53,6 +54,7 @@ EN_NAMES = {
     "감자": ("potato", "potato"),
     "토마토": ("tomato", "tomato"),
     "옥수수": ("corn on the cob", "corn"),
+    "홍게": ("red snow crab", "snow crab"),
     "대게": ("snow crab", "crab"),
     "꽃게": ("blue crab", "crab"),
     "고등어": ("mackerel", "mackerel fish"),
@@ -150,6 +152,22 @@ STOCK_QUERIES = {
     "축산": {"origin": ["cattle farm", "farm countryside"], "product": ["{stock}", "butcher meat"]},
     "가공": {"origin": ["food factory production", "kitchen cooking"], "product": ["{stock}", "snack food"]},
 }
+
+# 똑똑하게 채우기: 장면 유형(레퍼런스 shot)에 맞는 동작+상품 검색어
+_SMART_ACTIONS = {
+    "hook": ["{stock} cutting", "{stock} reveal", "{stock} fresh"],
+    "detail": ["{stock} close up", "{stock} texture macro", "{stock}"],
+    "crave": ["{stock} eating", "{stock} cooked plate", "{stock}"],
+    "hero": ["{stock} display", "{stock} market", "{stock}"],
+    "hold": ["{stock} hand holding", "{stock} hands", "{stock}"],
+    "pack": ["{stock} packing box", "{stock} delivery", "{stock}"],
+    "store": ["{stock} refrigerator", "{stock} storage", "{stock}"],
+    "prep": ["{stock} cutting board", "{stock} kitchen prep", "{stock}"],
+    "photo": ["{stock}", "fresh {stock}"],
+}
+for _cat, _shots in STOCK_QUERIES.items():
+    for _alias, _qs in _SMART_ACTIONS.items():
+        _shots.setdefault(_alias, list(_qs))
 
 
 def names(p):
@@ -296,9 +314,16 @@ def ai_clip(shot, p, ref_photo, cache):
 # ---------- 스톡 ----------
 
 def stock_clip(shot, p, cache, min_len=5):
-    out = cache / f"stock_{shot}.mp4"
+    # 시드별 변형 캐시 → 같은 상품이라도 작업마다 다른 스톡 영상이 나온다
+    seed_key = str(p.get("render_seed") or p.get("id") or p.get("name") or "x")
+    variant = abs(hash(f"{seed_key}:{shot}")) % 5
+    out = cache / f"stock_{shot}_v{variant}.mp4"
     if out.exists():
         return out
+    # 예전 단일 캐시도 있으면 첫 변형으로만 재사용
+    legacy = cache / f"stock_{shot}.mp4"
+    if variant == 0 and legacy.exists():
+        return legacy
     key = os.environ.get("PEXELS_API_KEY")
     if not key:
         return None
@@ -315,7 +340,9 @@ def stock_clip(shot, p, cache, min_len=5):
         videos = [v for v in videos if v.get("duration", 0) >= min_len]
         if not videos:
             continue
-        v = random.Random(p["name"] + shot).choice(videos[:8])
+        # 작업마다 다른 스톡을 고른다 (render_seed / id 가 있으면 그걸 씀)
+        seed_key = f"{p.get('render_seed') or p.get('id') or p['name']}:{shot}"
+        v = random.Random(seed_key).choice(videos[:8])
         files = [f for f in v["video_files"] if f.get("height") and f["height"] >= 1280 and f["height"] >= f["width"]]
         if not files:
             continue
@@ -329,12 +356,34 @@ def stock_clip(shot, p, cache, min_len=5):
     return None
 
 
-def get_clip(source, p, ref_photo, pdir):
-    """source 예: 'ai:hook', 'stock:origin', 'photo:1'. 클립 경로 또는 None (None이면 사진으로 만든다)."""
+def get_clip(source, p, ref_photo, pdir, smart=False):
+    """source 예: 'ai:hook', 'stock:origin', 'photo:1'. 클립 경로 또는 None (None이면 사진으로 만든다).
+
+    smart=True(똑똑하게 채우기): 스톡 영상 → AI → (없으면 None → 상품 사진)
+    """
     cache = pdir / "_clips"
     cache.mkdir(exist_ok=True)
-    kind, shot = source.split(":")
+    if ":" not in source:
+        return None
+    kind, shot = source.split(":", 1)
     if kind == "photo":
+        return None
+    if smart:
+        # 1) 스톡 (ai:/stock: 모두 먼저 스톡 시도)
+        try:
+            clip = stock_clip(shot, p, cache)
+            if clip:
+                return clip
+        except (KeyError, Exception) as e:
+            print(f"    ! 스마트 스톡 실패({shot}): {e}")
+        # 2) AI
+        ai_shot = shot if shot != "origin" else "hero"
+        try:
+            clip = ai_clip(ai_shot, p, ref_photo, cache)
+            if clip:
+                return clip
+        except Exception as e:
+            print(f"    ! 스마트 AI 실패({ai_shot}): {e}")
         return None
     if kind == "ai":
         return ai_clip(shot, p, ref_photo, cache)

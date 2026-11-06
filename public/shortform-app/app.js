@@ -22,8 +22,8 @@ function freshMake() {
     product: { name: "", category: "", origin: "", price: "", unit: "", memo: "", photoData: null },
     info: null,            // 서버에 저장된 상품 정보
     fields: {}, drafted: false, via: null,
-    opts: { music: "밝은", voice: "Gemini 여성 · 또렷한", ai_label: true, motion: false },
-    mode: "ai", job: null, scene: 0, sceneLocked: false,
+    opts: { music: "밝은", voice: "Gemini 여성 · 또렷한", ai_label: true, motion: true, motion_style: "clean", look: "", ucc_who: "man", ucc_role: "auto" },
+    mode: "smart", job: null, scene: 0, sceneLocked: false,
     chat: [], lint: [],
   };
 }
@@ -392,18 +392,19 @@ async function renderMake() {
   }
   if (!isClone() && (!M.tpl || !tplOf(M.tpl) || isShoot(tplOf(M.tpl)))) M.tpl = "고르는법";
   const t = curTpl();
-  if (!aiAvailable()) M.mode = "photo";
+  if (M.mode === "ai" && !aiAvailable()) M.mode = "smart";
   const a = isClone() ? S.analysis[M.ref] : null;
   if (a && !M.drafted && !M.fields.lines) {
-    M.fields = { title1: "", title2: "", info: "", voice_mode: a.voice === "text_only" || a.voice === "asmr" ? "text_only" : "narration",
+    // 판매 숏폼은 기본 내레이션(TTS). 레퍼런스가 ASMR/자막만이어도 사용자가 직접 '자막+음악만'으로 바꿀 수 있다.
+    M.fields = { title1: "", title2: "", info: "", voice_mode: "narration",
       lines: a.scenes.map((s) => ({
         say: "", label: s.label, role: s.role,
-        source: s.shot === "origin" ? "stock:origin" : s.shot === "photo" ? "photo:1" : (aiAvailable() ? "ai:" + s.shot : "photo:1"),
+        source: s.shot === "origin" ? "stock:origin" : s.shot === "photo" ? "photo:1" : "ai:" + s.shot,
         seconds: s.seconds,
         keyframe: s.keyframe || "",
       })) };
-    M.opts.music = a.music && a.music !== "없음" ? a.music : (M.fields.voice_mode === "text_only" ? "밝은" : M.opts.music);
-    if (!aiAvailable()) M.mode = "photo";
+    M.opts.music = a.music && a.music !== "없음" ? a.music : M.opts.music;
+    if (M.mode === "ai" && !aiAvailable()) M.mode = "smart";
   }
   const refs = isClone() ? S.boot.references.filter((r) => r.id === M.ref) : S.boot.references.filter((r) => r.template === M.tpl).slice(0, 40);
   if (!isClone() && M.ref && !refs.some((r) => r.id === M.ref)) { const rr = refOf(M.ref); if (rr) refs.unshift(rr); else M.ref = null; }
@@ -463,6 +464,7 @@ async function renderMake() {
             <span class="muted" id="save-msg"></span>
           </div>
           ${M.info ? `<div class="ident">✓ <b>${esc(M.info.name)}</b> · ${esc(M.info.category)}${M.info.en_name ? ` · AI용 설명: <i>${esc(M.info.en_name)}</i>` : ""}${M.info.look ? `<br>${esc(M.info.look)}` : ""}${M.info.cached.length ? `<br>이미 만든 AI 장면 ${M.info.cached.length}개는 다시 쓰고 비용이 들지 않아요.` : ""}</div>
+          ${assetsPanelHtml(M.info)}
           <div class="plan-cta"><div><b>한 편씩 말고, 일주일치를 한 번에</b><div class="muted">Claude가 분석해 둔 레퍼런스 중 이 상품에 맞는 5편을 골라 요일별로 기획하고 모두 만들어요.</div></div>
             <button class="btn yellow" id="plan-btn">✨ 일주일치 기획하기</button></div>
           ${M.info.real_photo === false ? `<div class="lint" style="margin-top:8px"><b>⚠ 올린 이미지가 실제 사진이 아니라 그림(일러스트)으로 보여요.</b><div>AI 장면이 실물과 달라질 수 있어요. 휴대폰으로 찍은 실제 상품 사진을 올리면 훨씬 정확해요.</div></div>` : ""}` : ""}
@@ -480,7 +482,25 @@ async function renderMake() {
 
         <section class="panel step ${M.info ? "" : "locked"}" id="step4">
           <div class="step-head"><span class="step-num">4</span><h2>영상 만들기</h2></div>
+          <div class="looks">
+            <div class="look ${!M.opts.look ? "on" : ""}" data-look=""><b>기본 편집</b><span>위에서 고른 채우기 방식 그대로 자막·음성을 입혀요.</span></div>
+            <div class="look ${M.opts.look === "origin" ? "on" : ""} ${replicateOn() ? "" : "disabled"}" data-look="origin"><b>산지 사진 → 영상</b><span>${replicateOn() ? "밭에서 찍은 사진처럼 만든 뒤 그 사진을 영상으로 바꾸고, 가운데에 짧은 글자를 올려요. 올린 영상이 있으면 구도를 참고해요." : "REPLICATE_API_TOKEN이 있어야 해요."}</span></div>
+            <div class="look ${M.opts.look === "farmer" ? "on" : ""} ${replicateOn() ? "" : "disabled"}" data-look="farmer"><b>농부 소개 · 시댄스 2.5</b><span>${replicateOn() ? "농부가 상품을 들고 장면 대사를 말해요. 목소리는 영상 안에 들어가고, 가운데 글자도 올라가요." : "REPLICATE_API_TOKEN이 있어야 해요."}</span></div>
+            <div class="look ${M.opts.look === "ucc" ? "on" : ""} ${replicateOn() ? "" : "disabled"}" data-look="ucc"><b>UCC · 시니어 소개</b><span>${replicateOn() ? "한국 남자 또는 여자 시니어(농부·어부)가 상품을 소개해요. 시댄스 2.5로 15초, 480p로 만들어요." : "REPLICATE_API_TOKEN이 있어야 해요."}</span></div>
+          </div>
+          <div class="opts" id="ucc-opts" ${M.opts.look === "ucc" ? "" : "hidden"}>
+            <label>인물 <select id="o-ucc-who">
+              <option value="man" ${M.opts.ucc_who !== "woman" ? "selected" : ""}>한국 남자 시니어</option>
+              <option value="woman" ${M.opts.ucc_who === "woman" ? "selected" : ""}>한국 여자 시니어</option>
+            </select></label>
+            <label>역할 <select id="o-ucc-role">
+              <option value="auto" ${!M.opts.ucc_role || M.opts.ucc_role === "auto" ? "selected" : ""}>상품에 맞게 (수산은 어부)</option>
+              <option value="farmer" ${M.opts.ucc_role === "farmer" ? "selected" : ""}>농부</option>
+              <option value="fisher" ${M.opts.ucc_role === "fisher" ? "selected" : ""}>어부</option>
+            </select></label>
+          </div>
           <div class="modes">
+            <div class="mode ${M.mode === "smart" ? "on" : ""}" data-mode="smart"><b>똑똑하게 채우기</b><span>가져온 영상이 입력한 키워드의 실물인지 AI가 확인해요. 다른 음식이거나 없으면 상품 사진으로 이미지를 만들어 영상으로 바꿔요.</span></div>
             <div class="mode ${M.mode === "ai" ? "on" : ""} ${aiAvailable() ? "" : "disabled"}" data-mode="ai"><b>AI 장면 + 사진</b><span>${aiAvailable() ? "장면마다 Replicate/FAL이 상품 사진으로 5초 영상을 만들어요. 같은 장면은 캐시되어 처음만 비용이 들어요." : "REPLICATE_API_TOKEN(또는 FAL_KEY)을 .env.local에 넣으면 켤 수 있어요."}</span></div>
             <div class="mode ${M.mode === "photo" ? "on" : ""}" data-mode="photo"><b>사진만 (무료·빠름)</b><span>${isClone() ? "캡처한 장면 초수대로 상품 사진을 영상으로 이어 붙여요." : "올린 사진을 천천히 확대하며 자막·음성을 입혀요. 1분 안팎."}</span></div>
           </div>
@@ -488,9 +508,12 @@ async function renderMake() {
             <label>배경음악 <select id="o-music">${S.boot.moods.map((m) => `<option ${M.opts.music === m ? "selected" : ""}>${m}</option>`).join("")}</select></label>
             <label>목소리 <select id="o-voice">${voiceOptions().map((v) => `<option ${M.opts.voice === v ? "selected" : ""}>${v}</option>`).join("")}</select></label>
             ${isClone() ? `<label>말하기 <select id="o-vmode"><option value="narration" ${M.fields.voice_mode !== "text_only" ? "selected" : ""}>내레이션</option><option value="text_only" ${M.fields.voice_mode === "text_only" ? "selected" : ""}>자막 + 음악만</option></select></label>` : ""}
-            <label class="chk"><input type="checkbox" id="o-ailabel" ${M.opts.ai_label ? "checked" : ""}> ‘AI 생성 장면 포함’ 표시</label>
-            ${motionOk(M.tpl) && S.boot.engine !== "web" ? `<label class="chk" title="글자가 튀어나오고, 형광펜 강조·배지·X·O 도장·VS·숫자 카운트·가격표 애니메이션이 들어가요"><input type="checkbox" id="o-motion" ${M.opts.motion ? "checked" : ""}> ✨ 모션그래픽 (움직이는 자막·가격표, 베타)</label>` : ""}
+            <span class="chk-row">
+              <label class="chk"><input type="checkbox" id="o-ailabel" ${M.opts.ai_label ? "checked" : ""}> ‘AI 생성 장면 포함’ 표시</label>
+              ${motionOk(M.tpl) ? `<label class="chk" title="이 PC에서는 Python으로 모션·효과음·배경음악을 입혀요"><input type="checkbox" id="o-motion" ${M.opts.motion ? "checked" : ""}> ✨ 모션그래픽</label>` : ""}
+            </span>
           </div>
+          ${motionOk(M.tpl) ? motionStylePickerHtml(M.opts.motion_style || "clean") : ""}
           <div class="cost" id="cost"></div>
           <button class="btn primary" id="render" style="width:100%;padding:14px">영상 만들기</button>
           <div id="job"></div>
@@ -539,7 +562,117 @@ function anatomyMini(a) {
 }
 
 function photoUrl() { return S.make.product.photoData || (S.make.info && S.make.info.photo) || ""; }
+
+function bindAssetUpload() {
+  const M = S.make;
+  const input = $("#asset-file");
+  if (!input || !M.info) return;
+  const ccBtn = $("#cc-search-btn");
+  if (ccBtn) ccBtn.onclick = async () => {
+    const msg = $("#cc-search-msg");
+    const box = $("#cc-search-hits");
+    if (msg) msg.textContent = "CC 검색 중…";
+    if (box) box.innerHTML = "";
+    try {
+      const shot = ($("#cc-shot") && $("#cc-shot").value) || "any";
+      const d = await api("/api/cc/search", {
+        q: M.info.name || M.product.name,
+        shot: shot === "any" ? "origin" : shot,
+      });
+      S._ccHits = d.hits || [];
+      if (msg) msg.textContent = `${(d.providers || []).join(" · ") || "검색 완료"} · ${d.notice || ""}`;
+      if (!box) return;
+      const hits = S._ccHits;
+      if (!hits.length) { box.innerHTML = `<div class="muted">CC 결과가 없어요. 상품명·키를 확인해 보세요.</div>`; return; }
+      box.innerHTML = `<ul class="ref-hits">${hits.map((h, i) => `
+        <li>
+          ${h.thumbnail ? `<img src="${esc(h.thumbnail)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<div class="ref-hit-ph"></div>`}
+          <div>
+            <a href="${esc(h.link)}" target="_blank" rel="noopener">${esc(h.title)}</a>
+            <div class="muted">${esc(h.license)}${h.channel ? ` · ${esc(h.channel)}` : ""} · ${h.kind === "video" ? "영상" : "사진"}</div>
+            <button type="button" class="btn small" data-cc-import="${i}" style="margin-top:6px">장면에 넣기</button>
+          </div>
+        </li>`).join("")}</ul>`;
+      box.querySelectorAll("[data-cc-import]").forEach((btn) => {
+        btn.onclick = async () => {
+          const hit = S._ccHits[Number(btn.dataset.ccImport)];
+          if (!hit) return;
+          btn.disabled = true;
+          btn.textContent = "받는 중…";
+          try {
+            const r = await api("/api/cc/import", {
+              product: M.info.folder,
+              hit,
+              shot: ($("#cc-shot") && $("#cc-shot").value) || "any",
+            });
+            M.info.assets = r.assets || [];
+            const p = S.boot.products.find((x) => x.folder === M.info.folder);
+            if (p) p.assets = M.info.assets;
+            toast("CC 소재를 넣었어요. 똑똑하게 채우기에서 우선 사용해요");
+            renderMake();
+          } catch (e) {
+            btn.disabled = false;
+            btn.textContent = "장면에 넣기";
+            toast(e.message || "가져오기 실패", true);
+          }
+        };
+      });
+    } catch (e) {
+      if (msg) msg.textContent = "";
+      toast(e.message || "CC 검색 실패", true);
+    }
+  };
+  input.onchange = async () => {
+    const file = input.files && input.files[0];
+    input.value = "";
+    if (!file) return;
+    if (file.size > 40 * 1024 * 1024) return toast("40MB 이하 파일만 올릴 수 있어요", true);
+    const msg = $("#asset-msg");
+    if (msg) msg.textContent = "올리는 중…";
+    try {
+      const data = await readFileAsDataUrl(file);
+      const shot = ($("#asset-shot") && $("#asset-shot").value) || "any";
+      const d = await api("/api/product/upload", {
+        product: M.info.folder,
+        data,
+        name: file.name.replace(/\.[^.]+$/, "").slice(0, 40),
+        shot,
+      });
+      M.info.assets = d.assets || [];
+      const p = S.boot.products.find((x) => x.folder === M.info.folder);
+      if (p) p.assets = M.info.assets;
+      toast("올렸어요. 똑똑하게 채우기에서 우선 사용해요");
+      renderMake();
+    } catch (e) {
+      toast(e.message || "업로드 실패", true);
+      if (msg) msg.textContent = "";
+    }
+  };
+  document.querySelectorAll("[data-adel]").forEach((btn) => {
+    btn.onclick = async () => {
+      try {
+        const d = await api("/api/product/assets/delete", { product: M.info.folder, id: btn.dataset.adel });
+        M.info.assets = d.assets || [];
+        const p = S.boot.products.find((x) => x.folder === M.info.folder);
+        if (p) p.assets = M.info.assets;
+        renderMake();
+      } catch (e) {
+        toast(e.message || "삭제 실패", true);
+      }
+    };
+  });
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error("파일을 읽지 못했어요"));
+    r.readAsDataURL(file);
+  });
+}
 function aiAvailable() { return !!(S.boot.keys && (S.boot.keys.aiScene || S.boot.keys.fal || S.boot.keys.replicate)); }
+function replicateOn() { return !!(S.boot.keys && S.boot.keys.replicate); }
 
 /** Gemini 키가 있으면 Gemini 목소리를 앞에 둔다 */
 function voiceOptions() {
@@ -600,13 +733,106 @@ function fieldsHtml(t) {
   return html;
 }
 
+const ASSET_SHOTS = [
+  { id: "any", label: "자동(아무 장면)" },
+  { id: "origin", label: "산지 풍경" },
+  { id: "crave", label: "먹는 장면" },
+  { id: "hook", label: "대표 컷·자르기" },
+  { id: "detail", label: "클로즈업" },
+  { id: "prep", label: "손질" },
+  { id: "pack", label: "포장" },
+  { id: "hold", label: "손에 들기" },
+  { id: "hero", label: "진열·상자" },
+  { id: "store", label: "보관" },
+];
+
+function productAssets() {
+  return (S.make.info && S.make.info.assets) || [];
+}
+
+function sceneOptions() {
+  const uploads = productAssets().map((a) => ({
+    id: `upload:${a.id}`,
+    label: `내 ${a.kind === "video" ? "영상" : "사진"}: ${a.name}${a.shot && a.shot !== "any" ? ` · ${a.shot}` : ""}`,
+  }));
+  return [...uploads, ...(S.boot.scenes || [])];
+}
+
 function sceneSelect(attr, val) {
-  return `<select ${attr}>${S.boot.scenes.map((s) => `<option value="${s.id}" ${s.id === val ? "selected" : ""}>${esc(s.label)}</option>`).join("")}</select>`;
+  return `<select ${attr}>${sceneOptions().map((s) => `<option value="${s.id}" ${s.id === val ? "selected" : ""}>${esc(s.label)}</option>`).join("")}</select>`;
+}
+
+function assetsPanelHtml(info) {
+  const assets = info.assets || [];
+  const ccOk = !!(S.boot.keys && (S.boot.keys.ccSearch || S.boot.keys.serpapi || S.boot.keys.youtubeCc));
+  return `<div class="assets-box" id="assets-box">
+    <div class="assets-head">
+      <b>내 영상·사진 올리기</b>
+      <span class="muted">산지·시식처럼 직접 찍은 파일을 올리면 똑똑하게 채우기에서 스톡보다 먼저 씁니다. (직접 찍거나 사용 권한이 있는 파일만)</span>
+    </div>
+    <div class="assets-row">
+      <select id="asset-shot">${ASSET_SHOTS.map((s) => `<option value="${s.id}">${esc(s.label)}</option>`).join("")}</select>
+      <label class="btn small ghost asset-up">파일 선택
+        <input type="file" id="asset-file" accept="video/mp4,video/quicktime,video/webm,image/jpeg,image/png,image/webp" hidden>
+      </label>
+      <span class="muted" id="asset-msg"></span>
+    </div>
+    ${assets.length ? `<ul class="assets-list">${assets.map((a) => `
+      <li>
+        <span class="assets-kind">${a.kind === "video" ? "▶" : "🖼"}</span>
+        <div><b>${esc(a.name)}</b><div class="muted">${esc(a.shot === "any" ? "자동 매칭" : a.shot)} · ${(a.kind === "video" ? "영상" : "사진")}</div></div>
+        <button type="button" class="btn small ghost" data-adel="${esc(a.id)}">삭제</button>
+      </li>`).join("")}</ul>` : `<div class="muted" style="margin-top:8px">아직 올린 파일이 없어요. 산지 영상·먹는 장면을 올리면 관련 없는 스톡 대신 쓰여요.</div>`}
+    <div class="assets-head" style="margin-top:16px">
+      <b>크리에이티브 커먼즈 (자동)</b>
+      <span class="muted"><b>똑똑하게 채우기</b> 때 AI가 대본에 맞는 유튜브 CC 영상을 찾아 구간을 잘라 넣습니다. 아래는 직접 확인하고 싶을 때만 쓰는 보조 검색이에요.</span>
+    </div>
+    <div class="assets-row">
+      <select id="cc-shot">${ASSET_SHOTS.map((s) => `<option value="${s.id}">${esc(s.label)}</option>`).join("")}</select>
+      <button type="button" class="btn small" id="cc-search-btn" ${ccOk ? "" : "disabled"}>${ccOk ? "CC 검색" : "키 필요"}</button>
+      <span class="muted" id="cc-search-msg">${ccOk ? "" : "YOUTUBE_API_KEY 또는 SERPAPI_API_KEY를 .env.local에 넣고 서버 재시작"}</span>
+    </div>
+    <div id="cc-search-hits"></div>
+  </div>`;
 }
 
 /* 초안이 없을 때 리스트 칸을 빈 줄로 준비 */
 // 모션그래픽은 카드(사진 묶음)만 빼고 모든 영상 템플릿·레퍼런스 복제에 쓸 수 있다
 const motionOk = (tpl) => tpl === "clone" || ((S.boot.templates[tpl] || {}).output !== "cards" && !!S.boot.templates[tpl]);
+/* 모션 템플릿 — Remotion Main.jsx MOTION_STYLES 와 id 를 맞춘다. focus만 노란 원이 나온다. */
+const MOTION_STYLES = [
+  { id: "clean", name: "클린", desc: "원·체크 없이 자막·배지만" },
+  { id: "soft", name: "소프트", desc: "진행 바 + 얇은 제목선" },
+  { id: "strip", name: "사이드 스트립", desc: "왼쪽 색 띠 + 스텝 번호" },
+  { id: "corners", name: "코너 프레임", desc: "모서리 브라켓 포커스" },
+  { id: "bold", name: "볼드 자막", desc: "큰 자막 중심, 장식 최소" },
+  { id: "focus", name: "포커스 원", desc: "노란 원으로 상품 강조" },
+];
+
+/** 카드형 미니 샘플 — 선택 전에 스타일 차이를 눈으로 본다 */
+function motionSampleHtml(s, on) {
+  const deco = {
+    clean: `<span class="ms-badge">STEP</span><span class="ms-cap">자막만 또렷</span><span class="ms-pill">정보</span>`,
+    soft: `<span class="ms-line"></span><span class="ms-bars"><i></i><i></i><i></i><i></i></span><span class="ms-cap">부드러운 진행</span>`,
+    strip: `<span class="ms-strip"></span><span class="ms-num">01</span><span class="ms-cap">사이드 강조</span>`,
+    corners: `<span class="ms-corner tl"></span><span class="ms-corner tr"></span><span class="ms-corner bl"></span><span class="ms-corner br"></span><span class="ms-bars"><i></i><i></i><i></i></span><span class="ms-cap">브라켓 포커스</span>`,
+    bold: `<span class="ms-big">큰 자막</span><span class="ms-sub">장식 거의 없음</span>`,
+    focus: `<span class="ms-circle"></span><span class="ms-check">✓</span><span class="ms-bars"><i></i><i></i><i></i><i></i></span><span class="ms-cap">원형 포커스</span>`,
+  };
+  return `<button type="button" class="ms-card ${on ? "on" : ""}" data-mstyle="${s.id}" title="${esc(s.desc)}">
+    <div class="ms-phone">${deco[s.id] || ""}</div>
+    <b>${esc(s.name)}${s.id === "clean" ? " · 기본" : ""}</b>
+    <span>${esc(s.desc)}</span>
+  </button>`;
+}
+
+function motionStylePickerHtml(selected) {
+  const cur = selected || "clean";
+  return `<div id="motion-style-wrap" class="ms-wrap" hidden>
+    <div class="ms-head">모션 템플릿 <span class="muted">샘플을 눌러 고르세요</span></div>
+    <div class="ms-grid">${MOTION_STYLES.map((s) => motionSampleHtml(s, s.id === cur)).join("")}</div>
+  </div>`;
+}
 
 function ensureFields(t) {
   const F = S.make.fields;
@@ -649,6 +875,7 @@ function bindMake() {
   bindP("#p-name", "name"); bindP("#p-origin", "origin"); bindP("#p-unit", "unit"); bindP("#p-price", "price"); bindP("#p-memo", "memo");
   $("#p-cat").onchange = (e) => { M.product.category = e.target.value; };
   $("#save-prod").onclick = saveProduct;
+  bindAssetUpload();
   $("#draft").onclick = makeDraft;
   document.querySelectorAll(".mode").forEach((el) => el.addEventListener("click", () => {
     if (el.classList.contains("disabled")) return;
@@ -656,10 +883,34 @@ function bindMake() {
     document.querySelectorAll(".mode").forEach((x) => x.classList.toggle("on", x === el));
     updateCost(); updatePreview();
   }));
+  document.querySelectorAll(".look").forEach((el) => el.addEventListener("click", () => {
+    if (el.classList.contains("disabled")) return;
+    M.opts.look = el.dataset.look || "";
+    document.querySelectorAll(".look").forEach((x) => x.classList.toggle("on", x === el));
+    if (M.opts.look) M.opts.ai_label = true;
+    const lab = $("#o-ailabel"); if (lab && M.opts.look) lab.checked = true;
+    const uccBox = $("#ucc-opts"); if (uccBox) uccBox.hidden = M.opts.look !== "ucc";
+    updateCost(); updatePreview();
+  }));
+  const uccWho = $("#o-ucc-who"); if (uccWho) uccWho.onchange = (e) => { M.opts.ucc_who = e.target.value; };
+  const uccRole = $("#o-ucc-role"); if (uccRole) uccRole.onchange = (e) => { M.opts.ucc_role = e.target.value; };
   $("#o-music").onchange = (e) => { M.opts.music = e.target.value; };
   $("#o-voice").onchange = (e) => { M.opts.voice = e.target.value; };
   $("#o-ailabel").onchange = (e) => { M.opts.ai_label = e.target.checked; updatePreview(); };
-  const mo = $("#o-motion"); if (mo) mo.onchange = (e) => { M.opts.motion = e.target.checked; };
+  const mo = $("#o-motion"); if (mo) mo.onchange = (e) => {
+    M.opts.motion = e.target.checked;
+    const wrap = $("#motion-style-wrap"); if (wrap) wrap.hidden = !e.target.checked;
+  };
+  const wrap = $("#motion-style-wrap");
+  if (wrap) {
+    wrap.hidden = !M.opts.motion;
+    wrap.querySelectorAll("[data-mstyle]").forEach((btn) => {
+      btn.onclick = () => {
+        M.opts.motion_style = btn.dataset.mstyle;
+        wrap.querySelectorAll(".ms-card").forEach((c) => c.classList.toggle("on", c === btn));
+      };
+    });
+  }
   const vm = $("#o-vmode"); if (vm) vm.onchange = (e) => { M.fields.voice_mode = e.target.value; };
   $("#render").onclick = startRender;
   const pb = $("#plan-btn"); if (pb) pb.onclick = openPlan;
@@ -768,6 +1019,7 @@ async function saveProduct() {
     if (M.product.photoData) body.photo = M.product.photoData;
     if (M.info) body.from = M.info.folder;  // 이름만 바꿔 저장해도 사진을 이어받는다
     M.info = await api("/api/product", body);
+    if (!M.info.assets) M.info.assets = [];
     M.product.photoData = null;
     M.product.category = M.info.category || M.product.category;
     S.boot.products = await api("/api/products");
@@ -865,7 +1117,7 @@ function updatePreview() {
   const i = ((M.scene % scenes.length) + scenes.length) % scenes.length;
   const s = scenes[i];
   const ctx = { ...(M.info || {}), name: (M.info && M.info.name) || M.product.name || "상품", ...flat(M.fields) };
-  const bg = (M.mode === "ai" && cachedFrame(s.src)) || photoUrl();
+  const bg = ((M.mode === "ai" || M.mode === "smart") && cachedFrame(s.src)) || photoUrl();
   $("#pv-video").style.backgroundImage = bg ? `url('${bg}')` : "";
   const a = isClone() ? S.analysis[M.ref] : null;
   const hlColor = a && a.caption && a.caption.color === "green" ? "#5ae65a" : a && a.caption && a.caption.color === "red" ? "#ff5046" : "";
@@ -875,7 +1127,7 @@ function updatePreview() {
   $("#pv-t1").hidden = !$("#pv-t1").textContent;
   $("#pv-info").textContent = fill(t.info || "", ctx);
   $("#pv-info").hidden = !$("#pv-info").textContent;
-  $("#pv-ai").hidden = !(M.opts.ai_label && M.mode === "ai");
+  $("#pv-ai").hidden = !(M.opts.ai_label && (M.mode === "ai" || M.mode === "smart"));
   const lab = $("#pv-label");
   if (s.mark) lab.innerHTML = `<span style="display:inline-grid;place-items:center;width:20cqw;height:20cqw;border-radius:50%;border:2px solid #fff;color:#fff;font-size:15cqw;background:${s.mark === "O" ? "#3cc85a" : "#eb3232"}">${s.mark}</span>`;
   else if (s.counter) lab.innerHTML = `<span style="font-size:16cqw;padding:0 4cqw;border-radius:8px;background:rgba(0,0,0,.55)">${esc(s.counter)}</span>`;
@@ -895,9 +1147,25 @@ function usedSources() { return [...new Set(buildScenes().map((s) => s.src).filt
 
 function updateCost() {
   const M = S.make, el = $("#cost"); if (!el) return;
+  if (M.opts.look === "origin") {
+    el.innerHTML = "산지 사진 → 영상 · 장면마다 밭에서 찍은 듯한 사진을 만든 뒤 영상으로 바꿔요. 올린 영상이 있으면 그 구도를 참고하고, <b>*별표*</b> 단어가 가운데 크게 나와요. 장면당 1~3분, Replicate 요금이 들어요.";
+    return;
+  }
+  if (M.opts.look === "farmer") {
+    el.innerHTML = "농부 소개 · 시댄스 2.5가 농부가 대사를 말하는 영상을 만들어요. 목소리는 영상 안에 들어가서 따로 입힌 TTS는 빼요. 장면당 4~8초, 480p(가장 싼 화질) 기준 초당 약 $0.10입니다.";
+    return;
+  }
+  if (M.opts.look === "ucc") {
+    el.innerHTML = "UCC · 한국 시니어 농부 또는 어부가 상품을 소개하는 영상 한 편을 시댄스 2.5로 만들어요. 15초, 480p(가장 싼 화질)라 초당 약 $0.10, 한 편 약 $1.5입니다.";
+    return;
+  }
   const t = curTpl();
   if (t.output === "cards") { el.innerHTML = "카드는 이미 만든 AI 장면 사진이 있으면 그걸 배경으로, 없으면 올린 사진으로 만들어요. <b>추가 비용 없음.</b>"; return; }
   if (M.mode === "photo") { el.innerHTML = "사진만 사용 · <b>AI 장면 비용 없음</b> · 음성(무료 TTS)·자막·전환·배경음악이 들어가요."; return; }
+  if (M.mode === "smart") {
+    el.innerHTML = `똑똑하게 채우기 · 상품 키워드와 같은 품목인지 AI가 확인한 영상만 써요. 참치·문어·빵처럼 다른 음식이면 버리고, 맞는 영상이 없으면 <b>상품 사진으로 AI 이미지를 만들어 영상으로</b> 바꿔요.`;
+    return;
+  }
   const cached = new Set((M.info && M.info.cached) || []);
   const ai = usedSources().filter((s) => s.startsWith("ai:")).map((s) => s.slice(3));
   const fresh = ai.filter((s) => !cached.has(s));
@@ -917,8 +1185,12 @@ function collectFields() {
     out.lines = (M.fields.lines || []).map((l) => ({ say: (l.say || "").trim(), label: l.label, role: l.role, source: l.source }));
     out.voice_mode = M.fields.voice_mode;
   }
-  return { ...out, music: M.opts.music, voice: M.opts.voice, ai_label: M.opts.ai_label,
-    motion: motionOk(M.tpl) && M.opts.motion };
+  return { ...out, music: M.opts.music, voice: M.opts.voice, ai_label: M.opts.ai_label || !!M.opts.look,
+    motion: motionOk(M.tpl) && M.opts.motion,
+    motion_style: M.opts.motion_style || "clean",
+    look: M.opts.look || "",
+    ucc_who: M.opts.ucc_who === "woman" ? "woman" : "man",
+    ucc_role: M.opts.ucc_role || "auto" };
 }
 
 function validate() {
@@ -941,9 +1213,8 @@ async function startRender() {
   const btn = $("#render");
   btn.disabled = true;
   try {
-    const mode = M.mode === "ai" && aiAvailable() ? "ai" : "photo";
+    const mode = M.mode === "ai" && !aiAvailable() ? "smart" : (M.mode || "smart");
     const fields = collectFields();
-    if (S.boot.engine === "web") fields.motion = false;
     const job = await api("/api/render", { product: M.info.folder, template: M.tpl, ref: M.ref, mode, fields });
     M.job = job.id;
     showJob(job.id);
@@ -954,6 +1225,8 @@ async function startRender() {
 async function showJob(id) {
   clearTimeout(S.poll);
   const box = $("#job"); if (!box) return;
+  // 2초마다 HTML을 다시 그리면 <details>가 닫히므로, 펼친 상태를 기억한다
+  const logOpen = !!box.querySelector("details.log-panel[open], details[open]");
   let j;
   try { j = await api("/api/jobs/" + encodeURIComponent(id)); } catch (e) { box.innerHTML = ""; return; }
   const btn = $("#render");
@@ -961,7 +1234,7 @@ async function showJob(id) {
     if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 만드는 중…`; }
     box.innerHTML = `<div class="progress"><div class="bar"><i></i></div>
       <div style="margin-top:6px"><b>${j.status === "queued" ? "앞 작업이 끝나면 시작해요" : esc(friendlyStep(j.log))}</b></div>
-      <details><summary class="muted">자세한 진행 기록</summary><div class="log">${esc(j.log.slice(-14).join("\n")) || "시작하는 중…"}</div></details></div>`;
+      <details class="log-panel"${logOpen ? " open" : ""}><summary class="muted">자세한 진행 기록</summary><div class="log">${esc(j.log.slice(-14).join("\n")) || "시작하는 중…"}</div></details></div>`;
     S.poll = setTimeout(() => showJob(id), 2000);
     return;
   }
@@ -969,7 +1242,7 @@ async function showJob(id) {
   refreshBadge();
   if (j.status === "error") {
     box.innerHTML = `<div class="progress"><div class="status error">만들지 못했어요</div><p>${esc(j.error || "")}</p>
-      <details><summary class="muted">자세한 기록 (문제를 알릴 때 보여 주세요)</summary><div class="log">${esc(j.log.slice(-30).join("\n"))}</div></details></div>`;
+      <details class="log-panel"${logOpen ? " open" : ""}><summary class="muted">자세한 기록 (문제를 알릴 때 보여 주세요)</summary><div class="log">${esc(j.log.slice(-30).join("\n"))}</div></details></div>`;
     return;
   }
   box.innerHTML = resultHtml(j) + fidelityHtml(j) + chatHtml();
@@ -981,10 +1254,13 @@ function friendlyStep(log) {
   const total = log.filter((l) => /^\s+\[/.test(l)).length;
   for (const l of [...log].reverse()) {
     let m;
+    if ((m = l.match(/스톡 영상 채택:\s*(\w+)/))) return `레퍼런스와 비슷한 무료 스톡을 넣었어요 (‘${SHOT_KO[m[1]] || m[1]}’)`;
+    if (/스톡 영상 검색/.test(l)) return "레퍼런스 장면과 비슷한 무료 스톡 영상을 찾는 중";
+    if (/스톡 없음 → AI|스톡 영상 없음/.test(l)) return "스톡이 없어 AI 장면으로 이어가는 중";
     if ((m = l.match(/AI 장면 사진 생성: (\w+)/))) return `AI가 ‘${SHOT_KO[m[1]] || m[1]}’ 장면 사진을 만드는 중 (장면 ${total + 1})`;
     if ((m = l.match(/AI 영상 생성: (\w+)/))) return `‘${SHOT_KO[m[1]] || m[1]}’ 장면을 5초 영상으로 바꾸는 중… 1~3분 걸려요`;
     if (/배경음악 생성/.test(l)) return "배경음악을 만드는 중 (처음 한 번만)";
-    if (/스톡 영상/.test(l)) return "산지 풍경 영상을 찾는 중";
+    if (/스톡 영상/.test(l)) return "비슷한 무료 스톡 영상을 찾는 중";
     if (/^\s+\[/.test(l)) return `장면 ${total}개 완성 · 다음 장면 준비 중`;
     if (/→/.test(l)) return "장면을 이어 붙이는 중";
   }
@@ -998,6 +1274,12 @@ function resultHtml(j) {
       <div class="cards" style="margin-top:10px">${r.files.map((f) => `<a href="${f}" download><img src="${f}" alt=""></a>`).join("")}</div>
       <div class="muted" style="margin-top:6px">카드를 눌러 한 장씩 저장하세요. 인스타 캐러셀·틱톡 사진 모드에 올리면 돼요.</div></div>`;
   }
+  const sources = Array.isArray(r.sources) ? r.sources : [];
+  const sourcesHtml = sources.length
+    ? `<details class="sources-box" open style="margin-top:12px"><summary><b>영상 출처</b> <span class="muted">장면마다 어디서 가져왔는지</span></summary>
+        <ol class="sources-list">${sources.map((s) => `<li><b>장면 ${s.scene}</b> · ${esc(s.label)}${s.attribution ? `<div class="muted">${esc(s.attribution)}</div>` : ""}</li>`).join("")}</ol>
+      </details>`
+    : `<div class="muted" style="margin-top:10px">출처 기록이 없어요. 다시 만들면 장면별 출처가 여기에 남아요.</div>`;
   return `<div class="result">
     <video src="${r.file}" controls playsinline preload="metadata"></video>
     <div>
@@ -1009,6 +1291,7 @@ function resultHtml(j) {
         <button class="btn" id="hooks-btn">첫 문장만 다른 3편 (A/B)</button>
       </div>
       <div class="muted" style="margin-top:6px">휴대폰에 옮길 때: 저장한 mp4를 카카오톡 ‘나와의 채팅’이나 휴대폰 연결로 보내면 돼요.</div>
+      ${sourcesHtml}
       <div id="post-box">${j.post ? postHtml(j.post, []) : ""}</div>
       ${r.script ? `<details style="margin-top:12px"><summary>대본 보기</summary><div class="script">${esc(r.script)}</div></details>` : ""}
     </div></div>`;
@@ -1151,7 +1434,7 @@ function applyFields(nf) {
   if (nf.voice) M.opts.voice = nf.voice;
   if (nf.ai_label !== undefined) M.opts.ai_label = !!nf.ai_label;
   for (const [k, v] of Object.entries(nf)) {
-    if (["music", "voice", "ai_label", "motion"].includes(k)) continue;
+    if (["music", "voice", "ai_label", "motion", "motion_style"].includes(k)) continue;
     if (k === "lines" && Array.isArray(v)) M.fields.lines = v.map((l) => ({ say: l.say || l.text || "", label: l.label || "", role: l.role || "TIP", source: l.source || "ai:hero" }));
     else if (Array.isArray(v)) M.fields[k] = v.map((x) => ({ text: x.text || x.say || "", source: x.source || "photo:1" }));
     else M.fields[k] = v;
@@ -1220,8 +1503,9 @@ async function renderJobs() {
       <div class="thumb">${th}</div>
       <div>
         <div>${j.plan_day ? `<span class="tag tname">${esc(j.plan_day)}요일</span> ` : ""}<b>${esc(j.product)}</b> · ${esc(j.template_name)} <span class="status ${j.status}">${st}</span>${bad ? ` <span class="tag" style="background:var(--red-soft);color:var(--red)">실물 점검 ${bad}건</span>` : ""}${(j.lint || []).length ? ` <span class="tag" style="background:var(--red-soft);color:var(--red)">문구 점검 ${j.lint.length}건</span>` : ""}</div>
-        <div class="muted">${esc(j.created)} · ${j.mode === "photo" ? "사진만" : "AI 장면"}${j.ref ? ` · 레퍼런스: ${esc((refOf(j.ref) || {}).title || j.ref)}` : ""}</div>
+        <div class="muted">${esc(j.created)} · ${j.mode === "photo" ? "사진만" : j.mode === "smart" ? "똑똑하게 채우기" : "AI 장면"}${j.ref ? ` · 레퍼런스: ${esc((refOf(j.ref) || {}).title || j.ref)}` : ""}</div>
         ${j.error ? `<div class="muted" style="color:var(--red)">${esc(j.error)}</div>` : ""}
+        ${Array.isArray(r.sources) && r.sources.length ? `<details style="margin-top:6px"><summary class="muted">영상 출처 ${r.sources.length}장면</summary><ol class="sources-list">${r.sources.map((s) => `<li><b>${s.scene}.</b> ${esc(s.label)}${s.attribution ? ` — ${esc(s.attribution)}` : ""}</li>`).join("")}</ol></details>` : ""}
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
         ${r.type === "video" ? `<a class="btn small" href="${r.file}" target="_blank">보기</a><a class="btn small" href="${r.file}" download>저장</a>` : ""}
@@ -1249,7 +1533,7 @@ async function again(id) {
   M.tpl = j.template; M.ref = j.ref; M.mode = j.mode; M.job = j.status === "done" ? j.id : null;
   if (p) { M.info = p; M.product = { name: p.name, category: p.category || "", origin: p.origin || "", price: p.price || "", unit: p.unit || "", memo: p.memo || "", photoData: null }; }
   const f = JSON.parse(JSON.stringify(j.fields || {}));
-  for (const k of ["music", "voice", "ai_label", "motion"]) if (f[k] !== undefined) { M.opts[k] = f[k]; delete f[k]; }
+  for (const k of ["music", "voice", "ai_label", "motion", "motion_style"]) if (f[k] !== undefined) { M.opts[k] = f[k]; delete f[k]; }
   // 기획·API로 만든 작업은 리스트 칸이 문장만 들어 있을 수 있어 화면 형식으로 맞춘다
   const t = S.boot.templates[j.template];
   for (const fd of (t && t.fields) || []) {
@@ -1280,7 +1564,7 @@ async function boot() {
     $("#app").innerHTML = `<div class="empty">서버에 연결하지 못했어요: ${esc(e.message)}</div>`;
     return;
   }
-  if (S.make && !aiAvailable()) S.make.mode = "photo";
+  if (S.make && S.make.mode === "ai" && !aiAvailable()) S.make.mode = "smart";
   // Gemini 키가 있으면 기본 목소리를 Gemini로, 없으면 무료 edge/OpenAI 여성
   if (S.make) {
     if (S.boot.keys && S.boot.keys.gemini) {

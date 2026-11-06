@@ -2,17 +2,35 @@
  * 파이썬(make_motion.py)이 목소리·단어 타이밍·장면 그림을 준비해 props 로 넘기면
  * 여기서 글자 튀어나오기, 형광펜 강조, TIP 배지, 체크 표시, 진행 점, 가격표 카운트를 그린다. */
 import {
-  AbsoluteFill, Audio, Img, Loop, OffthreadVideo, Sequence, interpolate, spring, staticFile,
+  AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, interpolate, spring, staticFile,
   useCurrentFrame, useVideoConfig, Easing,
 } from "remotion";
 
 const HL = { yellow: "#FFE14D", green: "#5AE65A", red: "#FF5046" };
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" };
 
+/**
+ * 모션 템플릿 — 사용자가 고른다.
+ * focus 의 노란 원(Spotlight)이 예전 기본이었고, 지금은 clean 이 기본.
+ */
+export const MOTION_STYLES = {
+  clean: { spotlight: false, check: false, progress: false, wipe: true, corners: false, strip: false, header: "box", info: "pill", tipBadge: true },
+  focus: { spotlight: true, check: true, progress: true, wipe: true, corners: false, strip: false, header: "box", info: "pill", tipBadge: true },
+  strip: { spotlight: false, check: false, progress: false, wipe: true, corners: false, strip: true, header: "left", info: "bar", tipBadge: true },
+  corners: { spotlight: false, check: false, progress: true, wipe: true, corners: true, strip: false, header: "box", info: "pill", tipBadge: true },
+  bold: { spotlight: false, check: false, progress: false, wipe: false, corners: false, strip: false, header: "stack", info: "none", tipBadge: false },
+  soft: { spotlight: false, check: false, progress: true, wipe: true, corners: false, strip: false, header: "line", info: "ghost", tipBadge: true },
+};
+
+function styleOf(p) {
+  return MOTION_STYLES[p.motionStyle] || MOTION_STYLES.clean;
+}
+
 export const Main = (p) => {
   let from = 0;
   const tips = p.scenes.filter((s) => s.kind === "TIP").length;
   const hasPriceScene = p.scenes.some((s) => s.kind === "PRICE");
+  const st = styleOf(p);
   let tipNo = 0;
   return (
     <AbsoluteFill style={{ background: "#0d0d0d", fontFamily: "Pretendard", color: "white" }}>
@@ -20,15 +38,16 @@ export const Main = (p) => {
         if (s.kind === "TIP") tipNo += 1;
         const el = (
           <Sequence key={i} from={from} durationInFrames={s.frames}>
-            <Scene s={s} p={p} i={i} tipNo={tipNo} tips={tips} last={i === p.scenes.length - 1} hasPriceScene={hasPriceScene} />
+            <Scene s={s} p={p} i={i} tipNo={tipNo} tips={tips} last={i === p.scenes.length - 1} hasPriceScene={hasPriceScene} st={st} />
           </Sequence>
         );
         from += s.frames;
         return el;
       })}
-      <Header p={p} />
-      <InfoBar text={p.info} color={HL[p.highlight] || HL.yellow} />
+      <Header p={p} st={st} />
+      {st.info !== "none" ? <InfoBar text={p.info} color={HL[p.highlight] || HL.yellow} variant={st.info} /> : null}
       {p.aiLabel ? <AiLabel /> : null}
+      {p.voice ? <Audio src={staticFile(p.voice)} /> : null}
       {p.bgm ? <Audio src={staticFile(p.bgm)} volume={(f) => bgmVolume(f, from, p.bgmVolume ?? 0.12)} /> : null}
     </AbsoluteFill>
   );
@@ -40,28 +59,43 @@ function bgmVolume(f, total, v) {
 
 /* ---------- 장면 ---------- */
 
-const Scene = ({ s, p, i, tipNo, tips, last, hasPriceScene }) => {
+/** 장면 앞뒤 몇 프레임은 소리를 0으로 내려, 자를 때 '픽'이 나지 않게 한다. */
+function SceneAudio({ src, frames }) {
+  const frame = useCurrentFrame();
+  const fade = 3;
+  const inn = Math.min(1, frame / fade);
+  const out = Math.min(1, Math.max(0, frames - frame) / fade);
+  return <Audio src={staticFile(src)} volume={Math.max(0, Math.min(inn, out))} />;
+}
+
+const Scene = ({ s, p, i, tipNo, tips, last, hasPriceScene, st }) => {
   const { fps } = useVideoConfig();
   const color = HL[p.highlight] || HL.yellow;
   const lead = Math.round((s.lead ?? 0.2) * fps);
   const side = p.vs && s.kind === "TIP" ? (tipNo === 1 ? "A" : "B") : null;
-  const cap = s.textOnly ? <AllText s={s} color={color} lead={lead} /> : <Caption s={s} color={color} lead={lead} />;
-  const showPrice = p.price && (s.kind === "PRICE" || (s.kind === "CTA" && last && !hasPriceScene));
+  const capY = st.header === "stack" ? 1180 : 1250;
+  const cap = s.textOnly
+    ? <AllText s={s} color={color} lead={lead} y={capY} size={st.header === "stack" ? 100 : 86} />
+    : <Caption s={s} color={color} lead={lead} y={capY} size={st.header === "stack" ? 100 : 92} />;
+  const showPrice = p.price && p.price.now && (s.kind === "PRICE" || (s.kind === "CTA" && last && !hasPriceScene));
   return (
     <AbsoluteFill>
-      <Background s={s} i={i} />
+      <Background s={s} i={i} seed={p.seed || 0} />
       <AbsoluteFill style={{
         background: "linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 28%, rgba(0,0,0,0) 48%, rgba(0,0,0,.78) 82%, rgba(0,0,0,.9) 100%)",
       }} />
+      {st.strip ? <SideStrip color={color} n={tipNo} /> : null}
       {s.kind === "HOOK" ? (s.textOnly ? <AllText s={s} color={color} lead={lead} y={760} size={110} /> : <HookText s={s} color={color} lead={lead} />) : null}
       {s.kind === "TIP" ? (
         <>
-          {s.mark ? <Stamp mark={s.mark} /> : <Spotlight color={side === "B" ? "#5AB4FF" : color} />}
-          {side ? <SideBadge text={s.label || side} side={side} color={color} /> : s.label ? <TipBadge text={s.label} color={color} /> : null}
+          {s.mark ? <Stamp mark={s.mark} seed={p.seed || 0} /> : null}
+          {!s.mark && st.spotlight ? <Spotlight color={side === "B" ? "#5AB4FF" : color} /> : null}
+          {!s.mark && st.corners ? <CornerFocus color={color} /> : null}
+          {side ? <SideBadge text={s.label || side} side={side} color={color} /> : (st.tipBadge && s.label) ? <TipBadge text={s.label} color={color} /> : null}
           {side === "B" ? <VsFlash /> : null}
-          {!side && tips >= 2 ? <Progress n={tipNo} total={tips} color={color} /> : null}
+          {!side && tips >= 2 && st.progress ? <Progress n={tipNo} total={tips} color={color} /> : null}
           {cap}
-          {!side && !s.mark ? <Check at={Math.round(s.frames * 0.62)} color={color} /> : null}
+          {!side && !s.mark && st.check ? <Check at={Math.round(s.frames * 0.62)} color={color} /> : null}
         </>
       ) : null}
       {s.kind === "REVEAL" ? (<>{s.counter ? <Counter to={s.counter} unit={s.unit} color={color} /> : null}{cap}</>) : null}
@@ -71,23 +105,25 @@ const Scene = ({ s, p, i, tipNo, tips, last, hasPriceScene }) => {
           {showPrice ? <PriceTag price={p.price} color={color} /> : s.kind === "CTA" && last ? <SaveIcon color={color} /> : null}
         </>
       ) : null}
-      {s.audio ? <Sequence from={lead}><Audio src={staticFile(s.audio)} /></Sequence> : null}
-      {i > 0 ? <Wipe color={color} /> : null}
+      {s.audio && !p.voice ? <Sequence from={lead}><SceneAudio src={s.audio} frames={Math.max(1, s.frames - lead)} /></Sequence> : null}
+      {i > 0 && st.wipe ? <Wipe color={color} /> : null}
     </AbsoluteFill>
   );
 };
 
-/* 사진은 장면마다 다른 방향으로 천천히 밀고 당긴다 (같은 사진 한 장이어도 지루하지 않게) */
+/* 사진은 장면·작업마다 다른 방향으로 천천히 밀고 당긴다 */
 const MOVES = [
   { s: [1.08, 1.22], x: [0, -40], y: [0, -30] },
   { s: [1.25, 1.1], x: [-50, 30], y: [20, 0] },
   { s: [1.1, 1.28], x: [40, -20], y: [-20, 30] },
   { s: [1.3, 1.12], x: [0, 0], y: [40, -40] },
+  { s: [1.12, 1.05], x: [30, -40], y: [-10, 25] },
+  { s: [1.2, 1.32], x: [-20, 20], y: [30, -20] },
 ];
 
-const Background = ({ s, i }) => {
+const Background = ({ s, i, seed = 0 }) => {
   const frame = useCurrentFrame();
-  const m = MOVES[i % MOVES.length];
+  const m = MOVES[Math.abs(i + (seed % MOVES.length)) % MOVES.length];
   const t = interpolate(frame, [0, s.frames], [0, 1], { ...clamp, easing: Easing.inOut(Easing.quad) });
   const style = {
     width: "100%", height: "100%", objectFit: "cover",
@@ -97,9 +133,8 @@ const Background = ({ s, i }) => {
   return (
     <AbsoluteFill style={{ overflow: "hidden" }}>
       {s.bgType === "video"
-        ? (s.bgFrames && s.bgFrames < s.frames  // AI 장면 영상(5초)이 말보다 짧으면 되풀이한다
-          ? <Loop durationInFrames={s.bgFrames}><OffthreadVideo src={staticFile(s.bg)} muted style={style} /></Loop>
-          : <OffthreadVideo src={staticFile(s.bg)} muted style={style} />)
+        // 짧은 클립을 Loop하면 같은 장면이 두 번 재생된 것처럼 보여서, 한 번만 틀고 마지막 프레임을 유지한다
+        ? <OffthreadVideo src={staticFile(s.bg)} muted volume={0} style={style} pauseWhenBuffering />
         : <Img src={staticFile(s.bg)} style={style} />}
     </AbsoluteFill>
   );
@@ -188,12 +223,30 @@ const HookText = ({ s, color, lead }) => {
 
 /* ---------- 그래픽 ---------- */
 
-const Header = ({ p }) => {
+const Header = ({ p, st }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const a = spring({ frame, fps, config: { damping: 14 } });
   const b = spring({ frame: frame - 6, fps, config: { damping: 14 } });
   const color = HL[p.highlight] || HL.yellow;
+  const mode = st?.header || "box";
+  if (mode === "line") {
+    return (
+      <div style={{ position: "absolute", top: 100, left: 50, right: 50, fontWeight: 900, opacity: a }}>
+        <div style={{ fontSize: 44, opacity: 0.85, textShadow: "0 2px 12px rgba(0,0,0,.7)" }}>{p.title1}</div>
+        <div style={{ marginTop: 10, height: 6, width: 120, background: color, borderRadius: 4, transform: `scaleX(${b})`, transformOrigin: "left" }} />
+        <div style={{ marginTop: 14, fontSize: 64, textShadow: "0 4px 18px rgba(0,0,0,.7)" }}>{p.title2}</div>
+      </div>
+    );
+  }
+  if (mode === "left" || mode === "stack") {
+    return (
+      <div style={{ position: "absolute", top: mode === "stack" ? 90 : 110, left: mode === "left" ? 70 : 50, right: 50, fontWeight: 900 }}>
+        <div style={{ fontSize: mode === "stack" ? 88 : 70, transform: `translateY(${(1 - a) * -60}px)`, opacity: a, textShadow: "0 4px 20px rgba(0,0,0,.75)", lineHeight: 1.15 }}>{p.title1}</div>
+        <div style={{ marginTop: 12, fontSize: mode === "stack" ? 56 : 52, color, opacity: b, textShadow: "0 2px 14px rgba(0,0,0,.6)" }}>{p.title2}</div>
+      </div>
+    );
+  }
   return (
     <div style={{ position: "absolute", top: 120, left: 0, right: 0, textAlign: "center", fontWeight: 900, letterSpacing: "-0.03em" }}>
       <div style={{ fontSize: 76, transform: `translateY(${(1 - a) * -80}px)`, opacity: a, textShadow: "0 4px 20px rgba(0,0,0,.7)" }}>{p.title1}</div>
@@ -256,7 +309,7 @@ const VsFlash = () => {
 };
 
 // 보관 경고형: 빨간 X / 초록 O 도장이 쾅 찍히고 화면이 살짝 흔들린다
-const Stamp = ({ mark }) => {
+const Stamp = ({ mark, seed = 0 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const a = spring({ frame: frame - 2, fps, config: { damping: 10, stiffness: 220 } });
@@ -321,7 +374,7 @@ const ProgressDot = ({ on, now, color }) => {
   );
 };
 
-// 상품 위에 숨 쉬듯 커졌다 작아지는 링 — "여기를 보세요"
+// 포커스 템플릿 전용: 상품 위에 숨 쉬듯 커졌다 작아지는 링
 const Spotlight = ({ color }) => {
   const frame = useCurrentFrame();
   const a = interpolate(frame, [0, 14], [0, 1], clamp);
@@ -332,6 +385,38 @@ const Spotlight = ({ color }) => {
       border: `10px solid ${color}`, opacity: a * 0.9, transform: `scale(${(0.6 + 0.4 * a) * pulse})`,
       boxShadow: `0 0 0 4000px rgba(0,0,0,${0.28 * a})`,
     }} />
+  );
+};
+
+/** 모서리 브라켓 포커스 — 원 대신 L자 프레임 */
+const CornerFocus = ({ color }) => {
+  const frame = useCurrentFrame();
+  const a = interpolate(frame, [0, 12], [0, 1], clamp);
+  const box = { position: "absolute", width: 70, height: 70, borderColor: color, opacity: a };
+  return (
+    <div style={{ position: "absolute", left: 180, top: 520, width: 720, height: 720, pointerEvents: "none" }}>
+      <div style={{ ...box, left: 0, top: 0, borderTop: "10px solid", borderLeft: "10px solid" }} />
+      <div style={{ ...box, right: 0, top: 0, borderTop: "10px solid", borderRight: "10px solid" }} />
+      <div style={{ ...box, left: 0, bottom: 0, borderBottom: "10px solid", borderLeft: "10px solid" }} />
+      <div style={{ ...box, right: 0, bottom: 0, borderBottom: "10px solid", borderRight: "10px solid" }} />
+    </div>
+  );
+};
+
+/** 왼쪽 세로 스트립 + 스텝 번호 */
+const SideStrip = ({ color, n }) => {
+  const frame = useCurrentFrame();
+  const a = interpolate(frame, [0, 10], [0, 1], clamp);
+  return (
+    <>
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 18, background: color, opacity: a }} />
+      {n > 0 ? (
+        <div style={{
+          position: "absolute", left: 36, top: 380, background: color, color: "#111", fontWeight: 900,
+          fontSize: 42, padding: "8px 18px", borderRadius: 12, opacity: a,
+        }}>0{n}</div>
+      ) : null}
+    </>
   );
 };
 
@@ -393,11 +478,25 @@ const SaveIcon = ({ color }) => {
   );
 };
 
-const InfoBar = ({ text, color }) => {
+const InfoBar = ({ text, color, variant = "pill" }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const a = spring({ frame: frame - 10, fps, config: { damping: 14 } });
   if (!text) return null;
+  if (variant === "bar") {
+    return (
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: color, color: "#111", fontWeight: 800, fontSize: 42, padding: "28px 40px 48px", textAlign: "center", transform: `translateY(${(1 - a) * 120}px)` }}>
+        {text}
+      </div>
+    );
+  }
+  if (variant === "ghost") {
+    return (
+      <div style={{ position: "absolute", bottom: 160, left: 60, right: 60, textAlign: "center", transform: `translateY(${(1 - a) * 160}px)`, opacity: a }}>
+        <div style={{ color: "white", fontWeight: 700, fontSize: 40, textShadow: "0 4px 16px rgba(0,0,0,.8)", borderBottom: `4px solid ${color}`, display: "inline-block", paddingBottom: 8 }}>{text}</div>
+      </div>
+    );
+  }
   return (
     <div style={{ position: "absolute", bottom: 150, left: 0, right: 0, display: "flex", justifyContent: "center", transform: `translateY(${(1 - a) * 200}px)` }}>
       <div style={{ background: color, color: "#111", fontWeight: 800, fontSize: 46, padding: "14px 40px", borderRadius: 999, boxShadow: "0 10px 30px rgba(0,0,0,.4)" }}>{text}</div>

@@ -346,8 +346,8 @@ def build_template(a, lines, mode_voice=None):
             "segments": segs}
 
 
-CLONE_PROMPT = """당신은 한국 농수산물 산지직송 숏폼 카피라이터입니다.
-아래 '레퍼런스 영상 분석'의 장면 구조와 말투를 그대로 따라, 판매자의 상품으로 장면별 문장을 새로 써 주세요.
+CLONE_PROMPT = """당신은 한국 농수산물 산지직송 숏폼(쇼츠·릴스) 전문 카피라이터입니다.
+레퍼런스의 장면 수·역할·템포만 빌리고, 문장은 내 상품용으로 새로 쓰세요. 베끼지 마세요.
 
 [레퍼런스 분석]
 {analysis}
@@ -356,17 +356,18 @@ CLONE_PROMPT = """당신은 한국 농수산물 산지직송 숏폼 카피라이
 {facts}
 
 {rules}
-- 장면 수와 순서는 레퍼런스와 같게 {n}개. 각 장면의 역할(role)·라벨·전달 내용(purpose)을 지킵니다.
-- 각 장면 문장은 그 장면의 purpose를 '내 상품'에 맞게 정확한 정보로 다시 쓴, 끝맺은 문장입니다. 앞뒤 장면과 이어서 하나의 이야기가 되게 씁니다.
-- 모든 문장은 10자 이상입니다. '오늘은', '구독 좋아요'처럼 조각이나 채널 홍보 문구는 쓰지 않습니다.
-  purpose가 '구독 유도'인 장면은 '저장해 두세요'나 '주문은 프로필 링크' 같은 판매자용 마무리로 바꿉니다.
-- 정보(보관법·고르는 법 등)는 그 품목에 대해 널리 알려진 올바른 방법만 씁니다. 확실하지 않은 방법은 쓰지 않습니다.
-- 자막만 나오는 영상(voice가 text_only/asmr)이면 각 문장을 16자 안팎의 짧은 완결 문장으로 씁니다.
+대본 스타일(필수):
+- 1장면은 스크롤을 끊는 훅(질문·반전·구체 숫자·'이것만은'). '신선해요'만으로 시작 금지.
+- 전체는 story(문제→산지→맛→CTA) 또는 intro(훅→특징→먹는법→CTA) 중 하나로 통일.
+- 한 사람이 이어서 말하는 대본. 2장면부터는 그래서/근데/그러니까로 앞 문장에 붙이세요. 장면마다 주제를 리셋하지 마세요.
+- 참외는 oriental melon·chamoe·yellow stripes. melon·cantaloupe·honeydew라고 쓰지 마세요.
+- 장면 수 {n}개. 구독 유도는 '저장해 두세요'/'주문은 프로필 링크'로.
+- 각 줄에 shot(hook|detail|crave|origin|hold|pack|prep|hero|store|photo)과 visual(영어 4~8단어, 꽃·패션 금지)을 꼭 넣으세요.
+- voice가 text_only/asmr이면 16자 안팎, 아니면 15~28자.
 
-JSON 하나로만 답하세요:
-{{"title1": "화면 위 제목 1줄(13자 이내, 레퍼런스에 제목이 없으면 빈 문자열)", "title2": "2줄(13자 이내 또는 빈 문자열)",
- "info": "아래 노란 안내 바 한 줄(22자 이내)",
- "lines": [{{"say": "장면 문장", "label": "라벨 또는 빈 문자열"}} ... {n}개]}}"""
+JSON 하나로만:
+{{"format":"story|intro","title1":"13자 이내","title2":"13자 이내 또는 빈 문자열","info":"22자 이내",
+ "lines":[{{"say":"후킹 문장","label":"라벨 또는 빈 문자열","shot":"hook","visual":"english search phrase"}} ... {n}개]}}"""
 
 
 def clone_draft(a, product):
@@ -392,10 +393,25 @@ def clone_draft(a, product):
     while len(lines) < len(a["scenes"]):
         lines.append({"say": "", "label": a["scenes"][len(lines)]["label"]})
     lines = lines[:len(a["scenes"])]
+    allowed = {"hook", "detail", "crave", "origin", "hold", "pack", "prep", "hero", "store", "photo"}
+    out_lines = []
+    for l, s in zip(lines, a["scenes"]):
+        say = str(l.get("say") or "")
+        shot = str(l.get("shot") or "").lower().strip()
+        if shot not in allowed:
+            shot = s.get("shot") or "hero"
+        out_lines.append({
+            "say": say,
+            "label": str(l.get("label") or s["label"]),
+            "shot": shot,
+            "visual": str(l.get("visual") or "")[:80],
+            "source": source_of(shot),
+            "role": s["role"],
+            "seconds": s.get("seconds") or 3,
+        })
     out = {"title1": str(d.get("title1") or "")[:16], "title2": str(d.get("title2") or "")[:16],
-           "info": str(d.get("info") or "")[:26],
-           "lines": [{"say": str(l.get("say") or ""), "label": str(l.get("label") or s["label"]),
-                      "source": source_of(s["shot"]), "role": s["role"]} for l, s in zip(lines, a["scenes"])]}
+           "info": str(d.get("info") or "")[:26], "story_format": str(d.get("format") or "story"),
+           "lines": out_lines}
     if (a.get("caption") or {}).get("style") != "keyword_highlight":
         for l in out["lines"]:
             l["say"] = l["say"].replace("*", "")

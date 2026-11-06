@@ -1,75 +1,102 @@
 {
- "summary": "수박 농장에서 재배자가 좋은 수박 고르는 3가지 방법을 수박을 들고 직접 보여주는 15초 쇼츠",
+ "summary": "수박을 고르는 방법을 소개하는 짧은 영상입니다.",
  "layout": "full",
- "title_lines": [],
+ "title_lines": [
+  "수박 고르는 법 3가지"
+ ],
  "caption": {
   "style": "keyword_highlight",
-  "color": "green",
-  "size": "big"
+  "color": "yellow",
+  "size": "medium"
  },
  "voice": "talking_head",
  "presenter": "face",
  "setting": "비닐하우스",
- "music": "경쾌한",
+ "music": "밝은",
  "hook": {
-  "text": "수박을",
-  "type": "숫자리스트"
+  "text": "고르려면",
+  "type": [
+   "질문리빌"
+  ]
  },
  "scenes": [
   {
    "role": "HOOK",
-   "label": "",
-   "shot": "hook",
-   "text": "수박을",
-   "purpose": "수박 농장에서 수박을 들고 있는 모습으로 시청자의 관심을 끈다",
-   "seconds": 2.0,
-   "note": "추정: 비닐하우스에서 수박을 양손으로 들고 있는 전신 샷, 화면 하단에 '수박을' 자막"
+   "label": "TIP 1",
+   "shot": "hold",
+   "text": "고르려면",
+   "purpose": "수박을 고르는 방법에 대한 관심을 유도한다.",
+   "seconds": 1.0,
+   "note": "추정",
+   "t0": 0.0,
+   "t1": 1.0,
+   "keyframe": "QUwUTuEriXo/scene_00.jpg",
+   "file": "QUwUTuEriXo/scene_00.jpg",
+   "measured": true
   },
   {
    "role": "TIP",
-   "label": "1",
-   "shot": "detail",
-   "text": "큰 것보단",
-   "purpose": "첫 번째 선별 기준으로 수박을 크게 보라고 알려준다",
-   "seconds": 3.0,
-   "note": "수박 클로즈업, 양손으로 수박을 카메라 쪽으로 내밀고 있음, '큰 것보란' 자막이 녹색으로 강조"
-  },
-  {
-   "role": "TIP",
-   "label": "2",
-   "shot": "detail",
-   "text": "푸른것보단",
-   "purpose": "두 번째 선별 기준으로 수박을 푸른 것을 고르라고 알려준다",
-   "seconds": 3.0,
-   "note": "수박 클로즈업, 양손으로 수박 위쪽을 감싸고 있음, '푸른것보란' 자막이 녹색으로 강조"
-  },
-  {
-   "role": "TIP",
-   "label": "3",
+   "label": "TIP 2",
    "shot": "detail",
    "text": "",
-   "purpose": "세 번째 선별 기준을 알려준다",
-   "seconds": 4.0,
-   "note": "추정: 수박의 다른 특징(줄무늬나 배꼽 등)을 클로즈업으로 보여주며 세 번째 팁 설명"
+   "purpose": "수박의 특징을 강조하여 올바른 선택을 돕는다.",
+   "seconds": 3.6,
+   "note": "추정",
+   "t0": 1.0,
+   "t1": 4.6,
+   "keyframe": "QUwUTuEriXo/scene_01.jpg",
+   "file": "QUwUTuEriXo/scene_01.jpg",
+   "measured": true
   },
   {
-   "role": "CTA",
-   "label": "",
+   "role": "STEP",
+   "label": "STEP 1",
+   "shot": "hero",
+   "text": "",
+   "purpose": "수박을 선택하는 구체적인 방법을 보여준다.",
+   "seconds": 3.7,
+   "note": "추정",
+   "t0": 4.6,
+   "t1": 8.3,
+   "keyframe": "QUwUTuEriXo/scene_02.jpg",
+   "file": "QUwUTuEriXo/scene_02.jpg",
+   "measured": true
+  },
+  {
+   "role": "WRONG",
+   "label": "WRONG 1",
    "shot": "hold",
-   "text": "푸른것보단",
-   "purpose": "마무리하며 시청자에게 행동을 유도한다",
-   "seconds": 3.0,
-   "note": "수박을 양손으로 들고 웃는 표정, '푸른것보란' 자막, 썸네일용 장면으로 추정"
+   "text": "",
+   "purpose": "잘못된 선택의 예시를 통해 경각심을 준다.",
+   "seconds": 3.83,
+   "note": "추정",
+   "t0": 8.3,
+   "t1": 12.13,
+   "keyframe": "QUwUTuEriXo/scene_03.jpg",
+   "file": "QUwUTuEriXo/scene_03.jpg",
+   "measured": true
+  },
+  {
+   "role": "RIGHT",
+   "label": "RIGHT 1",
+   "shot": "hold",
+   "text": "나가는 것보단",
+   "purpose": "올바른 수박 선택의 예시를 보여준다.",
+   "seconds": 2.63,
+   "note": "추정",
+   "t0": 12.13,
+   "t1": 14.77,
+   "keyframe": "QUwUTuEriXo/scene_04.jpg",
+   "file": "QUwUTuEriXo/scene_04.jpg",
+   "measured": true
   }
  ],
  "pacing": "빠름",
  "why": [
-  "수박 재배 농가에서 직접 촬영하여 전문성과 신뢰감을 준다",
-  "3가지라는 명확한 숫자로 구조화하여 끝까지 보게 만든다",
-  "큰 자막과 강조 색상으로 소리 없이도 정보 전달이 명확하다",
-  "15초 짧은 러닝타임으로 집중도를 유지하고 반복 시청을 유도한다"
+  "짧고 간결한 정보 전달로 시청자의 주목을 끌었다.",
+  "비주얼 요소가 풍부하여 이해하기 쉽게 구성되었다."
  ],
- "copy_style": "반말, ~보단 비교 형식 반복으로 리듬감 있게 전달",
+ "copy_style": "질문형",
  "template": "고르는법",
  "item": "수박",
  "category": "과일",
@@ -82,5 +109,10 @@
   "views": 25820000,
   "description": ""
  },
- "via": "fal"
+ "via": "openai",
+ "capture": {
+  "mode": "scene_detect",
+  "count": 5,
+  "total": 14.76
+ }
 }

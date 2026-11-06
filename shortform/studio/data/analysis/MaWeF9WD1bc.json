@@ -22,8 +22,14 @@
    "shot": "hook",
    "text": "",
    "purpose": "수박을 빠르게 회전시키며 달인의 기술을 예고한다",
-   "seconds": 3.0,
-   "note": "수박을 손에 들고 빠르게 회전시키는 모션 블러 효과, 흰 티셔츠 입은 남성의 상반신과 수박만 보임 (추정: 주목을 끌기 위한 오프닝)"
+   "seconds": 1.27,
+   "note": "수박을 손에 들고 빠르게 회전시키는 모션 블러 효과, 흰 티셔츠 입은 남성의 상반신과 수박만 보임 (추정: 주목을 끌기 위한 오프닝)",
+   "t0": 0.0,
+   "t1": 1.27,
+   "keyframe": "MaWeF9WD1bc/scene_00.jpg",
+   "file": "MaWeF9WD1bc/scene_00.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "STEP",
@@ -31,8 +37,29 @@
    "shot": "hold",
    "text": "",
    "purpose": "수박 전체를 보여주며 작업 준비 상태를 보여준다",
-   "seconds": 5.0,
-   "note": "수박을 정면으로 들고 있는 장면, 수박 표면의 무늬가 선명하게 보임"
+   "seconds": 3.2,
+   "note": "수박을 정면으로 들고 있는 장면, 수박 표면의 무늬가 선명하게 보임",
+   "t0": 1.27,
+   "t1": 4.47,
+   "keyframe": "MaWeF9WD1bc/scene_01.jpg",
+   "file": "MaWeF9WD1bc/scene_01.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "hold",
+   "text": "",
+   "purpose": "수박 전체를 보여주며 작업 준비 상태를 보여준다",
+   "seconds": 12.91,
+   "note": "수박을 정면으로 들고 있는 장면, 수박 표면의 무늬가 선명하게 보임",
+   "t0": 4.47,
+   "t1": 17.38,
+   "keyframe": "MaWeF9WD1bc/scene_02.jpg",
+   "file": "MaWeF9WD1bc/scene_02.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "STEP",
@@ -40,8 +67,29 @@
    "shot": "prep",
    "text": "",
    "purpose": "껍질을 벗긴 수박에 칼집을 넣어 자르기 준비를 한다",
-   "seconds": 8.0,
-   "note": "비닐 장갑 낀 손으로 껍질 벗긴 빨간 수박에 세로 칼집을 넣는 클로즈업, 나무 도마 위"
+   "seconds": 5.31,
+   "note": "비닐 장갑 낀 손으로 껍질 벗긴 빨간 수박에 세로 칼집을 넣는 클로즈업, 나무 도마 위",
+   "t0": 17.38,
+   "t1": 22.69,
+   "keyframe": "MaWeF9WD1bc/scene_03.jpg",
+   "file": "MaWeF9WD1bc/scene_03.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "STEP",
+   "label": "",
+   "shot": "prep",
+   "text": "",
+   "purpose": "껍질을 벗긴 수박에 칼집을 넣어 자르기 준비를 한다",
+   "seconds": 2.87,
+   "note": "비닐 장갑 낀 손으로 껍질 벗긴 빨간 수박에 세로 칼집을 넣는 클로즈업, 나무 도마 위",
+   "t0": 22.69,
+   "t1": 25.56,
+   "keyframe": "MaWeF9WD1bc/scene_04.jpg",
+   "file": "MaWeF9WD1bc/scene_04.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "REVEAL",
@@ -49,8 +97,29 @@
    "shot": "hero",
    "text": "",
    "purpose": "완성된 수박 과일컵 제품들을 진열하여 결과물을 보여준다",
-   "seconds": 10.0,
-   "note": "투명 플라스틱 컵에 담긴 수박 조각들이 여러 개 진열된 모습, 뚜껑이 덮인 상태의 완제품들"
+   "seconds": 5.11,
+   "note": "투명 플라스틱 컵에 담긴 수박 조각들이 여러 개 진열된 모습, 뚜껑이 덮인 상태의 완제품들",
+   "t0": 25.56,
+   "t1": 30.66,
+   "keyframe": "MaWeF9WD1bc/scene_05.jpg",
+   "file": "MaWeF9WD1bc/scene_05.jpg",
+   "measured": true,
+   "estimated": false
+  },
+  {
+   "role": "REVEAL",
+   "label": "",
+   "shot": "hero",
+   "text": "",
+   "purpose": "완성된 수박 과일컵 제품들을 진열하여 결과물을 보여준다",
+   "seconds": 3.9,
+   "note": "투명 플라스틱 컵에 담긴 수박 조각들이 여러 개 진열된 모습, 뚜껑이 덮인 상태의 완제품들",
+   "t0": 30.66,
+   "t1": 34.57,
+   "keyframe": "MaWeF9WD1bc/scene_06.jpg",
+   "file": "MaWeF9WD1bc/scene_06.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "SHOW",
@@ -58,8 +127,14 @@
    "shot": "detail",
    "text": "",
    "purpose": "수박 자르기 작업 과정을 다시 한번 클로즈업으로 보여준다",
-   "seconds": 15.0,
-   "note": "썸네일용 이미지로 추정, 껍질 벗긴 수박에 칼집 넣는 장면의 클로즈업"
+   "seconds": 6.32,
+   "note": "썸네일용 이미지로 추정, 껍질 벗긴 수박에 칼집 넣는 장면의 클로즈업",
+   "t0": 34.57,
+   "t1": 40.89,
+   "keyframe": "MaWeF9WD1bc/scene_07.jpg",
+   "file": "MaWeF9WD1bc/scene_07.jpg",
+   "measured": true,
+   "estimated": false
   }
  ],
  "pacing": "빠름",
@@ -81,5 +156,10 @@
   "views": 19230000,
   "description": "명동 과일 자르기 달인의 현란한 수박 컷팅 스킬! Amazing Korean Watermelon Cutting Skills\n\n💨 정보 (information) \n\n💲 가격 (Price) : 과일컵, 주스 KRW 5,000 (USD 3.90)                                                    \n\n💕화면 설정에서 화질을 고화질로 변경하시면 보다 더 선명하게 보실 수 있습니다.\n\n👍영상을 재밌게 보셨다면 구독과 좋아요 부탁드립니다.\n\n🎬FoodieRun 구독 : https://bit.ly/3bsJ3ZJ\n\n💌 촬영 요청 및 제보 이메일 (e-mail : foodierun77@naver.com)\n\n#명동과일 #과일자르기 #Shorts"
  },
- "via": "fal"
+ "via": "fal",
+ "capture": {
+  "mode": "scene_detect",
+  "count": 8,
+  "total": 40.89
+ }
 }

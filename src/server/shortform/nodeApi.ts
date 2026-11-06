@@ -23,6 +23,14 @@ import {
   upsertWebProduct,
   type SfJob,
 } from '@/server/shortform/webStore';
+import {
+  addProductAsset,
+  attachAssetsToProducts,
+  listProductAssets,
+  removeProductAsset,
+} from '@/server/shortform/productAssets';
+import { hasSerpApi, searchReferenceVideos } from '@/server/shortform/serpSearch';
+import { hasCcSearch, importCcHitToProduct, searchCcMedia, type CcHit } from '@/server/shortform/ccMedia';
 
 const ORDER = [
   '고르는법',
@@ -210,9 +218,11 @@ function loadDiskProducts() {
 async function mergedProducts() {
   const web = await listWebProducts();
   if (process.env.VERCEL) return web;
-  const disk = loadDiskProducts();
+  const disk = loadDiskProducts().filter(
+    (p): p is NonNullable<typeof p> => Boolean(p && p.folder),
+  );
   const seen = new Set(web.map((p) => p.folder));
-  return [...web, ...disk.filter((p) => p && !seen.has(p.folder))];
+  return [...web, ...disk.filter((p) => !seen.has(p.folder))];
 }
 
 export type NodeApiResult =
@@ -230,7 +240,7 @@ export async function handleShortformNode(
 
       case 'bootstrap': {
         const refs = loadReferences();
-        const products = await mergedProducts();
+        const products = await attachAssetsToProducts(await mergedProducts());
         return {
           ok: true,
           result: {
@@ -249,6 +259,9 @@ export async function handleShortformNode(
               pexels: Boolean(process.env.PEXELS_API_KEY),
               gemini: Boolean(geminiApiKey()),
               aiScene: hasAiSceneProvider(),
+              serpapi: hasSerpApi(),
+              youtubeCc: Boolean(process.env.YOUTUBE_API_KEY || process.env.GOOGLE_API_KEY),
+              ccSearch: hasCcSearch(),
             },
             deployHost: Boolean(process.env.VERCEL),
             engine: 'web',
@@ -262,11 +275,94 @@ export async function handleShortformNode(
       }
 
       case 'products':
-        return { ok: true, result: await mergedProducts() };
+        return { ok: true, result: await attachAssetsToProducts(await mergedProducts()) };
 
       case 'product': {
         const product = await upsertWebProduct(params);
-        return { ok: true, result: product };
+        const assets = await listProductAssets(product.folder);
+        return { ok: true, result: { ...product, assets } };
+      }
+
+      case 'product_upload': {
+        const folder = String(params.product || params.folder || '');
+        if (!(await readWebProduct(folder))) {
+          return { ok: false, error: '상품을 먼저 저장해 주세요', status: 400 };
+        }
+        const asset = await addProductAsset({
+          folder,
+          dataUrl: String(params.data || params.file || ''),
+          name: params.name ? String(params.name) : undefined,
+          shot: params.shot ? String(params.shot) : 'any',
+        });
+        const assets = await listProductAssets(folder);
+        return { ok: true, result: { asset, assets } };
+      }
+
+      case 'product_assets': {
+        const folder = String(params.product || params.folder || '');
+        if (!folder) return { ok: false, error: '상품을 지정해 주세요', status: 400 };
+        return { ok: true, result: { assets: await listProductAssets(folder) } };
+      }
+
+      case 'product_asset_delete': {
+        const folder = String(params.product || params.folder || '');
+        const id = String(params.id || '');
+        if (!folder || !id) return { ok: false, error: '상품과 파일 id가 필요해요', status: 400 };
+        await removeProductAsset(folder, id);
+        return { ok: true, result: { assets: await listProductAssets(folder) } };
+      }
+
+      case 'ref_search': {
+        if (!hasSerpApi()) {
+          return {
+            ok: false,
+            error: 'SERPAPI_API_KEY를 .env.local에 넣고 서버를 다시 켜 주세요',
+            status: 400,
+          };
+        }
+        const productName = String(params.q || params.productName || params.name || '').trim();
+        if (!productName) return { ok: false, error: '검색할 상품명을 넣어 주세요', status: 400 };
+        const result = await searchReferenceVideos({
+          productName,
+          shot: params.shot ? String(params.shot) : undefined,
+          extra: params.extra ? String(params.extra) : undefined,
+        });
+        return { ok: true, result };
+      }
+
+      case 'cc_search': {
+        if (!hasCcSearch()) {
+          return {
+            ok: false,
+            error:
+              'CC 검색에는 YOUTUBE_API_KEY(또는 GOOGLE_API_KEY)와/또는 SERPAPI_API_KEY가 필요해요. .env.local에 넣고 서버를 다시 켜 주세요.',
+            status: 400,
+          };
+        }
+        const productName = String(params.q || params.productName || params.name || '').trim();
+        if (!productName) return { ok: false, error: '검색할 상품명을 넣어 주세요', status: 400 };
+        const result = await searchCcMedia({
+          productName,
+          shot: params.shot ? String(params.shot) : undefined,
+        });
+        return { ok: true, result };
+      }
+
+      case 'cc_import': {
+        const folder = String(params.product || params.folder || '');
+        if (!(await readWebProduct(folder))) {
+          return { ok: false, error: '상품을 먼저 저장해 주세요', status: 400 };
+        }
+        const hit = params.hit as CcHit | undefined;
+        if (!hit?.link || !hit.kind) {
+          return { ok: false, error: '가져올 CC 항목이 없어요', status: 400 };
+        }
+        const asset = await importCcHitToProduct({
+          folder,
+          hit,
+          shot: params.shot ? String(params.shot) : 'any',
+        });
+        return { ok: true, result: { asset, assets: await listProductAssets(folder) } };
       }
 
       case 'jobs':

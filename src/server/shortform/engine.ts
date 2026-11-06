@@ -158,9 +158,19 @@ async function ensureEngine() {
   return startEngine();
 }
 
+/** Python bridge에 없는 API — 항상 Node 웹 엔진으로 처리 */
+const NODE_ONLY_METHODS = new Set([
+  'cc_search',
+  'cc_import',
+  'ref_search',
+  'product_upload',
+  'product_assets',
+  'product_asset_delete',
+]);
+
 export async function shortformCall(method: string, params: Record<string, unknown> = {}, timeoutMs = 300_000): Promise<EngineResult> {
-  // Vercel / FORCE_NODE: Python 없이 Node 웹 엔진(초안·사진 렌더 포함)
-  if (isShortformServerless()) {
+  // Vercel / FORCE_NODE / Node 전용 메서드: Python 없이 Node 웹 엔진
+  if (isShortformServerless() || NODE_ONLY_METHODS.has(method)) {
     return handleShortformNode(method, params);
   }
 

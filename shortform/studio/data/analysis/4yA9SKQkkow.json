@@ -25,17 +25,14 @@
    "shot": "hook",
    "text": "초대형 갑오징어를 손질하던 중",
    "purpose": "초대형 갑오징어를 손질하면서 예상치 못한 일이 벌어질 것임을 암시한다",
-   "seconds": 3.0,
-   "note": "손이 칼로 대형 갑오징어를 손질하는 장면, 조리대 위에서 손질 시작"
-  },
-  {
-   "role": "STEP",
-   "label": "",
-   "shot": "prep",
-   "text": "입안에서 정체불명의 생명체가 발견됩니다",
-   "purpose": "갑오징어 내부를 열어 손질하는 과정을 보여준다",
-   "seconds": 3.0,
-   "note": "손으로 갑오징어 몸통을 벌리며 내부를 확인하는 장면"
+   "seconds": 9.07,
+   "note": "손이 칼로 대형 갑오징어를 손질하는 장면, 조리대 위에서 손질 시작",
+   "t0": 0.0,
+   "t1": 9.07,
+   "keyframe": "4yA9SKQkkow/scene_00.jpg",
+   "file": "4yA9SKQkkow/scene_00.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "REVEAL",
@@ -43,17 +40,14 @@
    "shot": "detail",
    "text": "조심스럽게 밖으로 꺼내보는데",
    "purpose": "갑오징어 내부에서 발견된 생명체를 클로즈업으로 보여준다",
-   "seconds": 3.0,
-   "note": "손으로 조심스럽게 내부 생명체를 꺼내는 클로즈업, 물과 내장이 보임"
-  },
-  {
-   "role": "REVEAL",
-   "label": "",
-   "shot": "detail",
-   "text": "이게 왜 여기서 나오는거 아시는 분?",
-   "purpose": "꺼낸 생명체의 정체를 명확히 드러낸다",
-   "seconds": 3.0,
-   "note": "추정: 갑오징어가 먹은 물고기나 먹이가 드러나는 장면"
+   "seconds": 1.27,
+   "note": "손으로 조심스럽게 내부 생명체를 꺼내는 클로즈업, 물과 내장이 보임",
+   "t0": 9.07,
+   "t1": 10.33,
+   "keyframe": "4yA9SKQkkow/scene_01.jpg",
+   "file": "4yA9SKQkkow/scene_01.jpg",
+   "measured": true,
+   "estimated": false
   },
   {
    "role": "CTA",
@@ -61,8 +55,14 @@
    "shot": "prep",
    "text": "조심스럽게 밖으로 꺼내보는데",
    "purpose": "시청자의 궁금증을 유발하며 댓글 참여를 유도한다",
-   "seconds": 2.0,
-   "note": "추정: 마무리 손질 장면 또는 발견된 내용물 재확인"
+   "seconds": 3.69,
+   "note": "추정: 마무리 손질 장면 또는 발견된 내용물 재확인",
+   "t0": 10.33,
+   "t1": 14.02,
+   "keyframe": "4yA9SKQkkow/scene_02.jpg",
+   "file": "4yA9SKQkkow/scene_02.jpg",
+   "measured": true,
+   "estimated": false
   }
  ],
  "pacing": "빠름",
@@ -84,5 +84,10 @@
   "views": 17930000,
   "description": "🦑 엄청난 크기의 대물 갑오징어를 손질하던 중 \n예상치 못한 장면이 포착됐습니다!\n\n과연 어떤 일이 벌어졌을까요?\n영상에서 직접 확인해 보세요.\n\n재밌게 보셨다면 좋아요👍와 구독🔔 부탁드립니다!\n\n#대물갑오징어 #갑오징어 #오징어손질"
  },
- "via": "fal"
+ "via": "fal",
+ "capture": {
+  "mode": "scene_detect",
+  "count": 3,
+  "total": 14.03
+ }
 }

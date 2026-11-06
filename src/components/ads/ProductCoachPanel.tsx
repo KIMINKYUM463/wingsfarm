@@ -126,13 +126,16 @@ function CoachCard({ coach, open, onToggle }: { coach: ProductCoach; open: boole
           ))}
 
           {rows.length > 0 && (
-            <DataTable minWidth="640px">
+            <DataTable minWidth="760px">
               <TableHead>
                 <tr>
                   <th className={th("left")}>조치</th>
                   <th className={th("left")}>키워드</th>
                   <th className={th()}>클릭</th>
                   <th className={th()}>광고비</th>
+                  <th className={th()} title="클릭 1회당 광고비. 광고비 ÷ 클릭이고, 부가세 포함이면 표의 광고비와 같이 1.1을 곱해요.">
+                    단가
+                  </th>
                   <th className={th()}>ROAS</th>
                   <th className={th()}>주문</th>
                 </tr>
@@ -151,6 +154,9 @@ function CoachCard({ coach, open, onToggle }: { coach: ProductCoach; open: boole
                     </td>
                     <td className={`${td()} text-right tabular-nums`}>{num(g.metrics.clicks)}</td>
                     <td className={`${td()} text-right tabular-nums`}>{won(g.metrics.cost)}</td>
+                    <td className={`${td()} text-right tabular-nums`} title={g.metrics.clicks > 0 ? `${won(g.metrics.cost)} ÷ ${num(g.metrics.clicks)}클릭` : undefined}>
+                      {g.metrics.cpc === null ? "-" : won(g.metrics.cpc)}
+                    </td>
                     <td className={`${td()} text-right tabular-nums`}>{roasText(g.metrics.roas)}</td>
                     <td className={`${td()} text-right tabular-nums`}>{num(g.metrics.orders)}</td>
                   </tr>

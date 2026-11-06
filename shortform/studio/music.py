@@ -9,11 +9,12 @@ import sources  # noqa: E402
 from make_short import FFMPEG  # noqa: E402
 
 BGM = STUDIO / "data" / "bgm"
+# claps/틱·찍 소리 나는 타악기는 피한다 — 농식품 숏폼에 맞는 부드러운 루프
 MOODS = {
-    "밝은": "bright cheerful acoustic ukulele with light claps and whistles, fresh farm produce vibe, warm, no vocals, loopable background",
-    "경쾌한": "upbeat fun modern pop beat with plucky synth and light percussion, energetic short-form video background, no vocals",
-    "잔잔한": "calm warm fingerpicked acoustic guitar with soft piano, cozy home kitchen, gentle, no vocals",
-    "시장활기": "lively energetic market vibe with korean traditional percussion and gayageum, upbeat and fun, no vocals",
+    "밝은": "bright warm acoustic ukulele and soft shaker, sunny farm produce vibe, gentle groove, no claps, no clicks, no vocals, loopable background",
+    "경쾌한": "upbeat soft modern pop with warm bass and muted percussion, energetic but smooth short-form background, no sharp ticks, no vocals",
+    "잔잔한": "calm warm fingerpicked acoustic guitar with soft piano pads, cozy kitchen, very gentle, no percussion hits, no vocals",
+    "시장활기": "lively warm market vibe with soft gayageum and rounded percussion, upbeat and fun but no sharp clacks, no vocals",
 }
 MODELS = [("cassetteai/music-generator", lambda p: {"prompt": p, "duration": 40}, lambda r: r["audio_file"]["url"]),
           ("fal-ai/stable-audio-25/text-to-audio", lambda p: {"prompt": p, "seconds_total": 40}, lambda r: r["audio"]["url"])]

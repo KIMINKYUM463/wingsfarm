@@ -487,9 +487,16 @@ class Jobs:
             label = str(fields.get("voice") or "")
             config["voice"] = "gemini:Charon" if "남성" in label else "gemini:Kore"
         config["ai_label"] = fields.get("ai_label", True) and job["mode"] != "photo"
+        if job["mode"] == "smart":
+            config["smart_fill"] = True
+        # 작업마다 다른 스톡·카메라·효과음
+        config["render_seed"] = job["id"]
+        config["id"] = job["id"]
         motion = bool(fields.get("motion")) and tpl.get("output") != "cards"
+        base_cmd = list(cmd)
         if motion:  # 모션그래픽 엔진(Remotion): 같은 장면 구성을 움직이는 자막·배지·도장·가격표로 그린다
-            config.update(id=job["id"], mode=job["mode"])
+            config.update(id=job["id"], mode=job["mode"],
+                          motion_style=fields.get("motion_style") or "clean")
             if tpl.get("engine") == "short":
                 config["engine"] = "short"
             cmd = [sys.executable, "-u", str(ROOT / "make_motion.py"), str(pdir),
@@ -499,13 +506,24 @@ class Jobs:
         if job["mode"] == "photo" and not motion:
             cmd.append("--photos-only")
 
-        env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUNBUFFERED": "1"}
-        proc = subprocess.Popen(cmd, cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                env=env, encoding="utf-8", errors="replace",
-                                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-        for line in proc.stdout:
-            job["log"].append(line.rstrip())
-        proc.wait()
+        def run_cmd(c):
+            env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUNBUFFERED": "1"}
+            proc = subprocess.Popen(c, cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    env=env, encoding="utf-8", errors="replace",
+                                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            for line in proc.stdout:
+                job["log"].append(line.rstrip())
+            proc.wait()
+            return proc.returncode
+
+        code = run_cmd(cmd)
+        # 모션그래픽 실패(디스크 부족·Remotion 오류 등)면 이미 만든 AI 장면으로 일반 렌더에 한 번 더 시도
+        if motion and code != 0:
+            job["log"].append("모션그래픽 렌더가 실패해서, 같은 장면으로 일반 영상에 다시 합칠게요.")
+            fallback = list(base_cmd) + ["--config", str(cfg)]
+            if job["mode"] == "photo":
+                fallback.append("--photos-only")
+            code = run_cmd(fallback)
 
         out = OUTPUT / f"{name}_{job['id']}"
         job["fidelity"] = fidelity_report(pdir, job["log"]) if job["mode"] != "photo" else None
@@ -519,15 +537,19 @@ class Jobs:
             script = OUTPUT / f"{name}_{job['id']}_대본.txt"
             if script.exists():
                 job["result"]["script"] = script.read_text(encoding="utf-8")
-        if job["result"] and proc.returncode == 0:
+        if job["result"] and code == 0:
             job["status"] = "done"
-            job["used_ai"] = any("AI 영상 생성" in l for l in job["log"])
+            job["used_ai"] = any("AI 영상 생성" in l or "AI 장면" in l for l in job["log"])
         else:
             job["status"] = "error"
             job["result"] = None
-            text = "\n".join(job["log"][-30:])
-            if "TTS" in text or "edge" in text.lower():
-                job["error"] = "목소리(TTS) 만들기에 실패했어요. 인터넷 연결을 확인하고 다시 만들어 주세요."
+            text = "\n".join(job["log"][-40:])
+            if "ENOSPC" in text or "no space left" in text.lower():
+                job["error"] = "디스크 공간이 부족해서 렌더가 끊겼어요. C 드라이브 여유 공간을 비운 뒤, 모션그래픽을 끄고 다시 만들어 보세요. (AI 장면은 이미 캐시되어 있어요)"
+            elif "모션 렌더링에 실패" in text:
+                job["error"] = "모션그래픽 렌더에 실패했고, 일반 영상으로 다시 합치는 것도 실패했어요. 모션그래픽을 끄고 다시 시도해 주세요."
+            elif "TTS" in text or "edge" in text.lower() or "Gemini 목소리" in text:
+                job["error"] = "목소리(TTS) 만들기에 실패했어요. 인터넷 연결·GEMINI_API_KEY를 확인하고 다시 만들어 주세요."
             elif "ffmpeg" in text.lower():
                 job["error"] = "영상을 합치는 중 문제가 생겼어요. 같은 설정으로 한 번 더 만들어 보세요."
             else:

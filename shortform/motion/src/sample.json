@@ -3,6 +3,7 @@
   "title2": "딱 3가지만 보세요",
   "info": "청송 부사 5kg, 프로필 링크",
   "highlight": "yellow",
+  "motionStyle": "clean",
   "aiLabel": false,
   "price": {"now": 39000, "before": 45000, "unit": "5kg (20~22과)"},
   "scenes": [

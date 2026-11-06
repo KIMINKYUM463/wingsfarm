@@ -17,6 +17,7 @@ const SORTS = {
   roas: { label: "ROAS 순", value: (g: AdGroup) => g.metrics.roas ?? -1 },
   profit: { label: "남긴 돈 순", value: (g: AdGroup) => g.profit ?? 0 },
   clicks: { label: "클릭 순", value: (g: AdGroup) => g.metrics.clicks },
+  cpc: { label: "단가 순", value: (g: AdGroup) => g.metrics.cpc ?? -1 },
 } as const;
 type Sort = keyof typeof SORTS;
 
@@ -103,11 +104,14 @@ export function KeywordPanel({ keywords, minClicks }: { keywords: KeywordInsight
         </div>
       </div>
 
-      <DataTable minWidth="820px">
+      <DataTable minWidth="920px">
         <TableHead>
           <tr>
             <th className={th("left")}>키워드</th>
             <th className={th()}>광고비</th>
+            <th className={th()} title="클릭 1회당 광고비. 광고비 ÷ 클릭이고, 부가세 포함이면 표의 광고비와 같이 1.1을 곱해요.">
+              단가
+            </th>
             <th className={th()}>매출</th>
             <th className={th()}>ROAS</th>
             <th className={th()}>남긴 돈</th>
@@ -125,6 +129,9 @@ export function KeywordPanel({ keywords, minClicks }: { keywords: KeywordInsight
                 {g.key}
               </td>
               <td className={`${td()} text-right tabular-nums`}>{won(g.metrics.cost)}</td>
+              <td className={`${td()} text-right tabular-nums`} title={g.metrics.clicks > 0 ? `${won(g.metrics.cost)} ÷ ${num(g.metrics.clicks)}클릭` : undefined}>
+                {g.metrics.cpc === null ? "-" : won(g.metrics.cpc)}
+              </td>
               <td className={`${td()} text-right tabular-nums`}>{won(g.metrics.revenue)}</td>
               <td className={`${td()} text-right font-semibold tabular-nums ${g.metrics.roas !== null && g.breakEven ? (g.metrics.roas >= g.breakEven ? "text-emerald-600" : "text-rose-600") : ""}`}>
                 {roasText(g.metrics.roas)}

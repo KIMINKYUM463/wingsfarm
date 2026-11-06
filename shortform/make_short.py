@@ -414,7 +414,11 @@ def make_video(p, photos, segs, out_path, bgm, work, pdir):
         label = rest[0] if rest else None
         photo = photos[idx % len(photos)]
         bg, au, clip = (str(work / f"{i:02d}{s}") for s in ("_bg.jpg", "_tts.mp3", ".mp4"))
-        src_clip = None if p.get("photos_only") else get_clip(source, p, photos[0], pdir)
+        src_clip = (
+            None
+            if p.get("photos_only")
+            else get_clip(source, p, photos[0], pdir, smart=bool(p.get("smart_fill")))
+        )
         if not src_clip:
             make_background(photo, bg, used.get(photo, 0))
             used[photo] = used.get(photo, 0) + 1

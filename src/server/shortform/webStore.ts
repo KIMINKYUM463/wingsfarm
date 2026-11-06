@@ -24,6 +24,8 @@ export type SfProduct = {
   photo: string | null;
   photos: number;
   cached: string[];
+  /** 셀러가 직접 올린 산지·시식 등 영상/사진 */
+  assets?: import('@/server/shortform/productAssets').ProductAsset[];
   updated_at?: string;
 };
 
@@ -39,7 +41,14 @@ export type SfJob = {
   created: string;
   finished?: string;
   log: string[];
-  result: null | { type: 'video' | 'cards'; file?: string; files?: string[]; script?: string };
+  result: null | {
+    type: 'video' | 'cards';
+    file?: string;
+    files?: string[];
+    script?: string;
+    /** 장면별 영상·사진 출처 (스톡/CC/AI/업로드) */
+    sources?: Array<{ scene: number; label: string; attribution?: string }>;
+  };
   error?: string;
   fidelity?: null;
   post?: unknown;
