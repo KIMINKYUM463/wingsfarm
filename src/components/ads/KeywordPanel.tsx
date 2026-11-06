@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Badge, CopyButton, TextInput } from "@/components/ui";
+import { keywordSales, manualBidGroups } from "@/lib/adOptions";
 import { KEYWORD_LENGTHS, type KeywordInsights } from "@/lib/adInsights";
 import { VERDICT_META, type AdGroup, type Verdict } from "@/lib/coupangAds";
 import { num, percent, won, wonShort } from "@/lib/format";
+import { IrrelevantKeywords } from "./IrrelevantKeywords";
 import { DataTable, Metric, Panel, SectionHeader, TableHead, profitText, rateText, roasText, td, th } from "./parts";
 
 const PAGE = 40;
@@ -21,11 +23,14 @@ const SORTS = {
 } as const;
 type Sort = keyof typeof SORTS;
 
-export function KeywordPanel({ keywords, minClicks }: { keywords: KeywordInsights; minClicks: number }) {
+export function KeywordPanel({ keywords, minClicks, costMultiplier }: { keywords: KeywordInsights; minClicks: number; costMultiplier: number }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("cost");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(PAGE);
+  const [open, setOpen] = useState<string | null>(null);
+  const bids = useMemo(() => manualBidGroups(keywords.groups), [keywords.groups]);
+  const searchRows = useMemo(() => keywords.groups.flatMap((g) => g.rows), [keywords.groups]);
 
   const wasteShare = keywords.metrics.cost > 0 ? keywords.noOrder.cost / keywords.metrics.cost : 0;
   const bestLength = [...keywords.lengths].sort((a, b) => (b.metrics.roas ?? 0) - (a.metrics.roas ?? 0))[0];
@@ -56,6 +61,22 @@ export function KeywordPanel({ keywords, minClicks }: { keywords: KeywordInsight
         <Metric label="매출 80% 키워드" value={`${num(keywords.revenue80Count)}개`} hint={`상위 10개 광고비 ${percent(keywords.top10CostShare, 0)}`} />
         <Metric label="제외 후보" value={`${num(keywords.exclude.length)}개`} tone={keywords.exclude.length ? "loss" : "default"} />
       </div>
+
+      <div className="mb-4">
+        <IrrelevantKeywords rows={searchRows} costMultiplier={costMultiplier} />
+      </div>
+
+      {bids.length > 0 && (
+        <div className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-stone-700">
+              노출 80 미만인데 손익분기를 넘은 키워드 <b>{bids.length}</b>개. 자동 입찰에 두면 잘 안 보이니 수동 입찰로 올려 보세요.
+            </p>
+            <CopyButton text={bids.map((g) => g.key).join("\n")} label="수동 입찰 복사" />
+          </div>
+          <p className="mt-1 text-xs text-stone-500">{bids.slice(0, 8).map((g) => `${g.key} ${roasText(g.metrics.roas)}`).join(" · ")}</p>
+        </div>
+      )}
 
       {keywords.lengths.length > 0 && (
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
@@ -123,10 +144,16 @@ export function KeywordPanel({ keywords, minClicks }: { keywords: KeywordInsight
           </tr>
         </TableHead>
         <tbody>
-          {rows.slice(0, limit).map((g) => (
-            <tr key={g.key} className="border-t border-stone-100 hover:bg-stone-50/70">
+          {rows.slice(0, limit).map((g) => {
+            const sales = keywordSales(g);
+            const opened = open === g.key;
+            return (
+            <Fragment key={g.key}>
+            <tr className="border-t border-stone-100 hover:bg-stone-50/70">
               <td className={`${td("max-w-64 truncate font-medium text-stone-800")}`} title={g.key}>
-                {g.key}
+                <button type="button" className="max-w-full truncate text-left hover:underline" onClick={() => setOpen(opened ? null : g.key)}>
+                  {g.key}
+                </button>
               </td>
               <td className={`${td()} text-right tabular-nums`}>{won(g.metrics.cost)}</td>
               <td className={`${td()} text-right tabular-nums`} title={g.metrics.clicks > 0 ? `${won(g.metrics.cost)} ÷ ${num(g.metrics.clicks)}클릭` : undefined}>
@@ -145,7 +172,26 @@ export function KeywordPanel({ keywords, minClicks }: { keywords: KeywordInsight
                 <Badge tone={VERDICT_META[g.verdict].tone}>{VERDICT_META[g.verdict].label}</Badge>
               </td>
             </tr>
-          ))}
+            {opened && (
+              <tr className="bg-stone-50/80">
+                <td colSpan={11} className="px-3 py-2 text-sm text-stone-600">
+                  {sales.length === 0 ? (
+                    "이 키워드로 난 주문이 없어요."
+                  ) : (
+                    <ul className="space-y-1">
+                      {sales.map((s) => (
+                        <li key={s.productName}>
+                          {s.productName} · 주문 {num(s.orders)} · {won(s.revenue)}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </td>
+              </tr>
+            )}
+            </Fragment>
+          );
+          })}
         </tbody>
       </DataTable>
       {!rows.length && <p className="py-6 text-center text-sm text-stone-400">조건에 맞는 키워드가 없어요.</p>}

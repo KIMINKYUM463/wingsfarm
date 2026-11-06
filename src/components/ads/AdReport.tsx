@@ -13,6 +13,7 @@ import { AdSummary } from "./AdSummary";
 import { BehaviorPanel } from "./BehaviorPanel";
 import { FollowupPanel } from "./FollowupPanel";
 import { KeywordPanel } from "./KeywordPanel";
+import { OptionPanel } from "./OptionPanel";
 import { DataTable, Panel, SectionHeader, TableHead, profitText, rateText, roasText, td, th } from "./parts";
 import { PlacementPanel } from "./PlacementPanel";
 import { ProductCoachPanel } from "./ProductCoachPanel";
@@ -35,7 +36,7 @@ interface Props {
   sales: ReactNode;
 }
 
-type TabId = "actions" | "products" | "keywords" | "audience" | "breakdown" | "sales";
+type TabId = "actions" | "products" | "options" | "keywords" | "audience" | "breakdown" | "sales";
 
 /** 스크롤해도 위에 붙어 있는 밑줄형 탭 (이름 옆에 개수) */
 function ReportTabs({ tabs, value, onChange }: { tabs: { id: TabId; label: string; count?: number }[]; value: TabId; onChange: (id: TabId) => void }) {
@@ -129,6 +130,7 @@ export function AdReport({ rows, fields, fileName, window, period, breakEvenOf, 
   const tabs = [
     { id: "actions" as const, label: "할 일", count: analysis.actions.length },
     { id: "products" as const, label: "상품", count: analysis.products.length },
+    { id: "options" as const, label: "옵션" },
     ...(analysis.keywords
       ? [
           {
@@ -157,7 +159,8 @@ export function AdReport({ rows, fields, fileName, window, period, breakEvenOf, 
         <ProductMatrix products={analysis.products} />
       </>
     ),
-    keywords: analysis.keywords && <KeywordPanel keywords={analysis.keywords} minClicks={MIN_CLICKS} />,
+    options: <OptionPanel rows={rows} breakEvenOf={breakEvenOf} costMultiplier={costMultiplier} />,
+    keywords: analysis.keywords && <KeywordPanel keywords={analysis.keywords} minClicks={MIN_CLICKS} costMultiplier={costMultiplier} />,
     audience: (
       <>
         <PlacementPanel placements={analysis.placements} />
